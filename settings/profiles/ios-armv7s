@@ -1,4 +1,0 @@
-include(ios-base)
-
-[settings]
-arch=armv7s
