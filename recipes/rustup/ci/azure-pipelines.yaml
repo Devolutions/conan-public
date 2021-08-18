@@ -1,0 +1,35 @@
+name: $(BuildID)
+
+trigger:
+  branches:
+    include:
+      - master
+
+variables:
+  - group: conan
+
+jobs:
+  - job: linux64
+    pool:
+      name: 'Devolutions - Linux containers'
+
+    workspace:
+      clean: all
+
+    container: devolutions/waykbuilder:linux
+
+    steps:
+      - checkout: self
+        clean: true
+        fetchDepth: 1
+
+      - bash: |
+          conan user -r artifactory -p '$(CONAN_PASSWORD)' $(CONAN_LOGIN_USERNAME)
+          PACKAGE_NAME=`echo $(Build.Repository.Name) | sed 's/Devolutions\/conan-//'`
+          VERSION=`cat VERSION`
+          conan export . $PACKAGE_NAME/$VERSION@devolutions/stable
+          conan upload --all -r artifactory $PACKAGE_NAME/$VERSION@devolutions/stable
+          conan alias $PACKAGE_NAME/latest@devolutions/stable $PACKAGE_NAME/$VERSION@devolutions/stable
+          conan upload --all -r artifactory $PACKAGE_NAME/latest@devolutions/stable
+        env:
+          CONAN_PASSWORD: $(CONAN_PASSWORD)

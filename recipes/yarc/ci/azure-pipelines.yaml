@@ -1,0 +1,87 @@
+name: $(BuildID)
+
+trigger:
+  branches:
+    include:
+      - master
+
+variables:
+  - group: conan
+
+jobs:
+  - job: linux32
+    pool:
+      name: 'Devolutions - Linux containers'
+
+    workspace:
+      clean: all
+
+    steps:
+      - checkout: self
+        clean: true
+        fetchDepth: 1
+
+      - script: docker pull devolutions/waykbuilder:linux32
+        displayName: Fetching latest version of devolutions/waykbuilder:linux32
+
+      - script: "docker run --user wayk -v $(Build.Repository.LocalPath):/src --rm -w /src \
+        -e CONAN_CHANNEL=$(CONAN_CHANNEL) -e CONAN_LOGIN_USERNAME=$(CONAN_LOGIN_USERNAME) \
+        -e CONAN_PASSWORD='$(CONAN_PASSWORD)' -e CONAN_UPLOAD='$(CONAN_UPLOAD)' \
+        -e CONAN_UPLOAD_ONLY_WHEN_STABLE=$(CONAN_UPLOAD_ONLY_WHEN_STABLE) \
+        devolutions/waykbuilder:linux32 ./build.py -p linux -a x86"
+        displayName: Running build.py
+
+  - job: linux64
+    pool:
+      name: 'Devolutions - Linux containers'
+
+    workspace:
+      clean: all
+
+    container: devolutions/waykbuilder:linux
+
+    steps:
+      - checkout: self
+        clean: true
+        fetchDepth: 1
+
+      - script: ./build.py -p linux -a x86_64
+        displayName: Running build.py
+        env:
+          CONAN_PASSWORD: $(CONAN_PASSWORD)
+
+  - job: macOS
+    pool:
+      name: 'Devolutions - macOS'
+
+    workspace:
+      clean: all
+
+    steps:
+      - checkout: self
+        clean: true
+        fetchDepth: 1
+
+      - script: ./build.py -p macos
+        displayName: Running build.py
+        env:
+          CONAN_PASSWORD: $(CONAN_PASSWORD)
+
+  - job: windows
+    pool:
+      name: 'Devolutions - Windows containers'
+
+    workspace:
+      clean: all
+
+    container: devolutions/waykbuilder:vstools2k19
+
+    steps:
+      - checkout: self
+        clean: true
+        fetchDepth: 1
+
+      - script: C:\BuildTools\Common7\Tools\VsDevCmd.bat && python build.py -p windows
+        displayName: Running build.py
+        env:
+          CONAN_PASSWORD: $(CONAN_PASSWORD)

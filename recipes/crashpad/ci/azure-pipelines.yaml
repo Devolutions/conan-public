@@ -1,0 +1,31 @@
+name: conan-crashpad-$(Rev:r)
+
+trigger:
+  branches:
+    include:
+      - master
+
+variables:
+  - group: conan
+
+jobs:
+  - job: windows
+    pool:
+      name: 'Devolutions - Windows containers'
+
+    workspace:
+      clean: all
+
+    container:
+      image: devolutions/waykbuilder:vstools2k19
+      options: --isolation=hyperv
+
+    steps:
+      - checkout: self
+        clean: true
+        fetchDepth: 1
+
+      - script: C:\BuildTools\Common7\Tools\VsDevCmd.bat && python build.py -p windows --debug
+        displayName: Running build.py
+        env:
+          CONAN_PASSWORD: $(CONAN_PASSWORD)

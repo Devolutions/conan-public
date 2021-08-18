@@ -1,0 +1,11 @@
+include(default-options)
+
+[settings]
+os=iOS
+compiler=apple-clang
+compiler.version=9.1
+compiler.libcxx=libc++
+build_type=Release
+os.version=8.2
+os_build=Macos
+arch_build=x86_64

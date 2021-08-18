@@ -1,0 +1,79 @@
+from conans import ConanFile, tools, CMake, python_requires
+import os
+
+lipo = python_requires('lipo/latest@devolutions/stable')
+utils = python_requires('utils/latest@devolutions/stable')
+
+class ZlibConan(ConanFile):
+    name = 'zlib'
+    exports = 'VERSION', 'REVISION'
+    upstream_version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
+    revision = open(os.path.join('.', 'REVISION'), 'r').read().rstrip()
+    version = '%s-%s' % (upstream_version, revision)
+    license = 'Zlib'
+    url = 'https://github.com/madler/zlib.git'
+    description = 'zlib is a general purpose data compression library.'
+    settings = 'os', 'arch', 'build_type', 'compiler'
+    tag = 'v' + upstream_version
+
+    options = {
+        'fPIC': [True, False],
+        'cmake_osx_architectures': 'ANY',
+        'cmake_osx_deployment_target': 'ANY',
+        'ios_deployment_target': 'ANY',
+        'shared': [True, False]
+    }
+
+    def source(self):
+        if self.settings.arch == 'universal':
+            return
+
+        folder = self.name
+        self.output.info('Cloning repo: %s dest: %s tag: %s' % (self.url, folder, self.tag))
+        git = tools.Git(folder=folder)
+        git.clone(self.url)
+        git.checkout(self.tag)
+
+        if self.settings.os == 'Windows':
+            tools.replace_in_file(os.path.join(folder, 'CMakeLists.txt'),
+                "set(CMAKE_DEBUG_POSTFIX \"d\")",
+                "set(CMAKE_DEBUG_POSTFIX \"\")", strict=True)
+
+    def build(self):
+        if self.settings.arch == 'universal':
+            lipo.create(self, self.build_folder)
+            return
+
+        cmake = CMake(self)
+        utils.cmake_wrapper(cmake, self.settings, self.options)
+        cmake.configure(source_folder=self.name)
+
+        if self.settings.os == 'Windows':
+            tools.replace_in_file('CMakeCache.txt', '/MD', '/MT', strict=False)
+            cmake.configure(source_folder=self.name)
+
+        args = ['--target', 'zlibstatic'] if self.settings.os == 'iOS' else None
+        cmake.build(args=args)
+
+    def package(self):
+        if self.settings.arch == 'universal':
+            self.copy('*.a')
+            self.copy('*.h', src='include', dst='include')
+            return
+
+        if self.settings.os == 'Windows':
+            self.copy('*.lib', dst='lib', keep_path=False)
+            with tools.chdir(os.path.join(self.package_folder, 'lib')):
+                os.remove('zlib.lib')
+                os.replace('zlibstatic.lib', 'zlib.lib')
+        else:
+            self.copy('*.a', dst='lib')
+
+        self.copy('zconf.h', dst='include')
+        self.copy('zlib.h', src='zlib', dst='include')
+
+    def package_info(self):
+        if self.settings.os == 'Windows':
+            self.cpp_info.libs = ['zlib']
+        else:
+            self.cpp_info.libs = ['z']

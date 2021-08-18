@@ -1,0 +1,4 @@
+include(linux-base)
+
+[settings]
+arch=armv8

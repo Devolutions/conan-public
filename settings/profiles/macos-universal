@@ -1,0 +1,4 @@
+include(macos-base)
+
+[settings]
+arch=universal

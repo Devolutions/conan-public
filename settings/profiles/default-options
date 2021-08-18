@@ -1,0 +1,6 @@
+[options]
+*:fPIC=True
+*:shared=False
+*:cmake_osx_architectures=x86_64
+*:cmake_osx_deployment_target=10.9
+*:ios_deployment_target=8.2

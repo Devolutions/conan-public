@@ -1,0 +1,5 @@
+include(linux-base)
+
+[settings]
+arch=x86_64
+arch_build=x86_64
