@@ -6,23 +6,21 @@ utils = python_requires('utils/latest@devolutions/stable')
 
 class LibwebmConan(ConanFile):
     name = 'libwebm'
-    exports = 'VERSION', 'REVISION'
-    upstream_version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
-    revision = open(os.path.join('.', 'REVISION'), 'r').read().rstrip()
-    version = '%s-%s' % (upstream_version, revision)
+    exports = 'VERSION'
+    version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
     license = 'WebM'
     url = 'https://github.com/webmproject/libwebm.git'
     description = 'WebM'
-    settings = 'os', 'arch', 'build_type', 'compiler'
-    # the last release was done over 3 years ago. pinning the build to the last commit id
+    settings = 'os', 'arch', 'build_type'
     commit = 'bc32e3c'
 
     options = {
         'fPIC': [True, False],
-        'cmake_osx_architectures': 'ANY',
-        'cmake_osx_deployment_target': 'ANY',
-        'ios_deployment_target': 'ANY',
         'shared': [True, False]
+    }
+    default_options = {
+        'fPIC': True,
+        'shared': False
     }
 
     def source(self):

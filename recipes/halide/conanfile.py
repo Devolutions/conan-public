@@ -6,28 +6,27 @@ utils = python_requires('utils/latest@devolutions/stable')
 
 class HalideConan(ConanFile):
     name = 'halide'
-    exports = 'VERSION', 'REVISION'
-    upstream_version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
-    revision = open(os.path.join('.', 'REVISION'), 'r').read().rstrip()
-    version = '%s-%s' % (upstream_version, revision)
-    tag = 'v%s' % (upstream_version)
+    exports = 'VERSION'
+    version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
+    tag = 'v%s' % (version)
     no_copy_source = True
     license = 'Independent JPEG Group'
     license = 'BSD'
     url = 'https://github.com/Halide/Halide.git'
     description = 'a language for fast, portable data-parallel computation'
-    settings = 'os_build', 'arch_build', 'compiler'
+    settings = 'os_build', 'arch_build'
 
     options = {
         'fPIC': [True, False],
-        'cmake_osx_architectures': 'ANY',
-        'cmake_osx_deployment_target': 'ANY',
-        'ios_deployment_target': 'ANY',
         'shared': [True, False]
+    }
+    default_options = {
+        'fPIC': True,
+        'shared': False
     }
 
     def build_requirements(self):
-        self.build_requires('clang-llvm/12.0.1-2@devolutions/stable')
+        self.build_requires('clang-llvm/12.0.1@devolutions/stable')
 
     def source(self):
         folder = self.name

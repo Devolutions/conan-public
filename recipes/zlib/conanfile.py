@@ -6,22 +6,21 @@ utils = python_requires('utils/latest@devolutions/stable')
 
 class ZlibConan(ConanFile):
     name = 'zlib'
-    exports = 'VERSION', 'REVISION'
-    upstream_version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
-    revision = open(os.path.join('.', 'REVISION'), 'r').read().rstrip()
-    version = '%s-%s' % (upstream_version, revision)
+    exports = 'VERSION'
+    version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
     license = 'Zlib'
     url = 'https://github.com/madler/zlib.git'
     description = 'zlib is a general purpose data compression library.'
-    settings = 'os', 'arch', 'build_type', 'compiler'
-    tag = 'v' + upstream_version
+    settings = 'os', 'arch', 'build_type'
+    tag = 'v' + version
 
     options = {
         'fPIC': [True, False],
-        'cmake_osx_architectures': 'ANY',
-        'cmake_osx_deployment_target': 'ANY',
-        'ios_deployment_target': 'ANY',
         'shared': [True, False]
+    }
+    default_options = {
+        'fPIC': True,
+        'shared': False
     }
 
     def source(self):

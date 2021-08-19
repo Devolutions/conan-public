@@ -6,21 +6,20 @@ utils = python_requires('utils/latest@devolutions/stable')
 
 class MinizConan(ConanFile):
     name = 'miniz'
-    exports = 'VERSION', 'REVISION'
-    upstream_version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
-    revision = open(os.path.join('.', 'REVISION'), 'r').read().rstrip()
-    version = '%s-%s' % (upstream_version, revision)
+    exports = 'VERSION'
+    version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
     license = 'MIT'
     url = 'https://github.com/richgel999/miniz'
     description = 'miniz: Single C source file zlib-replacement library'
-    settings = 'os', 'arch', 'build_type', 'compiler'
+    settings = 'os', 'arch', 'build_type'
 
     options = {
         'fPIC': [True, False],
-        'cmake_osx_architectures': 'ANY',
-        'cmake_osx_deployment_target': 'ANY',
-        'ios_deployment_target': 'ANY',
         'shared': [True, False]
+    }
+    default_options = {
+        'fPIC': True,
+        'shared': False
     }
 
     def source(self):
@@ -28,13 +27,13 @@ class MinizConan(ConanFile):
             return
 
         folder = self.name
-        self.output.info('Cloning repo: %s dest: %s tag: %s' % (self.url, folder, self.upstream_version))
+        self.output.info('Cloning repo: %s dest: %s tag: %s' % (self.url, folder, self.version))
         git = tools.Git(folder=folder)
         git.clone(self.url)
-        git.checkout(self.upstream_version)
+        git.checkout(self.version)
 
     def build(self):
-        if self.settings.arch == 'universal' and self.settings.os == 'iOS':
+        if self.settings.arch == 'universal':
             lipo.create(self, self.build_folder)
             return
 
@@ -46,10 +45,6 @@ class MinizConan(ConanFile):
         cmake.definitions['AMALGAMATE_SOURCES'] = 'ON'
 
         cmake.configure(source_folder=self.name)
-
-        if self.settings.os == 'Windows':
-            tools.replace_in_file('CMakeCache.txt', '/MD', '/MT', strict=False)
-            cmake.configure(source_folder=self.name)
 
         cmake.build()
 

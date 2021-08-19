@@ -8,15 +8,13 @@ lipo = python_requires('lipo/latest@devolutions/stable')
 
 class LibvpxConan(ConanFile):
     name = 'libvpx'
-    exports = 'VERSION', 'REVISION'
-    upstream_version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
-    revision = open(os.path.join('.', 'REVISION'), 'r').read().rstrip()
-    version = '%s-%s' % (upstream_version, revision)
+    exports = 'VERSION'
+    version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
     license = 'WebM'
     url = 'https://github.com/webmproject/libvpx.git'
     description = 'WebM VP8/VP9 Codec SDK'
-    settings = 'os', 'arch', 'build_type', 'compiler'
-    tag = 'v%s' % upstream_version
+    settings = 'os', 'arch', 'build_type'
+    tag = 'v%s' % version
 
     def build_requirements(self):
         if self.settings.os == 'Windows':
@@ -26,9 +24,9 @@ class LibvpxConan(ConanFile):
         if self.settings.arch == 'universal':
             return
         
-        source_url = "https://github.com/webmproject/libvpx/archive/v%s.tar.gz" % self.upstream_version
+        source_url = "https://github.com/webmproject/libvpx/archive/v%s.tar.gz" % self.version
         tools.get(source_url, sha256='85803ccbdbdd7a3b03d930187cb055f1353596969c1f92ebec2db839fa4f834a')
-        extracted_dir = self.name + '-' + self.upstream_version
+        extracted_dir = self.name + '-' + self.version
         os.rename(extracted_dir, 'sources')
 
         if self.settings.os == 'Windows':
@@ -66,7 +64,7 @@ class LibvpxConan(ConanFile):
 
     def build_configure(self):
         os.chdir('sources')
-        if self.settings.compiler == 'Visual Studio':
+        if self.settings.os == 'Windows':
             gen = os.path.join('build', 'make', 'gen_msvs_vcxproj.sh')
             tools.replace_in_file(gen,
                                     '        --help|-h) show_help',

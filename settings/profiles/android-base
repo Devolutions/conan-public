@@ -1,10 +1,6 @@
-include(default-options)
 
 [settings]
 os=Android
 compiler=clang
-compiler.version=3.8
+compiler.version=12
 compiler.libcxx=c++_static
-build_type=Release
-os_build=Linux
-arch_build=x86_64

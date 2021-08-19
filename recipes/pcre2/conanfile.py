@@ -7,43 +7,45 @@ utils = python_requires('utils/latest@devolutions/stable')
 
 class PCREConan(ConanFile):
     name = 'pcre2'
-    exports = 'VERSION', 'REVISION'
-    upstream_version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
-    revision = open(os.path.join('.', 'REVISION'), 'r').read().rstrip()
-    version = '%s-%s' % (upstream_version, revision)
+    exports = 'VERSION'
+    version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
     url = 'https://github.com/bincrafters/conan-pcre2'
     description = 'Perl Compatible Regular Expressions'
     homepage = 'https://www.pcre.org/'
     license = 'BSD-3-Clause'
     exports_sources = ['CMakeLists.txt', 'ios-clear_cache.patch', 'jit_aarch64.patch']
     generators = 'cmake'
-    settings = 'os', 'arch', 'compiler', 'build_type'
+    settings = 'os', 'arch', 'build_type'
+
     options = {
+        'fPIC': [True, False],
+        'shared': [True, False],
         'build_pcre2_8': [True, False],
         'build_pcre2_16': [True, False],
         'build_pcre2_32': [True, False],
-        'support_jit': [True, False],
-        'fPIC': [True, False],
-        'cmake_osx_architectures': 'ANY',
-        'cmake_osx_deployment_target': 'ANY',
-        'ios_deployment_target': 'ANY',
-        'shared': [True, False]
+        'support_jit': [True, False]
     }
-
-    default_options = { 'shared': False, 'build_pcre2_8': True, 'build_pcre2_16': True, 'build_pcre2_32': True, 'support_jit': True }
+    default_options = {
+        'fPIC': True,
+        'shared': False,
+        'build_pcre2_8': True,
+        'build_pcre2_16': True,
+        'build_pcre2_32': True,
+        'support_jit': True
+    }
 
     _source_subfolder = 'source_subfolder'
     _build_subfolder = 'build_subfolder'
 
-    requires = 'zlib/1.2.11-5@devolutions/stable'
+    requires = 'zlib/1.2.11@devolutions/stable'
 
     def source(self):
         if self.settings.arch == 'universal':
             return
         
         source_url = 'https://ftp.pcre.org'
-        tools.get("{0}/pub/pcre/pcre2-{1}.tar.gz".format(source_url, self.upstream_version))
-        extracted_dir = self.name + '-' + self.upstream_version
+        tools.get("{0}/pub/pcre/pcre2-{1}.tar.gz".format(source_url, self.version))
+        extracted_dir = self.name + '-' + self.version
         os.rename(extracted_dir, self._source_subfolder)
 
         tools.patch(patch_file='ios-clear_cache.patch', base_path=os.path.join(self._source_subfolder, 'src'))

@@ -7,49 +7,49 @@ utils = python_requires('utils/latest@devolutions/stable')
 
 class FreerdpConan(ConanFile):
     name = 'freerdp'
-    exports = 'VERSION', 'REVISION'
-    upstream_version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
-    revision = open(os.path.join('.', 'REVISION'), 'r').read().rstrip()
-    version = '%s-%s' % (upstream_version, revision)
+    exports = 'VERSION'
+    version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
     license = 'Apache 2.0'
     no_copy_source = True
     url = 'https://github.com/Devolutions/FreeRDP.git'
     description = 'FreeRDP is a free remote desktop protocol client'
-    settings = 'os', 'arch', 'build_type', 'compiler'
+    settings = 'os', 'arch', 'build_type'
     branch = 'devolutions-rdp2'
 
     options = {
         'fPIC': [True, False],
-        'cmake_osx_architectures': 'ANY',
-        'cmake_osx_deployment_target': 'ANY',
-        'ios_deployment_target': 'ANY',
         'shared': [True, False]
+    }
+    default_options = {
+        'fPIC': True,
+        'shared': False
     }
 
     def build_requirements(self):
-        self.build_requires('openssl/1.1.1d-4@devolutions/stable')
-        self.build_requires('winpr/2.3.2-7@devolutions/stable')
-        self.build_requires('mbedtls/2.16.0-6@devolutions/stable')
-        self.build_requires('zlib/1.2.11-5@devolutions/stable')
+        self.build_requires('openssl/1.1.1d@devolutions/stable')
+        self.build_requires('winpr/2.3.2@devolutions/stable')
+        self.build_requires('mbedtls/2.16.0@devolutions/stable')
+        self.build_requires('zlib/1.2.11@devolutions/stable')
 
     def source(self):
-        if self.settings.arch != 'universal':
-            folder = self.name
+        if self.settings.arch == 'universal':
+            return
 
-            self.output.info('Cloning repo: %s dest: %s branch: %s' % (self.url, folder, self.branch))
-            git = tools.Git(folder=folder)
-            git.clone(self.url)
-            git.checkout(self.branch)
+        folder = self.name
+        self.output.info('Cloning repo: %s dest: %s branch: %s' % (self.url, folder, self.branch))
+        git = tools.Git(folder=folder)
+        git.clone(self.url)
+        git.checkout(self.branch)
 
-            devolutions_rdp_dir = os.path.join(folder, 'DevolutionsRdp')
-            for r, d, f in os.walk(os.path.join(devolutions_rdp_dir, "patches")):
-                for item in sorted(f):
-                    if '.patch' in item:
-                        print("applying patch: " + item)
-                        tools.patch(base_path=folder, patch_file=os.path.join(r, item))
+        devolutions_rdp_dir = os.path.join(folder, 'DevolutionsRdp')
+        for r, d, f in os.walk(os.path.join(devolutions_rdp_dir, "patches")):
+            for item in sorted(f):
+                if '.patch' in item:
+                    print("applying patch: " + item)
+                    tools.patch(base_path=folder, patch_file=os.path.join(r, item))
 
-            with open(os.path.join(folder, "CMakeLists.txt"), 'a') as file:
-                file.write('\nadd_subdirectory(DevolutionsRdp)')
+        with open(os.path.join(folder, "CMakeLists.txt"), 'a') as file:
+            file.write('\nadd_subdirectory(DevolutionsRdp)')
             
     def build(self):
         if self.settings.arch == 'universal':
@@ -146,7 +146,7 @@ class FreerdpConan(ConanFile):
             if lib not in self.cpp_info.libs:
                 self.cpp_info.libs.append(lib)
 
-        if self.settings.compiler == 'Visual Studio' and self.settings.os == 'Windows':
+        if self.settings.os == 'Windows':
             for lib in ['ws2_32', 'dbghelp', 'crypt32']:
                 self.cpp_info.libs.append(lib)
         elif self.settings.os == 'Linux' or self.settings.os == 'Macos':

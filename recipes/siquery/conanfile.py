@@ -6,15 +6,13 @@ utils = python_requires('utils/latest@devolutions/stable')
 
 class SiqueryConan(ConanFile):
     name = 'siquery'
-    exports = 'VERSION', 'REVISION'
-    upstream_version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
-    revision = open(os.path.join('.', 'REVISION'), 'r').read().rstrip()
-    version = '%s-%s' % (upstream_version, revision)
+    exports = 'VERSION'
+    version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
     url = 'https://github.com/Devolutions/siquery-rs.git'
-    license = 'Devolutions'
+    license = 'Apache-2.0/MIT'
     description = 'A rust library for system information analytics and monitoring.'
-    settings = 'os', 'arch', 'build_type', 'compiler'
-    tag = 'v%s' % upstream_version
+    settings = 'os', 'arch', 'build_type'
+    tag = 'v%s' % version
 
     def build_requirements(self):
         self.cargo_target = rustup.target(self.settings.os, self.settings.arch)

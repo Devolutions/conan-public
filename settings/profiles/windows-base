@@ -1,10 +1,6 @@
-include(default-options)
 
 [settings]
 os=Windows
-compiler=Visual Studio
-compiler.version=16
+compiler=clang
+compiler.version=12
 compiler.runtime=MT
-build_type=Release
-os_build=Windows
-arch_build=x86_64

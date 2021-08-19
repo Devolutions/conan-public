@@ -6,22 +6,21 @@ utils = python_requires('utils/latest@devolutions/stable')
 
 class OpensslConan(ConanFile):
     name = 'openssl'
-    exports = 'VERSION', 'REVISION'
-    upstream_version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
-    revision = open(os.path.join('.', 'REVISION'), 'r').read().rstrip()
-    version = '%s-%s' % (upstream_version, revision)
+    exports = 'VERSION'
+    version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
     license = 'OpenSSL'
     url = 'https://github.com/openssl/openssl.git'
     no_copy_source = True
     description = 'TLS/SSL and crypto library'
-    settings = 'os', 'arch', 'build_type', 'compiler'
+    settings = 'os', 'arch', 'build_type'
 
     options = {
         'fPIC': [True, False],
-        'cmake_osx_architectures': 'ANY',
-        'cmake_osx_deployment_target': 'ANY',
-        'ios_deployment_target': 'ANY',
         'shared': [True, False]
+    }
+    default_options = {
+        'fPIC': True,
+        'shared': False
     }
 
     def source(self):
@@ -29,7 +28,7 @@ class OpensslConan(ConanFile):
             return
 
         openssl_source_dir = os.path.join(self.source_folder, self.name)
-        tag = 'OpenSSL_%s' % self.upstream_version
+        tag = 'OpenSSL_%s' % self.version
         tag = tag.replace('.', '_')
 
         self.output.info('Cloning repo: %s tag: %s' % (self.url, tag))

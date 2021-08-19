@@ -1,11 +1,7 @@
-include(default-options)
 
 [settings]
 os=Macos
-compiler=apple-clang
-compiler.version=12.0
-compiler.libcxx=libc++
-build_type=Release
 os.version=10.9
-os_build=Macos
-arch_build=x86_64
+compiler=clang
+compiler.version=12
+compiler.libcxx=libc++

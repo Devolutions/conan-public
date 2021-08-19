@@ -1,1 +1,0 @@
-artifactory https://devolutions.jfrog.io/devolutions/api/conan/conan-local True
