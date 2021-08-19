@@ -6,21 +6,16 @@ utils = python_requires('utils/latest@devolutions/stable')
 
 class CrashpadConan(ConanFile):
     name = 'crashpad'
-    exports = 'VERSION', 'REVISION'
-    upstream_version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
-    revision = open(os.path.join('.', 'REVISION'), 'r').read().rstrip()
+    exports = 'VERSION'
     license = 'Apache'
-    version = '%s-%s' % (upstream_version, revision)
+    version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
     url = 'https://github.com/Devolutions/crashpad'
     description = 'Crashpad libraries and tools'
-    settings = 'os', 'arch', 'build_type', 'compiler'
+    settings = 'os', 'arch', 'build_type'
     tag = '91140a4'
 
     options = {
         'fPIC': [True, False],
-        'cmake_osx_architectures': 'ANY',
-        'cmake_osx_deployment_target': 'ANY',
-        'ios_deployment_target': 'ANY',
         'shared': [True, False]
     }
 
@@ -33,7 +28,7 @@ class CrashpadConan(ConanFile):
         git.run("submodule update --init")
 
     def build_requirements(self):
-        self.build_requires('zlib/1.2.11-5@devolutions/stable')
+        self.build_requires('zlib/1.2.11@devolutions/stable')
 
     def build(self):
         cmake = CMake(self, build_type='Release')

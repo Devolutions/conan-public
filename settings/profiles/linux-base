@@ -1,5 +1,6 @@
-include(default-options)
 
 [settings]
 os=Linux
+compiler=clang
+compiler.version=12
 compiler.libcxx=libstdc++

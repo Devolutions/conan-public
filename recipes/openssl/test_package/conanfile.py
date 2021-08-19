@@ -2,7 +2,7 @@ from conans import ConanFile, tools
 import os, glob
 
 class TestPackageConan(ConanFile):
-    settings = 'os', 'arch', 'build_type', 'compiler'
+    settings = 'os', 'arch', 'build_type'
 
     def build(self):
         pass

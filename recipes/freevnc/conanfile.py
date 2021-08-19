@@ -6,23 +6,21 @@ utils = python_requires('utils/latest@devolutions/stable')
 
 class FreevncConan(ConanFile):
     name = 'freevnc'
-    exports = 'VERSION', 'REVISION'
-    upstream_version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
-    revision = open(os.path.join('.', 'REVISION'), 'r').read().rstrip()
-    version = '%s-%s' % (upstream_version, revision)
+    exports = 'VERSION'
+    version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
     license = 'proprietary'
     url = 'git@github.com:Devolutions/freevnc.git'
     description = 'VNC/ARD implementation'
-    settings = 'os', 'arch', 'build_type', 'compiler'
-    #tag = "v" + upstream_version
-    tag = "29bf694"
+    settings = 'os', 'arch', 'build_type'
+    tag = "conan-monorepo"
 
     options = {
         'fPIC': [True, False],
-        'cmake_osx_architectures': 'ANY',
-        'cmake_osx_deployment_target': 'ANY',
-        'ios_deployment_target': 'ANY',
         'shared': [True, False]
+    }
+    default_options = {
+        'fPIC': True,
+        'shared': False
     }
 
     def source(self):
@@ -83,7 +81,7 @@ class FreevncConan(ConanFile):
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)
 
-        if self.settings.compiler == 'Visual Studio' and self.settings.os == 'Windows':
+        if self.settings.os == 'Windows':
             for lib in ['ws2_32', 'dbghelp', 'crypt32']:
                 self.cpp_info.libs.append(lib)
         elif self.settings.os == 'Linux' or self.settings.os == 'Macos':

@@ -1,5 +1,6 @@
-include(default-options)
 
 [settings]
 os=Windows
+compiler=clang
+compiler.version=12
 compiler.runtime=MT

@@ -1,4 +1,0 @@
-include(linux-base)
-
-[settings]
-arch=x86

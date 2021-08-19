@@ -1,6 +1,6 @@
-include(default-options)
 
 [settings]
 os=iOS
 os.version=9.3
+compiler=clang
 compiler.libcxx=libc++
