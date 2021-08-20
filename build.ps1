@@ -59,7 +59,6 @@ $Packages = @(
     'mbedtls',
     'openssl',
     'winpr',
-    'freevnc',
     'freerdp',
     'pcre2',
     'nng',
@@ -76,6 +75,9 @@ $Packages = @(
 if ($IsWindows) {
     $Packages = @('msys2') + $Packages + @('crashpad')
 }
+
+# private packages
+#$Packages += 'freevnc'
 
 foreach ($Package in $Packages) {
     Invoke-ConanRecipe $Package -UserChannel $UserChannel -ProfileName $ProfileName -Aliases @('latest')
