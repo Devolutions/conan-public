@@ -1,0 +1,4 @@
+[settings]
+os_build = {{ {"Darwin": "Macos"}.get(platform.system(), platform.system()) }}
+arch_build = {{ {"aarch64": "armv8"}.get(platform.processor(), platform.processor()) }}
+
