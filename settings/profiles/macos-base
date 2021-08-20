@@ -1,3 +1,4 @@
+include(host)
 
 [settings]
 os=Macos
