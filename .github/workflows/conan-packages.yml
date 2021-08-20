@@ -53,7 +53,10 @@ jobs:
           pip3 install conan==1.39.0 conan_package_tools==0.35.1 invoke Jinja2 --upgrade
           bash <(wget -qO - https://aka.ms/install-powershell.sh)
 
-      - name: Configure conan settings
+      - name: Configure conan environment
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
         run: |
           conan config install ./settings
 
