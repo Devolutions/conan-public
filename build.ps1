@@ -20,8 +20,6 @@ function Invoke-ConanRecipe
     $PackageVersion = $(Get-Content "./recipes/$PackageName/VERSION").Trim()
     $PackageReference = "$PackageName/$PackageVersion@$UserChannel"
 
-    Write-Host "Building $PackageReference package"
-
     Write-Host 'conan' 'create' "./recipes/$PackageName" $UserChannel -pr $ProfileName -s build_type=$BuildType
     & 'conan' 'create' "./recipes/$PackageName" $UserChannel -pr $ProfileName -s build_type=$BuildType
     
