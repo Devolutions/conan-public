@@ -59,6 +59,25 @@ jobs:
           bash <(wget -qO - https://aka.ms/install-powershell.sh)
           echo "CONAN_USER_HOME=$GITHUB_WORKSPACE}" >> $GITHUB_ENV
 
+      - name: Install Linux packages
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt install -y \
+            libssl-dev \
+            libpam-dev \
+            libffi-dev \
+            libsystemd-dev \
+            libx11-dev \
+            libxtst-dev \
+            libxcursor-dev \
+            libxrandr-dev \
+            libgtk2.0-dev \
+            libgtk-3-dev \
+            libglib2.0-dev \
+            libappindicator-dev \
+            libappindicator3-dev \
+            libnotify-dev
+
       - name: Configure conan environment
         run: |
           conan config init
@@ -66,4 +85,4 @@ jobs:
 
       - name: Build conan packages
         run: |
-          pwsh build.ps1
+          pwsh build.ps1 -Platform ${{matrix.os}} -Architecture ${{matrix.arch}}
