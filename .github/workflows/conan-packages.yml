@@ -57,9 +57,8 @@ jobs:
           bash <(wget -qO - https://aka.ms/install-powershell.sh)
 
       - name: Configure conan environment
-        env:
-          CONAN_USER_HOME: ${{ env.GITHUB_WORKSPACE }}
         run: |
+          echo "CONAN_USER_HOME=${{env.GITHUB_WORKSPACE}}" >> $GITHUB_ENV
           conan config install ./settings
 
       - name: Build conan packages
