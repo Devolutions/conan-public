@@ -18,6 +18,10 @@ class CrashpadConan(ConanFile):
         'fPIC': [True, False],
         'shared': [True, False]
     }
+    default_options = {
+        'fPIC': True,
+        'shared': False
+    }
 
     def source(self):
         folder = self.name

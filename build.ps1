@@ -12,15 +12,16 @@ function Invoke-ConanRecipe
         [string] $UserChannel,
         [Parameter(Mandatory=$true)]
         [string] $ProfileName,
+        [Parameter(Mandatory=$true)]
+        [string] $BuildType,
         [string[]] $Aliases
     )
 
     $PackageVersion = $(Get-Content "./recipes/$PackageName/VERSION").Trim()
     $PackageReference = "$PackageName/$PackageVersion@$UserChannel"
 
-    Write-Host "Building $PackageReference package"
-
-    & 'conan' 'create' "./recipes/$PackageName" $UserChannel -pr $ProfileName -s build_type=Release
+    Write-Host 'conan' 'create' "./recipes/$PackageName" $UserChannel -pr $ProfileName -s build_type=$BuildType
+    & 'conan' 'create' "./recipes/$PackageName" $UserChannel -pr $ProfileName -s build_type=$BuildType
     
     if ($LASTEXITCODE -ne 0) {
         throw "$PackageName creation failure"
@@ -33,50 +34,118 @@ function Invoke-ConanRecipe
     }
 }
 
-$UserChannel = "devolutions/stable"
-
-if ($IsWindows) {
-    $ProfileName = "windows-x86_64"
-} elseif ($IsMacos) {
-    $ProfileName = "macos-x86_64"
-} elseif ($IsLinux) {
-    $ProfileName = "linux-x86_64"
-}
-
-$Packages = @(
-    'cbake',
-    'utils',
-    'lipo', # TODO: merge with utils
-    'rustup', # TODO: merge with utils
-    'yarc',
-    'zlib',
-    'lz4',
-    'miniz',
-    'munit',
-    'lizard',
-    'libpng',
-    'libjpeg',
-    'mbedtls',
-    'openssl',
-    'winpr',
-    'freevnc',
-    'freerdp',
-    'pcre2',
-    'nng',
-    'curl',
-    'libyuv',
-    'libwebm',
-    'libvpx',
-    'clang-llvm',
-    'halide',
-    'xpp',
-    'jetsocat'
+function Get-TlkPlatform {
+    param(
+        [Parameter(Position=0)]
+        [string] $Platform
     )
 
-if ($IsWindows) {
-    $Packages = @('msys2') + $Packages + @('crashpad')
+    if (-Not $Platform) {
+        $Platform = if ($IsWindows) {
+            'windows'
+        } elseif ($IsMacOS) {
+            'macos'
+        } elseif ($IsLinux) {
+            'linux'
+        }
+    }
+
+    $Platform
 }
 
-foreach ($Package in $Packages) {
-    Invoke-ConanRecipe $Package -UserChannel $UserChannel -ProfileName $ProfileName -Aliases @('latest')
+function Invoke-TlkBuild {
+	param(
+		[ValidateSet('windows','macos','linux','ios','android')]
+		[string] $Platform,
+		[ValidateSet('x86','x86_64','arm64','aarch64')]
+		[string] $Architecture = "x86_64",
+        [string] $UserChannel = "devolutions/stable",
+        [ValidateSet('Release','Debug')]
+		[string] $BuildType = "Release",
+        [switch] $IncludePrivate
+	)
+
+    $HostPlatform = Get-TlkPlatform
+    $HostArchitecture = "x86_64"
+    $HostProfile = "$HostPlatform-$HostArchitecture".ToLower()
+
+    if (-Not $Platform) {
+        $Platform = $HostPlatform
+    }
+
+    $HostPackages = @(
+        'cbake',
+        'utils',
+        'lipo',
+        'rustup',
+        'yarc',
+        'clang-llvm',
+        'halide')
+
+    if ($IsWindows) {
+        $HostPackages += @('msys2')
+    }
+
+    $TargetPackages = @(
+        'zlib',
+        'lz4',
+        'miniz',
+        'lizard',
+        'libpng',
+        'libjpeg',
+        'mbedtls',
+        'openssl',
+        'winpr',
+        'freerdp',
+        'pcre2',
+        'nng',
+        'curl',
+        'libyuv',
+        'xpp'
+    )
+
+    if (@('windows','macos','linux') -Contains $Platform) {
+        $TargetPackages += @(
+            'munit',
+            'libvpx',
+            'libwebm',
+            'jetsocat',
+            'siquery'
+        )
+    }
+
+    if ($IsWindows) {
+        $TargetPackages += @('crashpad')
+    }
+
+    if ($IncludePrivate) {
+        $TargetPackages += @('freevnc')
+    }
+
+    $TargetProfile = "$Platform-$Architecture".ToLower()
+    $Aliases = @('latest')
+
+    foreach ($Package in $HostPackages) {
+        $params = @{
+            PackageName = $Package;
+            UserChannel = $UserChannel;
+            ProfileName = $HostProfile;
+            BuildType = $BuildType;
+            Aliases = $Aliases;
+        }
+        Invoke-ConanRecipe @params
+    }
+
+    foreach ($Package in $TargetPackages) {
+        $params = @{
+            PackageName = $Package;
+            UserChannel = $UserChannel;
+            ProfileName = $TargetProfile;
+            BuildType = $BuildType;
+            Aliases = $Aliases;
+        }
+        Invoke-ConanRecipe @params
+    }
 }
+
+Invoke-TlkBuild @args
