@@ -21,13 +21,12 @@ jobs:
       - name: Configure Windows runner
         if: runner.os == 'Windows'
         run: |
-          choco install ninja cmake 7zip
-          choco install python
-          choco install vswhere
-          choco install nasm yasm
+          choco install --no-progress ninja cmake 7zip
+          choco install --no-progress python
+          choco install --no-progress vswhere
+          choco install --no-progress nasm yasm
           pip install conan==1.39.0 conan_package_tools==0.35.1 invoke Jinja2 pywin32 --upgrade
           iex "& { $(irm https://aka.ms/install-powershell.ps1) } -UseMSI -Quiet"
-          conan config install ./settings
 
       - name: Configure macOS runner
         if: runner.os == 'macOS'
@@ -37,7 +36,6 @@ jobs:
           brew install ninja cmake
           brew install python
           brew install --cask powershell
-          conan config install ./settings
 
       - name: Configure Linux runner
         if: runner.os == 'Linux'
@@ -48,8 +46,11 @@ jobs:
           sudo apt install nasm yasm
           pip3 install --user conan==1.39.0 conan_package_tools==0.35.1 invoke Jinja2 --upgrade
           bash <(wget -qO - https://aka.ms/install-powershell.sh)
+
+      - name: Configure conan settings
+        run: |
           conan config install ./settings
 
-      - name: Build packages
+      - name: Build conan packages
         run: |
           pwsh build.ps1
