@@ -41,6 +41,7 @@ jobs:
           brew install ninja
           brew install cmake
           brew install python
+          brew install nasm yasm
           pip3 install conan==1.39.0 conan_package_tools==0.35.1 invoke Jinja2 --upgrade
           brew install --cask powershell
           echo "CONAN_USER_HOME=$GITHUB_WORKSPACE}" >> $GITHUB_ENV
