@@ -58,7 +58,7 @@ jobs:
 
       - name: Configure conan environment
         run: |
-          echo "CONAN_USER_HOME=${{env.GITHUB_WORKSPACE}}" >> $GITHUB_ENV
+          echo "CONAN_USER_HOME=$GITHUB_WORKSPACE" >> $GITHUB_ENV
           conan config install ./settings
 
       - name: Build conan packages
