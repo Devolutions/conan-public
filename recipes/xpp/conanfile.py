@@ -12,7 +12,7 @@ class XppConan(ConanFile):
     url = 'https://github.com/Devolutions/xpp.git'
     description = 'eXtreme Performance Primitives'
     settings = 'os', 'arch', 'build_type'
-    branch = 'master'
+    branch = 'conan-monorepo'
 
     options = {
         'fPIC': [True, False],

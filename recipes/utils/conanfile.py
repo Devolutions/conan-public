@@ -11,9 +11,6 @@ def cmake_wrapper(cmake, settings, options):
     cmake.definitions['BUILD_SHARED_LIBS'] = options.shared
     cmake.definitions['CMAKE_POSITION_INDEPENDENT_CODE'] = options.fPIC
 
-    # need to catch the exception and split conditions in 2 chunks
-    # because conan raises if you try to access os or os_build and
-    # it's not present in the object
     try:
         if settings.os:
             target = str(settings.os)
@@ -28,6 +25,18 @@ def cmake_wrapper(cmake, settings, options):
     except:
         pass
 
+    try:
+        if settings.os.version:
+            os_version = str(settings.os.version)
+    except:
+        if target == "Macos":
+            if arch == "x86_64":
+                os_version = "10.12"
+            else:
+                os_version = "10.15"
+        elif target == "iOS":
+            os_version = "9.3"
+
     if target == 'Windows':
         cmake.generator = 'Visual Studio 16 2019'
         cmake.generator_platform = {
@@ -39,13 +48,13 @@ def cmake_wrapper(cmake, settings, options):
         }[str(arch)]
     elif target == 'Macos':
         osx_arch = { 'x86_64': 'x86_64', 'armv8': 'arm64', 'universal': 'universal' }[str(arch)]
-        cmake.definitions['CMAKE_OSX_DEPLOYMENT_TARGET'] = settings.os.version
+        cmake.definitions['CMAKE_OSX_DEPLOYMENT_TARGET'] = os_version
         cmake.definitions['CMAKE_OSX_ARCHITECTURES'] = osx_arch
     elif target == 'iOS':
         ios_arch = { 'x86': 'i386', 'x86_64': 'x86_64', 'armv8': 'arm64', 'armv7': 'armv7', 'universal': 'universal' }[str(arch)]
 
         cmake.definitions['CMAKE_TOOLCHAIN_FILE'] = os.path.join(cbake_root, 'ios-%s.toolchain.cmake' % ios_arch)
-        cmake.definitions['IOS_DEPLOYMENT_TARGET'] = settings.os.version
+        cmake.definitions['IOS_DEPLOYMENT_TARGET'] = os_version
     elif target == 'Android':
         if not 'ANDROID_HOME' in os.environ:
             raise Exception('You need to set the ANDROID_HOME environment variable')

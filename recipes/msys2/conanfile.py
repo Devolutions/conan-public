@@ -44,7 +44,8 @@ class MSYS2Conan(ConanFile):
     topics = ("conan", "msys", "unix", "subsystem")
     short_paths = True
     no_copy_source = True
-    version = "20210604"
+    exports = 'VERSION'
+    version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
     # "exclude_files" "packages" "additional_packages" values are a comma separated list
     options = {
         "exclude_files": "ANY",

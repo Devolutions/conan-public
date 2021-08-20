@@ -34,7 +34,14 @@ function Invoke-ConanRecipe
 }
 
 $UserChannel = "devolutions/stable"
-$ProfileName = "linux-x86_64"
+
+if ($IsWindows) {
+    $ProfileName = "windows-x86_64"
+} elseif ($IsMacos) {
+    $ProfileName = "macos-x86_64"
+} elseif ($IsLinux) {
+    $ProfileName = "linux-x86_64"
+}
 
 $Packages = @(
     'cbake',
@@ -55,8 +62,20 @@ $Packages = @(
     'freevnc',
     'freerdp',
     'pcre2',
-    'nng'
+    'nng',
+    'curl',
+    'libyuv',
+    'libwebm',
+    'libvpx',
+    'clang-llvm',
+    'halide',
+    'xpp',
+    'jetsocat'
     )
+
+if ($IsWindows) {
+    $Packages = @('msys2') + $Packages + @('crashpad')
+}
 
 foreach ($Package in $Packages) {
     Invoke-ConanRecipe $Package -UserChannel $UserChannel -ProfileName $ProfileName -Aliases @('latest')
