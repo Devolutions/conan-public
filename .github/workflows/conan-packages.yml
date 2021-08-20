@@ -18,6 +18,9 @@ jobs:
           - os: linux
             runner: ubuntu-18.04
     steps:
+      - name: Check out ${{ github.repository }}
+        uses: actions/checkout@v2
+
       - name: Configure Windows runner
         if: runner.os == 'Windows'
         run: |
@@ -54,9 +57,8 @@ jobs:
           bash <(wget -qO - https://aka.ms/install-powershell.sh)
 
       - name: Configure conan environment
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 1
+        env:
+          CONAN_USER_HOME: ${{ env.GITHUB_WORKSPACE }}
         run: |
           conan config install ./settings
 
