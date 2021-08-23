@@ -75,16 +75,19 @@ function Invoke-TlkBuild {
 
     $HostPackages = @(
         'cbake',
-        'sysroot',
-        'shared',
-        'utils',
-        'yarc'
-        'clang-llvm',
-        'halide'
+        'shared'
     )
 
+    if ($IsLinux) {
+        $HostPackages += @('sysroot')
+    }
+
+    $HostPackages += @('yarc')
+
+    #$HostPackages += @('clang-llvm', 'halide')
+
     if ($IsWindows) {
-        $HostPackages += @('msys2')
+        #$HostPackages += @('msys2')
     }
 
     $TargetPackages = @(
@@ -101,9 +104,10 @@ function Invoke-TlkBuild {
         'pcre2',
         'nng',
         'curl',
-        'libyuv',
-        'xpp'
+        'libyuv'
     )
+
+    #$TargetPackages += @('xpp')
 
     if (@('windows','macos','linux') -Contains $Platform) {
         $TargetPackages += @(

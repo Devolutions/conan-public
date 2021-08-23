@@ -15,20 +15,19 @@ class SiqueryConan(ConanFile):
 
     def source(self):
         folder = self.name
-
         self.output.info('Cloning repo: %s dest: %s branch: %s' % (self.url, folder, self.tag))
         git = tools.Git(folder=folder)
         git.clone(self.url)
         git.checkout(self.tag)
 
     def build(self):
-        self.cargo_target = self.rustup_target(self.settings.os, self.settings.arch)
+        self.cargo_target = self.cargo_target(self.settings.os, self.settings.arch)
 
         if self.settings.os == 'Windows':
             os.environ['RUSTFLAGS'] = '-C target-feature=+crt-static'
 
         with tools.chdir(self.name):
-            self.rustup_build(target=self.cargo_target, build_type=self.settings.build_type)
+            self.cargo_build(target=self.cargo_target, build_type=self.settings.build_type)
 
     def package(self):
         exe = self.name

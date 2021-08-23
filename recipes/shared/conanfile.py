@@ -1,6 +1,33 @@
 from conans import ConanFile, python_requires, tools
 import os, platform, subprocess, shutil, stat, json
 
+def execute(cmd, cwd=None, verbose=True):
+    if isinstance(cmd, str):
+        cmd = cmd.split()
+
+    output = open(os.devnull, 'w')
+
+    try:
+        return subprocess.check_call(
+            cmd,
+            stdout=output,
+            stderr=output,
+            cwd=cwd
+        )
+    except subprocess.CalledProcessError as e:
+        print(e.stderr)
+        exit(1)
+
+def get_cmd_output(self, cmd, cwd=None, verbose=True, shell=False):
+    if isinstance(cmd, str):
+        cmd = cmd.split()
+
+    return subprocess.check_output(
+        cmd,
+        universal_newlines=True,
+        cwd=cwd
+    )
+
 class UtilsBase(object):
     def build_requirements(self):
         self.output.info("injecting build requirements!")
@@ -119,16 +146,6 @@ class UtilsBase(object):
             print(e.stderr)
             exit(1)
 
-    def get_cmd_output(self, cmd, cwd=None, verbose=True, shell=False):
-        if isinstance(cmd, str):
-            cmd = cmd.split()
-
-        return subprocess.check_output(
-            cmd,
-            universal_newlines=True,
-            cwd=cwd
-        )
-
     # lipo helper
 
     def lipo_create(self, output_dir):
@@ -218,7 +235,7 @@ class UtilsBase(object):
             '-q',
             query
         ]
-        output = self.get_cmd_output(cmd)
+        output = get_cmd_output(cmd)
 
         regex = re.compile(r"(.*)Package_ID: [a-z0-9]{40}")
         package_ids = []
@@ -285,10 +302,10 @@ class UtilsBase(object):
 
     def rustup_is_installed(self, target, component):
         if component == 'target':
-            components = self.utils_get_cmd_output('rustup target list').splitlines()
+            components = get_cmd_output('rustup target list').splitlines()
         elif component == 'toolchain':
             target = 'stable-%s' % target
-            components = self.utils_get_cmd_output('rustup toolchain list').splitlines()
+            components = get_cmd_output('rustup toolchain list').splitlines()
         else:
             raise Exception('Invalid component: %s' % component)
 
