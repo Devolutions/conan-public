@@ -17,17 +17,17 @@ function Invoke-ConanRecipe
         [string[]] $Aliases
     )
 
-    $PackageVersion = $(Get-Content "./recipes/$PackageName/VERSION").Trim()
+    $Recipes = Join-Path $PSScriptRoot "recipes"
+    $PackageVersion = $(Get-Content "$Recipes/$PackageName/VERSION").Trim()
     $PackageReference = "$PackageName/$PackageVersion@$UserChannel"
 
-    Write-Host 'conan' 'create' "./recipes/$PackageName" $UserChannel -pr $ProfileName -s build_type=$BuildType
-    & 'conan' 'create' "./recipes/$PackageName" $UserChannel -pr $ProfileName -s build_type=$BuildType
+    & 'conan' 'create' "$Recipes/$PackageName" $UserChannel -pr $ProfileName -s build_type=$BuildType
     
     if ($LASTEXITCODE -ne 0) {
         throw "$PackageName creation failure"
     }
 
-    & 'conan' 'export' "./recipes/$PackageName" $PackageReference
+    & 'conan' 'export' "$Recipes/$PackageName" $PackageReference
 
     foreach ($Alias in $Aliases) {
         & 'conan' 'alias' "$PackageName/$Alias@$UserChannel" $PackageReference
