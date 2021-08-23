@@ -29,14 +29,14 @@ class UtilsBase(object):
 
     def get_target_arch(self):
         try:
-            if settings.arch:
-                return str(settings.arch)
+            if self.settings.arch:
+                return str(self.settings.arch)
         except:
             pass
 
         try:
-            if settings.arch_build:
-                return str(settings.arch_build)
+            if self.settings.arch_build:
+                return str(self.settings.arch_build)
         except:
             pass
 
