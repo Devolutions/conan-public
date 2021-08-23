@@ -1,8 +1,6 @@
 from conans import ConanFile, tools, CMake, python_requires
 import os
 
-utils = python_requires('utils/latest@devolutions/stable')
-
 class YarcConan(ConanFile):
     name = 'yarc'
     exports = 'VERSION'
@@ -12,6 +10,8 @@ class YarcConan(ConanFile):
     description = 'Yet Another Resource Compiler'
     settings = 'os_build', 'arch_build'
     branch = 'master'
+    python_requires = "shared/1.0.0@devolutions/stable"
+    python_requires_extend = "shared.UtilsBase"
 
     options = {
         'fPIC': [True, False],
@@ -30,7 +30,7 @@ class YarcConan(ConanFile):
 
     def build(self):
         cmake = CMake(self, build_type='Release')
-        utils.cmake_wrapper(cmake, self.settings, self.options)
+        self.cmake_wrapper(cmake, self.settings, self.options)
         cmake.configure(source_folder=self.name)
         cmake.build()
 

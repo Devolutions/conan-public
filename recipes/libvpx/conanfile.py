@@ -4,8 +4,6 @@ import os
 import shutil
 import subprocess
 
-lipo = python_requires('lipo/latest@devolutions/stable')
-
 class LibvpxConan(ConanFile):
     name = 'libvpx'
     exports = 'VERSION'
@@ -15,6 +13,8 @@ class LibvpxConan(ConanFile):
     description = 'WebM VP8/VP9 Codec SDK'
     settings = 'os', 'arch', 'build_type'
     tag = 'v%s' % version
+    python_requires = "shared/1.0.0@devolutions/stable"
+    python_requires_extend = "shared.UtilsBase"
 
     def build_requirements(self):
         if self.settings.os == 'Windows':
@@ -45,7 +45,7 @@ class LibvpxConan(ConanFile):
 
     def build(self):
         if self.settings.arch == 'universal':
-            lipo.create(self, self.build_folder)
+            self.lipo_create(self, self.build_folder)
             return
 
         if self.settings.os == 'Windows':

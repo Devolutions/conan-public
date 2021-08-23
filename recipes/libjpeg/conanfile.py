@@ -1,9 +1,6 @@
 from conans import ConanFile, tools, python_requires, CMake
 import os
 
-lipo = python_requires('lipo/latest@devolutions/stable')
-utils = python_requires('utils/latest@devolutions/stable')
-
 class JpegConan(ConanFile):
     name = 'libjpeg'
     exports = 'VERSION'
@@ -13,6 +10,8 @@ class JpegConan(ConanFile):
     description = 'libjpeg-turbo is a JPEG image codec that uses SIMD instructions to accelerate baseline JPEG compression and decompression'
     settings = 'os', 'arch', 'build_type'
     branch = 'wayk'
+    python_requires = "shared/1.0.0@devolutions/stable"
+    python_requires_extend = "shared.UtilsBase"
 
     options = {
         'fPIC': [True, False],
@@ -34,11 +33,11 @@ class JpegConan(ConanFile):
 
     def build(self):
         if self.settings.arch == 'universal':
-            lipo.create(self, self.build_folder)
+            self.lipo_create(self, self.build_folder)
             return
 
         cmake = CMake(self)
-        utils.cmake_wrapper(cmake, self.settings, self.options)
+        self.cmake_wrapper(cmake, self.settings, self.options)
 
         cmake.definitions['ENABLE_TESTING'] = 'OFF'
         cmake.definitions['ENABLE_SHARED'] = 'OFF'

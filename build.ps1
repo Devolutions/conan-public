@@ -75,12 +75,13 @@ function Invoke-TlkBuild {
 
     $HostPackages = @(
         'cbake',
+        'sysroot',
+        'shared',
         'utils',
-        'lipo',
-        'rustup',
-        'yarc',
+        'yarc'
         'clang-llvm',
-        'halide')
+        'halide'
+    )
 
     if ($IsWindows) {
         $HostPackages += @('msys2')

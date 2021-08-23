@@ -1,9 +1,6 @@
 from conans import ConanFile, CMake, tools, python_requires
 import os
 
-lipo = python_requires('lipo/latest@devolutions/stable')
-utils = python_requires('utils/latest@devolutions/stable')
-
 class Lz4Conan(ConanFile):
     name = 'lz4'
     exports = 'VERSION'
@@ -13,6 +10,8 @@ class Lz4Conan(ConanFile):
     description = 'Description'
     settings = 'os', 'arch', 'build_type'
     tag = 'v%s' % version
+    python_requires = "shared/1.0.0@devolutions/stable"
+    python_requires_extend = "shared.UtilsBase"
 
     options = {
         'fPIC': [True, False],
@@ -35,11 +34,11 @@ class Lz4Conan(ConanFile):
 
     def build(self):
         if self.settings.arch == 'universal':
-            lipo.create(self, self.build_folder)
+            self.lipo_create(self, self.build_folder)
             return
         
         cmake = CMake(self)
-        utils.cmake_wrapper(cmake, self.settings, self.options)
+        self.cmake_wrapper(cmake, self.settings, self.options)
         cmake.configure(source_folder=os.path.join(self.name, 'contrib', 'cmake_unofficial'))
 
         cmake.build(args=['--target', 'lz4_static'])

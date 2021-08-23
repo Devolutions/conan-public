@@ -2,8 +2,6 @@ from conans import ConanFile, CMake, tools, python_requires
 
 import os
 
-utils = python_requires('utils/latest@devolutions/stable')
-
 class CrashpadConan(ConanFile):
     name = 'crashpad'
     exports = 'VERSION'
@@ -13,6 +11,8 @@ class CrashpadConan(ConanFile):
     description = 'Crashpad libraries and tools'
     settings = 'os', 'arch', 'build_type'
     tag = '91140a4'
+    python_requires = "shared/1.0.0@devolutions/stable"
+    python_requires_extend = "shared.UtilsBase"
 
     options = {
         'fPIC': [True, False],
@@ -36,7 +36,7 @@ class CrashpadConan(ConanFile):
 
     def build(self):
         cmake = CMake(self, build_type='Release')
-        utils.cmake_wrapper(cmake, self.settings, self.options)
+        self.cmake_wrapper(cmake, self.settings, self.options)
 
         if self.settings.os == 'Windows':
             cmake.definitions['MSVC_RUNTIME'] = 'static'

@@ -1,9 +1,6 @@
 from conans import ConanFile, CMake, tools, python_requires
 import os
 
-lipo = python_requires('lipo/latest@devolutions/stable')
-utils = python_requires('utils/latest@devolutions/stable')
-
 class MbedtlsConan(ConanFile):
     name = 'mbedtls'
     exports = 'VERSION'
@@ -13,6 +10,8 @@ class MbedtlsConan(ConanFile):
     description = 'An open source, portable, easy to use, readable and flexible SSL library'
     settings = 'os', 'arch', 'build_type'
     branch = 'wayk'
+    python_requires = "shared/1.0.0@devolutions/stable"
+    python_requires_extend = "shared.UtilsBase"
 
     options = {
         'fPIC': [True, False],
@@ -34,11 +33,11 @@ class MbedtlsConan(ConanFile):
 
     def build(self):
         if self.settings.arch == 'universal':
-            lipo.create(self, self.build_folder)
+            self.lipo_create(self, self.build_folder)
             return
 
         cmake = CMake(self)
-        utils.cmake_wrapper(cmake, self.settings, self.options)
+        self.cmake_wrapper(cmake, self.settings, self.options)
 
         cmake.definitions['ENABLE_TESTING'] = 'OFF'
         cmake.definitions['ENABLE_PROGRAMS'] = 'OFF'

@@ -1,9 +1,6 @@
 from conans import ConanFile, CMake, tools, python_requires, VisualStudioBuildEnvironment
 import os, glob, shutil
 
-lipo = python_requires('lipo/latest@devolutions/stable')
-utils = python_requires('utils/latest@devolutions/stable')
-
 class OpensslConan(ConanFile):
     name = 'openssl'
     exports = 'VERSION'
@@ -13,6 +10,8 @@ class OpensslConan(ConanFile):
     no_copy_source = True
     description = 'TLS/SSL and crypto library'
     settings = 'os', 'arch', 'build_type'
+    python_requires = "shared/1.0.0@devolutions/stable"
+    python_requires_extend = "shared.UtilsBase"
 
     options = {
         'fPIC': [True, False],
@@ -60,11 +59,11 @@ class OpensslConan(ConanFile):
 
     def build(self):
         if self.settings.arch == 'universal':
-            lipo.create(self, self.build_folder)
+            self.lipo_create(self, self.build_folder)
             return
 
         cmake = CMake(self)
-        utils.cmake_wrapper(cmake, self.settings, self.options)
+        self.cmake_wrapper(cmake, self.settings, self.options)
 
         cmake.definitions['WITH_APPS'] = 'OFF'
         cmake.definitions['OPENSSL_NO_ENGINE'] = 'ON'

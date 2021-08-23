@@ -1,9 +1,6 @@
 from conans import ConanFile, CMake, tools, python_requires
 import os
 
-lipo = python_requires('lipo/latest@devolutions/stable')
-utils = python_requires('utils/latest@devolutions/stable')
-
 class XppConan(ConanFile):
     name = 'xpp'
     exports = 'VERSION'
@@ -13,6 +10,8 @@ class XppConan(ConanFile):
     description = 'eXtreme Performance Primitives'
     settings = 'os', 'arch', 'build_type'
     branch = 'conan-monorepo'
+    python_requires = "shared/1.0.0@devolutions/stable"
+    python_requires_extend = "shared.UtilsBase"
 
     options = {
         'fPIC': [True, False],
@@ -34,11 +33,11 @@ class XppConan(ConanFile):
 
     def build(self):
         if self.settings.arch == 'universal':
-            lipo.create(self, self.build_folder)
+            self.lipo_create(self, self.build_folder)
             return
 
         cmake = CMake(self)
-        utils.cmake_wrapper(cmake, self.settings, self.options)
+        self.cmake_wrapper(cmake, self.settings, self.options)
 
         cmake.definitions['XPP_INSTALL'] = 'ON'
         cmake.configure(source_folder=self.name)

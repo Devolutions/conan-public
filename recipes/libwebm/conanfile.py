@@ -1,9 +1,6 @@
 from conans import ConanFile, tools, CMake, python_requires
 import os
 
-lipo = python_requires('lipo/latest@devolutions/stable')
-utils = python_requires('utils/latest@devolutions/stable')
-
 class LibwebmConan(ConanFile):
     name = 'libwebm'
     exports = 'VERSION'
@@ -13,6 +10,8 @@ class LibwebmConan(ConanFile):
     description = 'WebM'
     settings = 'os', 'arch', 'build_type'
     commit = 'bc32e3c'
+    python_requires = "shared/1.0.0@devolutions/stable"
+    python_requires_extend = "shared.UtilsBase"
 
     options = {
         'fPIC': [True, False],
@@ -40,8 +39,12 @@ class LibwebmConan(ConanFile):
                 "add_cxx_flag_if_supported(-std=c++11 -fno-rtti -fno-exceptions)")
 
     def build(self):
+        if self.settings.arch == 'universal':
+            self.lipo_create(self, self.build_folder)
+            return
+
         cmake = CMake(self)
-        utils.cmake_wrapper(cmake, self.settings, self.options)
+        self.cmake_wrapper(cmake, self.settings, self.options)
 
         cmake.definitions['ENABLE_TESTS'] = 'OFF'
         cmake.definitions['ENABLE_IWYU'] = 'OFF'

@@ -1,9 +1,6 @@
 from conans import ConanFile, CMake, tools, python_requires
 import os
 
-lipo = python_requires('lipo/latest@devolutions/stable')
-utils = python_requires('utils/latest@devolutions/stable')
-
 class FreevncConan(ConanFile):
     name = 'freevnc'
     exports = 'VERSION'
@@ -13,6 +10,8 @@ class FreevncConan(ConanFile):
     description = 'VNC/ARD implementation'
     settings = 'os', 'arch', 'build_type'
     tag = "conan-monorepo"
+    python_requires = "shared/1.0.0@devolutions/stable"
+    python_requires_extend = "shared.UtilsBase"
 
     options = {
         'fPIC': [True, False],
@@ -35,11 +34,11 @@ class FreevncConan(ConanFile):
 
     def build(self):
         if self.settings.arch == 'universal':
-            lipo.create(self, self.build_folder)
+            self.lipo_create(self, self.build_folder)
             return
 
         cmake = CMake(self)
-        utils.cmake_wrapper(cmake, self.settings, self.options)
+        self.cmake_wrapper(cmake, self.settings, self.options)
 
         cmake.definitions['WITH_APPS'] = 'OFF'
 

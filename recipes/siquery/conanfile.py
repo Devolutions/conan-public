@@ -1,9 +1,6 @@
 from conans import ConanFile, tools, python_requires
 import os
 
-rustup = python_requires('rustup/0.4.4@devolutions/stable')
-utils = python_requires('utils/latest@devolutions/stable')
-
 class SiqueryConan(ConanFile):
     name = 'siquery'
     exports = 'VERSION'
@@ -13,9 +10,8 @@ class SiqueryConan(ConanFile):
     description = 'A rust library for system information analytics and monitoring.'
     settings = 'os', 'arch', 'build_type'
     tag = 'v%s' % version
-
-    def build_requirements(self):
-        self.cargo_target = rustup.target(self.settings.os, self.settings.arch)
+    python_requires = "shared/1.0.0@devolutions/stable"
+    python_requires_extend = "shared.UtilsBase"
 
     def source(self):
         folder = self.name
@@ -26,11 +22,13 @@ class SiqueryConan(ConanFile):
         git.checkout(self.tag)
 
     def build(self):
+        self.cargo_target = self.rustup_target(self.settings.os, self.settings.arch)
+
         if self.settings.os == 'Windows':
             os.environ['RUSTFLAGS'] = '-C target-feature=+crt-static'
 
         with tools.chdir(self.name):
-            rustup.build(target=self.cargo_target, build_type=self.settings.build_type)
+            self.rustup_build(target=self.cargo_target, build_type=self.settings.build_type)
 
     def package(self):
         exe = self.name
