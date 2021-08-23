@@ -32,6 +32,7 @@ class CrashpadConan(ConanFile):
         git.run("submodule update --init")
 
     def build_requirements(self):
+        super().build_requirements()
         self.build_requires('zlib/1.2.11@devolutions/stable')
 
     def build(self):

@@ -17,6 +17,8 @@ class LibvpxConan(ConanFile):
     python_requires_extend = "shared.UtilsBase"
 
     def build_requirements(self):
+        super().build_requirements()
+        
         if self.settings.os == 'Windows':
             self.build_requires('msys2/20210604@devolutions/stable')
 

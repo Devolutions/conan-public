@@ -12,9 +12,6 @@ class Sysroot(ConanFile):
     settings = 'os', 'arch'
     branch = 'conan'
 
-    def source(self):
-        pass
-
     def build_requirements(self):
         self.build_requires('cbake/latest@devolutions/stable')
 

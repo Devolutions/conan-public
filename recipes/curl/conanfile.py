@@ -23,6 +23,7 @@ class CurlConan(ConanFile):
     }
 
     def build_requirements(self):
+        super().build_requirements()
         self.build_requires('mbedtls/2.16.0@devolutions/stable')
 
     def source(self):

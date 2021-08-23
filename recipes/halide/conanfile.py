@@ -26,6 +26,7 @@ class HalideConan(ConanFile):
     }
 
     def build_requirements(self):
+        super().build_requirements()
         self.build_requires('clang-llvm/12.0.1@devolutions/stable')
 
     def source(self):
