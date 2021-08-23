@@ -100,12 +100,6 @@ class FreerdpConan(ConanFile):
 
         cmake.configure(source_folder=self.name)
 
-        # conan doesn't support properly switching runtimes at the moment,
-        # need to use this hack in the meantime
-        if self.settings.os == 'Windows':
-            tools.replace_in_file('CMakeCache.txt', '/MD', '/MT', strict=False)
-            cmake.configure(source_folder=self.name)
-
         cmake.build()
 
     def package(self):

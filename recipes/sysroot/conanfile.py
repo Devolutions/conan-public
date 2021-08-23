@@ -33,3 +33,9 @@ class Sysroot(ConanFile):
 
     def package(self):
         self.copy('*', src=self.sysroot_name, dst=self.sysroot_name, keep_path=True)
+
+    def package_info(self):
+        self.distro = "ubuntu-18.04"
+        self.sysroot_arch = { 'x86_64':'amd64', 'armv8':'arm64' }[str(self.settings.arch)]
+        self.sysroot_name = "%s-%s" % (self.distro, self.sysroot_arch)
+        self.env_info.CMAKE_SYSROOT = os.path.join(self.package_folder, self.sysroot_name)

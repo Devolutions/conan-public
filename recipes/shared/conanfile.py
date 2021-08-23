@@ -1,11 +1,28 @@
 from conans import ConanFile, python_requires, tools
-import os, platform, subprocess, shutil, stat, json
+import os, platform, subprocess, shutil, stat, json, re
 
-def execute(cmd, cwd=None, verbose=True):
+def runner_logger(msg):
+    if isinstance(msg, list):
+        msg = (' ').join(msg)
+
+    msg = 'Running: %s' % msg
+    msg_length = len(msg)
+    if msg_length > 80:
+        msg_length = 80
+
+    print('-' * msg_length)
+    print(msg)
+    print('-' * msg_length)
+
+def execute_command(cmd, cwd=None, verbose=True):
     if isinstance(cmd, str):
         cmd = cmd.split()
 
-    output = open(os.devnull, 'w')
+    if verbose:
+        runner_logger(cmd)
+        output = None
+    else:
+        output = open(os.devnull, 'w')
 
     try:
         return subprocess.check_call(
@@ -18,7 +35,10 @@ def execute(cmd, cwd=None, verbose=True):
         print(e.stderr)
         exit(1)
 
-def get_cmd_output(self, cmd, cwd=None, verbose=True, shell=False):
+def get_cmd_output(cmd, cwd=None, verbose=True, shell=False):
+    if verbose:
+        runner_logger(cmd)
+
     if isinstance(cmd, str):
         cmd = cmd.split()
 
@@ -74,22 +94,22 @@ class UtilsBase(object):
         cmake.definitions['BUILD_SHARED_LIBS'] = options.shared
         cmake.definitions['CMAKE_POSITION_INDEPENDENT_CODE'] = options.fPIC
 
-        target = self.get_target_os()
-        arch = self.get_target_arch()
+        target_os = self.get_target_os()
+        target_arch = self.get_target_arch()
 
         try:
             if settings.os.version:
                 os_version = str(settings.os.version)
         except:
-            if target == "Macos":
-                if arch == "x86_64":
+            if target_os == "Macos":
+                if target_arch == "x86_64":
                     os_version = "10.12"
                 else:
                     os_version = "10.15"
-            elif target == "iOS":
+            elif target_os == "iOS":
                 os_version = "9.3"
 
-        if target == 'Windows':
+        if target_os == 'Windows':
             cmake.generator = 'Visual Studio 16 2019'
             cmake.generator_platform = {
                 'x86': 'Win32',
@@ -97,25 +117,27 @@ class UtilsBase(object):
                 'armv7': 'ARM',
                 'armv8': 'ARM64', # conan uses armv8 instead of arm64
                 'arm64': 'ARM64'  # add arm64 to list just for safety
-            }[str(arch)]
-        elif target == 'Macos':
-            osx_arch = { 'x86_64': 'x86_64', 'armv8': 'arm64', 'universal': 'universal' }[str(arch)]
+            }[target_arch]
+        elif target_os == 'Macos':
+            osx_arch = { 'x86_64': 'x86_64', 'armv8': 'arm64', 'universal': 'universal' }[target_arch]
             cmake.definitions['CMAKE_OSX_DEPLOYMENT_TARGET'] = os_version
             cmake.definitions['CMAKE_OSX_ARCHITECTURES'] = osx_arch
             cmake.generator = 'Ninja'
-        elif target == 'Linux':
+        elif target_os == 'Linux':
             cmake.generator = 'Ninja'
-        elif target == 'iOS':
-            ios_arch = { 'x86': 'i386', 'x86_64': 'x86_64', 'armv8': 'arm64', 'armv7': 'armv7', 'universal': 'universal' }[str(arch)]
+            cmake.definitions['CMAKE_SYSROOT'] = self.deps_env_info["sysroot"].CMAKE_SYSROOT
+            cmake.definitions['CMAKE_TOOLCHAIN_FILE'] = os.path.join(cbake_home, 'cmake', 'linux.toolchain.cmake')
+        elif target_os == 'iOS':
+            ios_arch = { 'x86': 'i386', 'x86_64': 'x86_64', 'armv8': 'arm64', 'armv7': 'armv7', 'universal': 'universal' }[target_arch]
             cmake.definitions['CMAKE_TOOLCHAIN_FILE'] = os.path.join(cbake_home, 'cmake', 'ios-%s.toolchain.cmake' % ios_arch)
             cmake.definitions['IOS_DEPLOYMENT_TARGET'] = os_version
             cmake.generator = 'Ninja'
-        elif target == 'Android':
+        elif target_os == 'Android':
             if not 'ANDROID_HOME' in os.environ:
                 raise Exception('You need to set the ANDROID_HOME environment variable')
 
-            abi = {'armv7': 'armeabi-v7a with NEON', 'armv8': 'arm64-v8a', 'x86': 'x86', 'x86_64': 'x86_64'}[str(arch)]
-            conan_to_cbake_map = { 'x86': 'x86', 'x86_64': 'x86_64', 'armv7': 'arm', 'armv8': 'arm64'}[str(arch)]
+            abi = {'armv7': 'armeabi-v7a with NEON', 'armv8': 'arm64-v8a', 'x86': 'x86', 'x86_64': 'x86_64'}[target_arch]
+            conan_to_cbake_map = { 'x86': 'x86', 'x86_64': 'x86_64', 'armv7': 'arm', 'armv8': 'arm64'}[target_arch]
 
             cmake.definitions['CMAKE_TOOLCHAIN_FILE'] = os.path.join(cbake_home, 'cmake', 'android-%s.toolchain.cmake' % conan_to_cbake_map)
             cmake.definitions['ANDROID_PLATFORM'] = 'android-%s' % settings.os.api_level
@@ -128,23 +150,6 @@ class UtilsBase(object):
 
             cmake.definitions['ANDROID_NDK'] = ndk_path
             cmake.generator = 'Ninja'
-
-    def utils_execute(cmd, cwd=None, verbose=True):
-        if isinstance(cmd, str):
-            cmd = cmd.split()
-
-        output = open(os.devnull, 'w')
-
-        try:
-            return subprocess.check_call(
-                cmd,
-                stdout=output,
-                stderr=output,
-                cwd=cwd
-            )
-        except subprocess.CalledProcessError as e:
-            print(e.stderr)
-            exit(1)
 
     # lipo helper
 
@@ -189,7 +194,7 @@ class UtilsBase(object):
 
             cmd += ' '.join(include_files)
 
-            self.utils_execute(cmd)
+            execute_command(cmd)
 
             expected_archs = ['x86_64', 'arm64', 'armv7']
             self.lipo_validate(self, output_file, expected_archs)
@@ -278,7 +283,7 @@ class UtilsBase(object):
 
     def cargo_build(self, target=None, build_type=None, verbose=False, args=None):
         self.rustup_validate(target)
-        self.utils_execute('cargo clean')
+        execute_command('cargo clean')
 
         cmd = 'cargo build'
         cmd += ' --target %s' % target
@@ -292,13 +297,13 @@ class UtilsBase(object):
         if verbose:
             cmd += ' -vvv'
 
-        self.utils_execute(cmd)
+        execute_command(cmd)
 
     def rustup_install(self, target, component):
         if component == 'toolchain':
             target = 'stable-%s' % target
 
-        self.utils_execute('rustup %s install %s' % (component, target))
+        execute_command('rustup %s install %s' % (component, target))
 
     def rustup_is_installed(self, target, component):
         if component == 'target':
@@ -345,10 +350,10 @@ class UtilsBase(object):
         raise Exception('Received invalid parameters, cannot determine target! (os: %s arch: %s)' % (os, arch))
 
     def rustup_validate(self, target):
-        if not rustup_is_installed(target, 'target'):
+        if not self.rustup_is_installed(target, 'target'):
             self.rustup_install(target, 'target')
 
-        if not rustup_is_installed(target, 'toolchain'):
+        if not self.rustup_is_installed(target, 'toolchain'):
             self.rustup_install(target, 'toolchain')
 
 class SharedUtils(ConanFile):

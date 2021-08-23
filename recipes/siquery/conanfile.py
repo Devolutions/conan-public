@@ -30,14 +30,16 @@ class SiqueryConan(ConanFile):
             self.cargo_build(target=self.cargo_target, build_type=self.settings.build_type)
 
     def package(self):
+        utils = self.python_requires["shared"].module
+        
         exe = self.name
         if self.settings.os == 'Windows':
             exe += '.exe'
 
         if self.settings.build_type == 'Release':
             if self.settings.os == 'Linux':
-                utils.execute('strip -s siquery/target/%s/release/%s' % (self.cargo_target, exe))
+                utils.execute_command('strip -s siquery/target/%s/release/%s' % (self.cargo_target, exe))
             elif self.settings.os == 'Macos':
-                utils.execute('strip siquery/target/%s/release/%s' % (self.cargo_target, exe))
+                utils.execute_command('strip siquery/target/%s/release/%s' % (self.cargo_target, exe))
 
         self.copy(exe, src='siquery/target/%s/%s' % (self.cargo_target, str(self.settings.build_type).lower()), dst='bin')
