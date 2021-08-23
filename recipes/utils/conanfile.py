@@ -46,14 +46,17 @@ def cmake_wrapper(cmake, settings, options):
             'armv8': 'ARM64', # conan uses armv8 instead of arm64
             'arm64': 'ARM64'  # add arm64 to list just for safety
         }[str(arch)]
+        cmake.generator = 'Ninja'
+        cmake.definitions['CMAKE_TOOLCHAIN_FILE'] = os.path.join(cbake_root, 'cmake', 'windows-msvc.toolchain.cmake')
     elif target == 'Macos':
         osx_arch = { 'x86_64': 'x86_64', 'armv8': 'arm64', 'universal': 'universal' }[str(arch)]
         cmake.definitions['CMAKE_OSX_DEPLOYMENT_TARGET'] = os_version
         cmake.definitions['CMAKE_OSX_ARCHITECTURES'] = osx_arch
+    elif target == 'Linux':
+        cmake.generator = 'Ninja'
     elif target == 'iOS':
         ios_arch = { 'x86': 'i386', 'x86_64': 'x86_64', 'armv8': 'arm64', 'armv7': 'armv7', 'universal': 'universal' }[str(arch)]
-
-        cmake.definitions['CMAKE_TOOLCHAIN_FILE'] = os.path.join(cbake_root, 'ios-%s.toolchain.cmake' % ios_arch)
+        cmake.definitions['CMAKE_TOOLCHAIN_FILE'] = os.path.join(cbake_root, 'cmake', 'ios-%s.toolchain.cmake' % ios_arch)
         cmake.definitions['IOS_DEPLOYMENT_TARGET'] = os_version
     elif target == 'Android':
         if not 'ANDROID_HOME' in os.environ:
@@ -62,7 +65,7 @@ def cmake_wrapper(cmake, settings, options):
         abi = {'armv7': 'armeabi-v7a with NEON', 'armv8': 'arm64-v8a', 'x86': 'x86', 'x86_64': 'x86_64'}[str(arch)]
         conan_to_cbake_map = { 'x86': 'x86', 'x86_64': 'x86_64', 'armv7': 'arm', 'armv8': 'arm64'}[str(arch)]
 
-        cmake.definitions['CMAKE_TOOLCHAIN_FILE'] = os.path.join(cbake_root, 'android-%s.toolchain.cmake' % conan_to_cbake_map)
+        cmake.definitions['CMAKE_TOOLCHAIN_FILE'] = os.path.join(cbake_root, 'cmake', 'android-%s.toolchain.cmake' % conan_to_cbake_map)
         cmake.definitions['ANDROID_PLATFORM'] = 'android-%s' % settings.os.api_level
         cmake.definitions['ANDROID_ABI'] = abi
 

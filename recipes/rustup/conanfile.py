@@ -55,17 +55,21 @@ def is_installed(target, component):
 
 def target(os, arch):
     if os == 'Macos':
-        if arch == 'x86_64':
-            return 'x86_64-apple-darwin'
         if arch == 'armv8':
             return 'aarch64-apple-darwin'
+        elif arch == 'x86_64':
+            return 'x86_64-apple-darwin'
     elif os == 'Linux':
-        if arch == 'x86_64':
+        if arch == 'armv8':
+            return 'aarch64-unknown-linux-gnu'
+        elif arch == 'x86_64':
             return 'x86_64-unknown-linux-gnu'
         elif arch == 'x86':
             return 'i686-unknown-linux-gnu'
     elif os == 'Windows':
-        if arch == 'x86_64':
+        if arch == 'armv8':
+            return 'aarch64-pc-windows-msvc'
+        elif arch == 'x86_64':
             return 'x86_64-pc-windows-msvc'
         elif arch == 'x86':
             return 'i686-pc-windows-msvc'
