@@ -1,3 +1,4 @@
+#!/usr/bin/env pwsh
 
 # conan remove -f '*'
 # conan config install ./settings
@@ -21,6 +22,7 @@ function Invoke-ConanRecipe
     $PackageVersion = $(Get-Content "$Recipes/$PackageName/VERSION").Trim()
     $PackageReference = "$PackageName/$PackageVersion@$UserChannel"
 
+    Write-Host "building $PackageReference"
     & 'conan' 'create' "$Recipes/$PackageName" $UserChannel -pr $ProfileName -s build_type=$BuildType
     
     if ($LASTEXITCODE -ne 0) {
@@ -73,6 +75,10 @@ function Invoke-TlkBuild {
         $Platform = $HostPlatform
     }
 
+    if ($Architecture -eq 'aarch64') {
+        $Architecture = 'arm64'
+    }
+
     $HostPackages = @(
         'cbake',
         'shared'
@@ -90,7 +96,13 @@ function Invoke-TlkBuild {
         #$HostPackages += @('msys2')
     }
 
-    $TargetPackages = @(
+    $TargetPackages = @()
+
+    if ($IsLinux) {
+        $TargetPackages += @('sysroot')
+    }
+
+    $TargetPackages += @(
         'zlib',
         'lz4',
         'miniz',
@@ -113,10 +125,15 @@ function Invoke-TlkBuild {
         $TargetPackages += @(
             'munit',
             'libvpx',
-            'libwebm',
-            'jetsocat',
-            'siquery'
+            'libwebm'
         )
+
+        if (@('x86','x86_64') -Contains $Architecture) {
+            $TargetPackages += @(
+                'jetsocat',
+                'siquery'
+            )
+        }
     }
 
     if ($IsWindows) {
