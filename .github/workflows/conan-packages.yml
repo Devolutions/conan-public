@@ -95,11 +95,15 @@ jobs:
           conan config init
           conan config install ./settings
 
-      - name: Setup tmate session
+      - name: Build Linux sysroot
         if: runner.os == 'Linux'
         run: |
-          sudo apt install tmate
-          tmate
+          git clone https://github.com/Devolutions/cbake
+          cd cbake
+          git checkout conan
+          cd recipes/ubuntu-18.04
+          docker buildx build . -t ubuntu-18.04-sysroot --platform linux/amd64 -o ./ubuntu-18.04-amd64
+          docker buildx build . -t ubuntu-18.04-sysroot --platform linux/arm64 -o ./ubuntu-18.04-arm64
 
       - name: Build conan packages
         run: |
