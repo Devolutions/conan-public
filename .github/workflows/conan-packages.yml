@@ -7,7 +7,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arch: [ x86_64 ]
+        arch: [ x86_64, 'aarch64' ]
         os: [ windows, macos, linux, ios ]
 
         include:
@@ -51,6 +51,7 @@ jobs:
 
       - name: Configure Linux runner
         if: runner.os == 'Linux'
+        uses: docker/setup-buildx-action@v1
         run: |
           sudo apt update
           sudo apt install ninja-build
@@ -62,25 +63,14 @@ jobs:
           bash <(wget -qO - https://aka.ms/install-powershell.sh)
           echo "CONAN_USER_HOME=$GITHUB_WORKSPACE}" >> $GITHUB_ENV
 
-      - name: Install Linux packages
+      - name: Inspect Docker builder
         if: runner.os == 'Linux'
         run: |
-          sudo apt install -y \
-            libssl-dev \
-            libpam-dev \
-            libffi-dev \
-            libcups2-dev \
-            libsystemd-dev \
-            libx11-dev \
-            libxtst-dev \
-            libxcursor-dev \
-            libxrandr-dev \
-            libgtk2.0-dev \
-            libgtk-3-dev \
-            libglib2.0-dev \
-            libappindicator-dev \
-            libappindicator3-dev \
-            libnotify-dev
+          echo "Name:      ${{ steps.buildx.outputs.name }}"
+          echo "Endpoint:  ${{ steps.buildx.outputs.endpoint }}"
+          echo "Status:    ${{ steps.buildx.outputs.status }}"
+          echo "Flags:     ${{ steps.buildx.outputs.flags }}"
+          echo "Platforms: ${{ steps.buildx.outputs.platforms }}"
 
       - name: Configure conan environment
         run: |
