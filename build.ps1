@@ -85,7 +85,7 @@ function Invoke-TlkBuild {
     )
 
     if ($HostPlatform -eq 'Linux') {
-        $HostPackages += @('sysroot')
+        #$HostPackages += @('sysroot')
     }
 
     $HostPackages += @('yarc')

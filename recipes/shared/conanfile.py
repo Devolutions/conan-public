@@ -125,8 +125,11 @@ class UtilsBase(object):
             cmake.generator = 'Ninja'
         elif target_os == 'Linux':
             cmake.generator = 'Ninja'
-            cmake.definitions['CMAKE_SYSROOT'] = self.deps_env_info["sysroot"].CMAKE_SYSROOT
-            cmake.definitions['CMAKE_TOOLCHAIN_FILE'] = os.path.join(cbake_home, 'cmake', 'linux.toolchain.cmake')
+            try:
+                cmake.definitions['CMAKE_SYSROOT'] = self.deps_env_info["sysroot"].CMAKE_SYSROOT
+                cmake.definitions['CMAKE_TOOLCHAIN_FILE'] = os.path.join(cbake_home, 'cmake', 'linux.toolchain.cmake')
+            except:
+                pass
         elif target_os == 'iOS':
             ios_arch = { 'x86': 'i386', 'x86_64': 'x86_64', 'armv8': 'arm64', 'armv7': 'armv7', 'universal': 'universal' }[target_arch]
             cmake.definitions['CMAKE_TOOLCHAIN_FILE'] = os.path.join(cbake_home, 'cmake', 'ios-%s.toolchain.cmake' % ios_arch)

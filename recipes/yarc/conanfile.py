@@ -22,6 +22,12 @@ class YarcConan(ConanFile):
         'shared': False
     }
 
+    def build_requirements(self):
+        if self.settings.os_build == 'Linux':
+            self.build_requires('cbake/latest@devolutions/stable')
+        else:
+            super().build_requirements()
+
     def source(self):
         folder = self.name
         self.output.info('Cloning repo: %s dest: %s branch: %s' % (self.url, folder, self.branch))
