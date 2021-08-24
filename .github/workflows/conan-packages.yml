@@ -7,8 +7,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arch: [ x86_64, 'aarch64' ]
+        arch: [ x86, x86_64, aarch64 ]
         os: [ windows, macos, linux, ios ]
+
+        exclude:
+          - arch: x86
+            os: macos
+          - arch: x86
+            os: linux
+          - arch: x86
+            os: ios
 
         include:
           - os: windows
@@ -23,6 +31,16 @@ jobs:
     steps:
       - name: Check out ${{ github.repository }}
         uses: actions/checkout@v2
+
+      - name: Set up docker buildx
+        uses: docker/setup-buildx-action@v1
+        if: runner.os == 'Linux'
+        run: |
+          echo "Name:      ${{ steps.buildx.outputs.name }}"
+          echo "Endpoint:  ${{ steps.buildx.outputs.endpoint }}"
+          echo "Status:    ${{ steps.buildx.outputs.status }}"
+          echo "Flags:     ${{ steps.buildx.outputs.flags }}"
+          echo "Platforms: ${{ steps.buildx.outputs.platforms }}"
 
       - name: Configure Windows runner
         if: runner.os == 'Windows'
