@@ -96,8 +96,10 @@ jobs:
           conan config install ./settings
 
       - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-        timeout-minutes: 10
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt install tmate
+          tmate
 
       - name: Build conan packages
         run: |
