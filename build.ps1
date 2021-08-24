@@ -59,7 +59,7 @@ function Invoke-TlkBuild {
 	param(
 		[ValidateSet('windows','macos','linux','ios','android')]
 		[string] $Platform,
-		[ValidateSet('x86','x86_64','arm64','aarch64')]
+		[ValidateSet('x86','x86_64','arm','arm64','aarch64')]
 		[string] $Architecture = "x86_64",
         [string] $UserChannel = "devolutions/stable",
         [ValidateSet('Release','Debug')]
@@ -84,7 +84,7 @@ function Invoke-TlkBuild {
         'shared'
     )
 
-    if ($IsLinux) {
+    if ($HostPlatform -eq 'Linux') {
         $HostPackages += @('sysroot')
     }
 
@@ -98,7 +98,7 @@ function Invoke-TlkBuild {
 
     $TargetPackages = @()
 
-    if ($IsLinux) {
+    if ($Platform -eq 'Linux') {
         $TargetPackages += @('sysroot')
     }
 

@@ -51,7 +51,6 @@ jobs:
 
       - name: Configure Linux runner
         if: runner.os == 'Linux'
-        uses: docker/setup-buildx-action@v1
         run: |
           sudo apt update
           sudo apt install ninja-build
@@ -62,15 +61,6 @@ jobs:
           pip3 install conan==1.39.0 conan_package_tools==0.35.1 invoke Jinja2 --upgrade
           bash <(wget -qO - https://aka.ms/install-powershell.sh)
           echo "CONAN_USER_HOME=$GITHUB_WORKSPACE}" >> $GITHUB_ENV
-
-      - name: Inspect Docker builder
-        if: runner.os == 'Linux'
-        run: |
-          echo "Name:      ${{ steps.buildx.outputs.name }}"
-          echo "Endpoint:  ${{ steps.buildx.outputs.endpoint }}"
-          echo "Status:    ${{ steps.buildx.outputs.status }}"
-          echo "Flags:     ${{ steps.buildx.outputs.flags }}"
-          echo "Platforms: ${{ steps.buildx.outputs.platforms }}"
 
       - name: Configure conan environment
         run: |

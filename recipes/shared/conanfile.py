@@ -141,6 +141,7 @@ class UtilsBase(object):
 
             cmake.definitions['CMAKE_TOOLCHAIN_FILE'] = os.path.join(cbake_home, 'cmake', 'android-%s.toolchain.cmake' % conan_to_cbake_map)
             cmake.definitions['ANDROID_PLATFORM'] = 'android-%s' % settings.os.api_level
+            cmake.definitions['ANDROID_TOOLCHAIN'] = 'clang'
             cmake.definitions['ANDROID_ABI'] = abi
 
             if not 'ANDROID_NDK' in os.environ:
