@@ -133,9 +133,6 @@ class UtilsBase(object):
             cmake.definitions['IOS_DEPLOYMENT_TARGET'] = os_version
             cmake.generator = 'Ninja'
         elif target_os == 'Android':
-            if not 'ANDROID_HOME' in os.environ:
-                raise Exception('You need to set the ANDROID_HOME environment variable')
-
             abi = {'armv7': 'armeabi-v7a with NEON', 'armv8': 'arm64-v8a', 'x86': 'x86', 'x86_64': 'x86_64'}[target_arch]
             conan_to_cbake_map = { 'x86': 'x86', 'x86_64': 'x86_64', 'armv7': 'arm', 'armv8': 'arm64'}[target_arch]
 
@@ -145,11 +142,14 @@ class UtilsBase(object):
             cmake.definitions['ANDROID_ABI'] = abi
 
             if not 'ANDROID_NDK' in os.environ:
-                ndk_path = os.path.join(os.environ['ANDROID_HOME'], 'ndk-bundle')
-            else:
-                ndk_path = os.environ['ANDROID_NDK']
+                if 'ANDROID_HOME' in os.environ:
+                    os.environ['ANDROID_NDK'] = os.path.join(os.environ['ANDROID_HOME'], 'ndk-bundle')
 
-            cmake.definitions['ANDROID_NDK'] = ndk_path
+            if not 'ANDROID_NDK' in os.environ:
+                raise Exception('ANDROID_NDK environment variable is not set!')
+
+            android_ndk = os.environ['ANDROID_NDK']
+            cmake.definitions['ANDROID_NDK'] = android_ndk
             cmake.generator = 'Ninja'
 
     # lipo helper
