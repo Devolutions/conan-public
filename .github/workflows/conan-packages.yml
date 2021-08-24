@@ -95,16 +95,6 @@ jobs:
           conan config init
           conan config install ./settings
 
-      - name: Build Linux sysroot
-        if: runner.os == 'Linux'
-        run: |
-          git clone https://github.com/Devolutions/cbake
-          cd cbake
-          git checkout conan
-          cd recipes/ubuntu-18.04
-          docker buildx build . -t ubuntu-18.04-sysroot --platform linux/amd64 -o ./ubuntu-18.04-amd64
-          docker buildx build . -t ubuntu-18.04-sysroot --platform linux/arm64 -o ./ubuntu-18.04-arm64
-
       - name: Build conan packages
         run: |
           pwsh build.ps1 -Platform ${{matrix.os}} -Architecture ${{matrix.arch}}
