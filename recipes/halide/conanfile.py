@@ -26,9 +26,9 @@ class HalideConan(ConanFile):
     }
 
     def build_requirements(self):
+        self.build_requires('clang-llvm/12.0.1@devolutions/stable')
         if self.settings.os_build == 'Linux':
             self.build_requires('cbake/latest@devolutions/stable')
-            self.build_requires('clang-llvm/12.0.1@devolutions/stable')
         else:
             super().build_requirements()
 
