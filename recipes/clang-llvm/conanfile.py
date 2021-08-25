@@ -17,6 +17,12 @@ class ClangLlvmConan(ConanFile):
     python_requires = "shared/1.0.0@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
 
+    def build_requirements(self):
+        if self.settings.os_build == 'Linux':
+            self.build_requires('cbake/latest@devolutions/stable')
+        else:
+            super().build_requirements()
+
     def source(self):
         self.pkg_version = self.version
         self.pkg_platform = {'Windows':'windows', 'Macos':'macos', 'Linux':'linux'}[str(self.settings.os_build)]
