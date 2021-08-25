@@ -84,19 +84,15 @@ function Invoke-TlkBuild {
         'shared'
     )
 
-    if ($HostPlatform -eq 'Linux') {
-        #$HostPackages += @('sysroot')
-    }
-
     $HostPackages += @('yarc')
 
-    #$HostPackages += @('clang-llvm', 'halide')
-
-    if ($IsWindows) {
-        $HostPackages += @('msys2')
-    }
+    $HostPackages += @('clang-llvm', 'halide')
 
     $TargetPackages = @()
+
+    if ($IsWindows) {
+        $TargetPackages += @('msys2')
+    }
 
     if ($Platform -eq 'Linux') {
         $TargetPackages += @('sysroot')
@@ -119,7 +115,7 @@ function Invoke-TlkBuild {
         'libyuv'
     )
 
-    #$TargetPackages += @('xpp')
+    $TargetPackages += @('xpp')
 
     if (@('windows','macos','linux') -Contains $Platform) {
         $TargetPackages += @(
