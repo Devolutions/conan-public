@@ -10,7 +10,6 @@ class Sysroot(ConanFile):
     license = 'MIT'
     description = 'Linux sysroot'
     settings = 'os', 'arch'
-    branch = 'conan'
 
     def build_requirements(self):
         self.build_requires('cbake/latest@devolutions/stable')
@@ -25,9 +24,9 @@ class Sysroot(ConanFile):
         os.mkdir(self.package_folder)
         os.mkdir(self.export_path)
 
-        subprocess.run([build_script,
-            "-Distro", self.distro,
-            "-Arch", self.sysroot_arch,
+        subprocess.run([build_script, "sysroot",
+            "-Distribution", self.distro,
+            "-Architecture", self.sysroot_arch,
             "-ExportPath", self.export_path,
             "-SkipPackaging"])
 

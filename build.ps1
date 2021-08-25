@@ -93,7 +93,7 @@ function Invoke-TlkBuild {
     #$HostPackages += @('clang-llvm', 'halide')
 
     if ($IsWindows) {
-        #$HostPackages += @('msys2')
+        $HostPackages += @('msys2')
     }
 
     $TargetPackages = @()
