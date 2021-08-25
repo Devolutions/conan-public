@@ -86,11 +86,19 @@ jobs:
           bash <(wget -qO - https://aka.ms/install-powershell.sh)
           echo "CONAN_USER_HOME=$GITHUB_WORKSPACE" >> $GITHUB_ENV
 
-      - name: Configure Android NDK
+      - name: Install clang+llvm
+        if: runner.os == 'Linux'
+        run: |
+          wget -q https://github.com/awakecoding/llvm-prebuilt/releases/download/v2021.2.0/clang+llvm-12.0.1-x86_64-linux.tar.xz
+          tar -xf clang+llvm-12.0.1-x86_64-linux.tar.xz -C /tmp
+          sudo mv /tmp/clang+llvm-12-x86_64-linux /opt/llvm
+          echo "PATH=$PATH:/opt/llvm/bin" >> $GITHUB_ENV
+
+      - name: Install Android NDK
         if: runner.os == 'Linux'
         run: |
           wget -q https://dl.google.com/android/repository/android-ndk-r21e-linux-x86_64.zip
-          unzip android-ndk-r21e-linux-x86_64.zip -d /tmp
+          unzip -q android-ndk-r21e-linux-x86_64.zip -d /tmp
           sudo mv /tmp/android-ndk-r21e /opt/android-ndk
           echo "ANDROID_NDK=/opt/android-ndk" >> $GITHUB_ENV
 
