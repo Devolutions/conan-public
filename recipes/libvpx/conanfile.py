@@ -117,10 +117,10 @@ class LibvpxConan(ConanFile):
             else:
                 target = "arm64-darwin20-gcc"
         elif self.settings.os == 'Linux':
-            if self.settings.arch == 'x86':
-                target = "x86-linux-gcc"
-            else:
+            if self.settings.arch == 'x86_64':
                 target = "x86_64-linux-gcc"
+            else:
+                target = "arm64-linux-gcc"
         elif self.settings.os == 'Windows':
             if self.settings.arch == 'x86':
                 target = "x86-win32-vs16"
