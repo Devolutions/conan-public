@@ -94,6 +94,8 @@ function Invoke-TlkBuild {
         $TargetPackages += @('sysroot')
     }
 
+    $TargetPackages += @('libvpx')
+
     $TargetPackages += @(
         'zlib',
         'lz4',
@@ -116,7 +118,7 @@ function Invoke-TlkBuild {
     if (@('windows','macos','linux') -Contains $Platform) {
         $TargetPackages += @(
             'munit',
-            'libvpx',
+            #'libvpx',
             'libwebm'
         )
 
