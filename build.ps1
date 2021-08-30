@@ -90,10 +90,6 @@ function Invoke-TlkBuild {
 
     $TargetPackages = @()
 
-    if ($IsWindows) {
-        $TargetPackages += @('msys2')
-    }
-
     if ($Platform -eq 'Linux') {
         $TargetPackages += @('sysroot')
     }
