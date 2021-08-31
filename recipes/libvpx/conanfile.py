@@ -47,6 +47,10 @@ class LibvpxConan(ConanFile):
         cmake.definitions['CONFIG_MULTITHREAD'] = 'OFF'
         cmake.definitions['CONFIG_STATIC_MSVCRT'] = 'ON'
         cmake.definitions['INSTALL_PKG_CONFIG_FILE'] = 'OFF'
+
+        if self.settings.os == 'Android' and self.settings.arch == 'x86':
+            cmake.definitions['WITH_SIMD'] = 'OFF'
+
         cmake.configure(source_folder=self.name)
         
         cmake.build()
