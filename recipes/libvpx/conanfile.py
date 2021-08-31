@@ -9,6 +9,8 @@ class LibvpxConan(ConanFile):
     url = 'https://github.com/awakecoding/libvpx.git'
     description = 'WebM VP8/VP9 Codec SDK'
     settings = 'os', 'arch', 'build_type'
+    no_copy_source = True
+    short_paths = True
     branch = 'cmake'
     python_requires = "shared/1.0.0@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
