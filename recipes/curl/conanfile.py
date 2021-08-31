@@ -1,9 +1,6 @@
 from conans import ConanFile, tools, CMake, python_requires
 import os
 
-lipo = python_requires('lipo/latest@devolutions/stable')
-utils = python_requires('utils/latest@devolutions/stable')
-
 class CurlConan(ConanFile):
     name = 'curl'
     exports = 'VERSION'
@@ -13,6 +10,8 @@ class CurlConan(ConanFile):
     description = 'An open source, portable, easy to use, readable and flexible SSL library'
     settings = 'os', 'arch', 'build_type'
     branch = 'curl-%s-patched' % (version)
+    python_requires = "shared/1.0.0@devolutions/stable"
+    python_requires_extend = "shared.UtilsBase"
 
     options = {
         'fPIC': [True, False],
@@ -24,6 +23,7 @@ class CurlConan(ConanFile):
     }
 
     def build_requirements(self):
+        super().build_requirements()
         self.build_requires('mbedtls/2.16.0@devolutions/stable')
 
     def source(self):
@@ -37,11 +37,11 @@ class CurlConan(ConanFile):
 
     def build(self):
         if self.settings.arch == 'universal':
-            lipo.create(self, self.build_folder)
+            self.lipo_create(self, self.build_folder)
             return
 
         cmake = CMake(self)
-        utils.cmake_wrapper(cmake, self.settings, self.options)
+        self.cmake_wrapper(cmake, self.settings, self.options)
 
         cmake.definitions['CMAKE_USE_MBEDTLS'] = 'ON'
         cmake.definitions['CMAKE_USE_LIBSSH2'] = 'OFF'

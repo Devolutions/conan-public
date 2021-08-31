@@ -7,8 +7,22 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arch: [ x86_64 ]
-        os: [ windows, macos, linux, ios ]
+        arch: [ x86, x86_64, arm, aarch64 ]
+        os: [ windows, macos, linux, ios, android ]
+
+        exclude:
+          - arch: x86
+            os: macos
+          - arch: x86
+            os: linux
+          - arch: x86
+            os: ios
+          - arch: arm
+            os: windows
+          - arch: arm
+            os: macos
+          - arch: arm
+            os: linux
 
         include:
           - os: windows
@@ -19,10 +33,20 @@ jobs:
             runner: ubuntu-18.04
           - os: ios
             runner: macos-10.15
+          - os: android
+            runner: ubuntu-18.04
             
     steps:
       - name: Check out ${{ github.repository }}
         uses: actions/checkout@v2
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+        if: runner.os == 'Linux'
+
+      - name: Set up docker buildx
+        uses: docker/setup-buildx-action@v1
+        if: runner.os == 'Linux'
 
       - name: Configure Windows runner
         if: runner.os == 'Windows'
@@ -47,7 +71,8 @@ jobs:
           brew install nasm yasm
           pip3 install conan==1.39.0 conan_package_tools==0.35.1 invoke Jinja2 --upgrade
           brew install --cask powershell
-          echo "CONAN_USER_HOME=$GITHUB_WORKSPACE}" >> $GITHUB_ENV
+          echo "CONAN_USER_HOME=/tmp" >> $GITHUB_ENV
+          echo "CONAN_USE_ALWAYS_SHORT_PATHS=1" >> $GITHUB_ENV
 
       - name: Configure Linux runner
         if: runner.os == 'Linux'
@@ -60,27 +85,24 @@ jobs:
           sudo apt install python3 python3-pip python3-wget python3-setuptools
           pip3 install conan==1.39.0 conan_package_tools==0.35.1 invoke Jinja2 --upgrade
           bash <(wget -qO - https://aka.ms/install-powershell.sh)
-          echo "CONAN_USER_HOME=$GITHUB_WORKSPACE}" >> $GITHUB_ENV
+          echo "CONAN_USER_HOME=/tmp" >> $GITHUB_ENV
+          echo "CONAN_USE_ALWAYS_SHORT_PATHS=1" >> $GITHUB_ENV
 
-      - name: Install Linux packages
+      - name: Install clang+llvm
         if: runner.os == 'Linux'
         run: |
-          sudo apt install -y \
-            libssl-dev \
-            libpam-dev \
-            libffi-dev \
-            libcups2-dev \
-            libsystemd-dev \
-            libx11-dev \
-            libxtst-dev \
-            libxcursor-dev \
-            libxrandr-dev \
-            libgtk2.0-dev \
-            libgtk-3-dev \
-            libglib2.0-dev \
-            libappindicator-dev \
-            libappindicator3-dev \
-            libnotify-dev
+          wget -q https://github.com/awakecoding/llvm-prebuilt/releases/download/v2021.2.0/clang+llvm-12.0.1-x86_64-linux.tar.xz
+          tar -xf clang+llvm-12.0.1-x86_64-linux.tar.xz -C /tmp
+          sudo mv /tmp/clang+llvm-12-x86_64-linux /opt/llvm
+          echo "PATH=$PATH:/opt/llvm/bin" >> $GITHUB_ENV
+
+      - name: Install Android NDK
+        if: runner.os == 'Linux'
+        run: |
+          wget -q https://dl.google.com/android/repository/android-ndk-r21e-linux-x86_64.zip
+          unzip -q android-ndk-r21e-linux-x86_64.zip -d /tmp
+          sudo mv /tmp/android-ndk-r21e /opt/android-ndk
+          echo "ANDROID_NDK=/opt/android-ndk" >> $GITHUB_ENV
 
       - name: Configure conan environment
         run: |

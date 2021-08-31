@@ -1,8 +1,6 @@
 from conans import ConanFile, tools, python_requires
 import os, shutil
 
-utils = python_requires('utils/latest@devolutions/stable')
-
 class TestPackageConan(ConanFile):
     settings = 'os', 'arch', 'build_type'
 

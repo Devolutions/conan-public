@@ -2,9 +2,6 @@ from conans import ConanFile, CMake, tools, python_requires
 import os
 from shutil import copyfile
 
-lipo = python_requires('lipo/latest@devolutions/stable')
-utils = python_requires('utils/latest@devolutions/stable')
-
 class FreerdpConan(ConanFile):
     name = 'freerdp'
     exports = 'VERSION'
@@ -15,6 +12,8 @@ class FreerdpConan(ConanFile):
     description = 'FreeRDP is a free remote desktop protocol client'
     settings = 'os', 'arch', 'build_type'
     branch = 'devolutions-rdp2'
+    python_requires = "shared/1.0.0@devolutions/stable"
+    python_requires_extend = "shared.UtilsBase"
 
     options = {
         'fPIC': [True, False],
@@ -26,6 +25,7 @@ class FreerdpConan(ConanFile):
     }
 
     def build_requirements(self):
+        super().build_requirements()
         self.build_requires('openssl/1.1.1d@devolutions/stable')
         self.build_requires('winpr/2.3.2@devolutions/stable')
         self.build_requires('mbedtls/2.16.0@devolutions/stable')
@@ -53,11 +53,11 @@ class FreerdpConan(ConanFile):
             
     def build(self):
         if self.settings.arch == 'universal':
-            lipo.create(self, self.build_folder)
+            self.lipo_create(self, self.build_folder)
             return
 
         cmake = CMake(self)
-        utils.cmake_wrapper(cmake, self.settings, self.options)
+        self.cmake_wrapper(cmake, self.settings, self.options)
 
         cmake.definitions['WINPR_IMPORT'] = 'ON'
         cmake.definitions['ENABLE_TESTING'] = 'OFF'
@@ -99,12 +99,6 @@ class FreerdpConan(ConanFile):
         cmake.definitions['CMAKE_VERBOSE_MAKEFILE'] = 'ON'
 
         cmake.configure(source_folder=self.name)
-
-        # conan doesn't support properly switching runtimes at the moment,
-        # need to use this hack in the meantime
-        if self.settings.os == 'Windows':
-            tools.replace_in_file('CMakeCache.txt', '/MD', '/MT', strict=False)
-            cmake.configure(source_folder=self.name)
 
         cmake.build()
 

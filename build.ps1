@@ -1,3 +1,4 @@
+#!/usr/bin/env pwsh
 
 # conan remove -f '*'
 # conan config install ./settings
@@ -17,17 +18,18 @@ function Invoke-ConanRecipe
         [string[]] $Aliases
     )
 
-    $PackageVersion = $(Get-Content "./recipes/$PackageName/VERSION").Trim()
+    $Recipes = Join-Path $PSScriptRoot "recipes"
+    $PackageVersion = $(Get-Content "$Recipes/$PackageName/VERSION").Trim()
     $PackageReference = "$PackageName/$PackageVersion@$UserChannel"
 
-    Write-Host 'conan' 'create' "./recipes/$PackageName" $UserChannel -pr $ProfileName -s build_type=$BuildType
-    & 'conan' 'create' "./recipes/$PackageName" $UserChannel -pr $ProfileName -s build_type=$BuildType
+    Write-Host "building $PackageReference"
+    & 'conan' 'create' "$Recipes/$PackageName" $UserChannel -pr $ProfileName -s build_type=$BuildType
     
     if ($LASTEXITCODE -ne 0) {
         throw "$PackageName creation failure"
     }
 
-    & 'conan' 'export' "./recipes/$PackageName" $PackageReference
+    & 'conan' 'export' "$Recipes/$PackageName" $PackageReference
 
     foreach ($Alias in $Aliases) {
         & 'conan' 'alias' "$PackageName/$Alias@$UserChannel" $PackageReference
@@ -57,7 +59,7 @@ function Invoke-TlkBuild {
 	param(
 		[ValidateSet('windows','macos','linux','ios','android')]
 		[string] $Platform,
-		[ValidateSet('x86','x86_64','arm64','aarch64')]
+		[ValidateSet('x86','x86_64','arm','arm64','aarch64')]
 		[string] $Architecture = "x86_64",
         [string] $UserChannel = "devolutions/stable",
         [ValidateSet('Release','Debug')]
@@ -73,20 +75,28 @@ function Invoke-TlkBuild {
         $Platform = $HostPlatform
     }
 
-    $HostPackages = @(
-        'cbake',
-        'utils',
-        'lipo',
-        'rustup',
-        'yarc',
-        'clang-llvm',
-        'halide')
-
-    if ($IsWindows) {
-        $HostPackages += @('msys2')
+    if ($Architecture -eq 'aarch64') {
+        $Architecture = 'arm64'
     }
 
-    $TargetPackages = @(
+    $HostPackages = @(
+        'cbake',
+        'shared'
+    )
+
+    $HostPackages += @('yarc')
+
+    $HostPackages += @('clang-llvm', 'halide')
+
+    $TargetPackages = @()
+
+    if ($Platform -eq 'Linux') {
+        $TargetPackages += @('sysroot')
+    }
+
+    $TargetPackages += @('libvpx')
+
+    $TargetPackages += @(
         'zlib',
         'lz4',
         'miniz',
@@ -100,18 +110,24 @@ function Invoke-TlkBuild {
         'pcre2',
         'nng',
         'curl',
-        'libyuv',
-        'xpp'
+        'libyuv'
     )
+
+    $TargetPackages += @('xpp')
 
     if (@('windows','macos','linux') -Contains $Platform) {
         $TargetPackages += @(
             'munit',
-            'libvpx',
-            'libwebm',
-            'jetsocat',
-            'siquery'
+            #'libvpx',
+            'libwebm'
         )
+
+        if (@('x86','x86_64') -Contains $Architecture) {
+            $TargetPackages += @(
+                'jetsocat',
+                'siquery'
+            )
+        }
     }
 
     if ($IsWindows) {

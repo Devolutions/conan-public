@@ -1,9 +1,6 @@
 from conans import ConanFile, tools, CMake, python_requires
 import os
 
-lipo = python_requires('lipo/latest@devolutions/stable')
-utils = python_requires('utils/latest@devolutions/stable')
-
 class MinizConan(ConanFile):
     name = 'miniz'
     exports = 'VERSION'
@@ -12,6 +9,8 @@ class MinizConan(ConanFile):
     url = 'https://github.com/richgel999/miniz'
     description = 'miniz: Single C source file zlib-replacement library'
     settings = 'os', 'arch', 'build_type'
+    python_requires = "shared/1.0.0@devolutions/stable"
+    python_requires_extend = "shared.UtilsBase"
 
     options = {
         'fPIC': [True, False],
@@ -34,11 +33,11 @@ class MinizConan(ConanFile):
 
     def build(self):
         if self.settings.arch == 'universal':
-            lipo.create(self, self.build_folder)
+            self.lipo_create(self, self.build_folder)
             return
 
         cmake = CMake(self)
-        utils.cmake_wrapper(cmake, self.settings, self.options)
+        self.cmake_wrapper(cmake, self.settings, self.options)
 
         cmake.definitions['BUILD_EXAMPLES'] = 'OFF'
         cmake.definitions['BUILD_HEADER_ONLY'] = 'OFF'

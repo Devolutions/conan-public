@@ -2,9 +2,6 @@
 from conans import ConanFile, CMake, tools, python_requires
 import os
 
-lipo = python_requires('lipo/latest@devolutions/stable')
-utils = python_requires('utils/latest@devolutions/stable')
-
 class PCREConan(ConanFile):
     name = 'pcre2'
     exports = 'VERSION'
@@ -16,6 +13,8 @@ class PCREConan(ConanFile):
     exports_sources = ['CMakeLists.txt', 'ios-clear_cache.patch', 'jit_aarch64.patch']
     generators = 'cmake'
     settings = 'os', 'arch', 'build_type'
+    python_requires = "shared/1.0.0@devolutions/stable"
+    python_requires_extend = "shared.UtilsBase"
 
     options = {
         'fPIC': [True, False],
@@ -52,11 +51,11 @@ class PCREConan(ConanFile):
 
     def build(self):
         if self.settings.arch == 'universal':
-            lipo.create(self, self.build_folder)
+            self.lipo_create(self, self.build_folder)
             return
 
         cmake = CMake(self)
-        utils.cmake_wrapper(cmake, self.settings, self.options)
+        self.cmake_wrapper(cmake, self.settings, self.options)
         
         cmake.definitions['PCRE2_BUILD_TESTS'] = False
         cmake.definitions['PCRE2_DEBUG'] = self.settings.build_type == 'Debug'

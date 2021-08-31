@@ -1,9 +1,6 @@
 from conans import ConanFile, CMake, tools, python_requires
 import os
 
-lipo = python_requires('lipo/latest@devolutions/stable')
-utils = python_requires('utils/latest@devolutions/stable')
-
 class LibyuvConan(ConanFile):
     name = 'libyuv'
     exports = 'VERSION'
@@ -14,6 +11,8 @@ class LibyuvConan(ConanFile):
     description = 'YUV scaling and conversion functionality'
     settings = 'os', 'arch', 'build_type'
     tag = '639dd4e'
+    python_requires = "shared/1.0.0@devolutions/stable"
+    python_requires_extend = "shared.UtilsBase"
 
     options = {
         'fPIC': [True, False],
@@ -48,11 +47,11 @@ class LibyuvConan(ConanFile):
 
     def build(self):
         if self.settings.arch == 'universal':
-            lipo.create(self, self.build_folder)
+            self.lipo_create(self, self.build_folder)
             return
 
         cmake = CMake(self)
-        utils.cmake_wrapper(cmake, self.settings, self.options)
+        self.cmake_wrapper(cmake, self.settings, self.options)
 
         cmake.definitions['BUILD_SHARED_LIBS'] = 'OFF'
         cmake.definitions['CMAKE_STATIC_LIBRARY_PREFIX_CXX'] = 'lib'

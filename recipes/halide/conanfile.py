@@ -2,8 +2,6 @@ from conans import ConanFile, tools, CMake, python_requires
 import os
 import shutil
 
-utils = python_requires('utils/latest@devolutions/stable')
-
 class HalideConan(ConanFile):
     name = 'halide'
     exports = 'VERSION'
@@ -15,6 +13,8 @@ class HalideConan(ConanFile):
     url = 'https://github.com/Halide/Halide.git'
     description = 'a language for fast, portable data-parallel computation'
     settings = 'os_build', 'arch_build'
+    python_requires = "shared/1.0.0@devolutions/stable"
+    python_requires_extend = "shared.UtilsBase"
 
     options = {
         'fPIC': [True, False],
@@ -27,6 +27,10 @@ class HalideConan(ConanFile):
 
     def build_requirements(self):
         self.build_requires('clang-llvm/12.0.1@devolutions/stable')
+        if self.settings.os_build == 'Linux':
+            self.build_requires('cbake/latest@devolutions/stable')
+        else:
+            super().build_requirements()
 
     def source(self):
         folder = self.name

@@ -1,8 +1,6 @@
 from conans import ConanFile, tools, python_requires
 import os
 
-utils = python_requires('utils/latest@devolutions/stable')
-
 class JetsocatConan(ConanFile):
     name = 'jetsocat'
     exports = 'VERSION'
@@ -11,6 +9,8 @@ class JetsocatConan(ConanFile):
     license = 'Devolutions'
     description = 'WebSocket toolkit for Jet protocol related operations.'
     settings = 'os', 'arch', 'build_type'
+    python_requires = "shared/1.0.0@devolutions/stable"
+    python_requires_extend = "shared.UtilsBase"
 
     def build(self):
         arch = self.settings.arch
