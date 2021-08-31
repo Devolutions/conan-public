@@ -71,7 +71,8 @@ jobs:
           brew install nasm yasm
           pip3 install conan==1.39.0 conan_package_tools==0.35.1 invoke Jinja2 --upgrade
           brew install --cask powershell
-          echo "CONAN_USER_HOME=$GITHUB_WORKSPACE" >> $GITHUB_ENV
+          echo "CONAN_USER_HOME=/tmp" >> $GITHUB_ENV
+          echo "CONAN_USE_ALWAYS_SHORT_PATHS=1" >> $GITHUB_ENV
 
       - name: Configure Linux runner
         if: runner.os == 'Linux'
@@ -84,7 +85,8 @@ jobs:
           sudo apt install python3 python3-pip python3-wget python3-setuptools
           pip3 install conan==1.39.0 conan_package_tools==0.35.1 invoke Jinja2 --upgrade
           bash <(wget -qO - https://aka.ms/install-powershell.sh)
-          echo "CONAN_USER_HOME=$GITHUB_WORKSPACE" >> $GITHUB_ENV
+          echo "CONAN_USER_HOME=/tmp" >> $GITHUB_ENV
+          echo "CONAN_USE_ALWAYS_SHORT_PATHS=1" >> $GITHUB_ENV
 
       - name: Install clang+llvm
         if: runner.os == 'Linux'
