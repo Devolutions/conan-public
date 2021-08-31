@@ -9,7 +9,8 @@ class SiqueryConan(ConanFile):
     license = 'Apache-2.0/MIT'
     description = 'A rust library for system information analytics and monitoring.'
     settings = 'os', 'arch', 'build_type'
-    tag = 'v%s' % version
+    #tag = 'v%s' % version
+    tag = '2a85336'
     python_requires = "shared/1.0.0@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
 
