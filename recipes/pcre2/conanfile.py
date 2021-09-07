@@ -12,7 +12,7 @@ class PCREConan(ConanFile):
     license = 'BSD-3-Clause'
     exports_sources = ['CMakeLists.txt', 'ios-clear_cache.patch', 'jit_aarch64.patch']
     generators = 'cmake'
-    settings = 'os', 'arch', 'build_type'
+    settings = 'os', 'arch', 'distro', 'build_type'
     python_requires = "shared/1.0.0@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
 

@@ -8,7 +8,7 @@ class LibwebmConan(ConanFile):
     license = 'WebM'
     url = 'https://github.com/webmproject/libwebm.git'
     description = 'WebM'
-    settings = 'os', 'arch', 'build_type'
+    settings = 'os', 'arch', 'distro', 'build_type'
     commit = 'bc32e3c'
     python_requires = "shared/1.0.0@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"

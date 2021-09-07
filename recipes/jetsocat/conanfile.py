@@ -8,7 +8,7 @@ class JetsocatConan(ConanFile):
     url = 'https://github.com/Devolutions/devolutions-gateway.git'
     license = 'Devolutions'
     description = 'WebSocket toolkit for Jet protocol related operations.'
-    settings = 'os', 'arch', 'build_type'
+    settings = 'os', 'arch', 'distro', 'build_type'
     python_requires = "shared/1.0.0@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
 

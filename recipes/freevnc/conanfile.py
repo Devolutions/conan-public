@@ -8,7 +8,7 @@ class FreevncConan(ConanFile):
     license = 'proprietary'
     url = 'git@github.com:Devolutions/freevnc.git'
     description = 'VNC/ARD implementation'
-    settings = 'os', 'arch', 'build_type'
+    settings = 'os', 'arch', 'distro', 'build_type'
     tag = "conan-monorepo"
     python_requires = "shared/1.0.0@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"

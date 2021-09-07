@@ -8,7 +8,7 @@ class XppConan(ConanFile):
     license = 'Apache, MIT'
     url = 'https://github.com/Devolutions/xpp.git'
     description = 'eXtreme Performance Primitives'
-    settings = 'os', 'arch', 'build_type'
+    settings = 'os', 'arch', 'distro', 'build_type'
     branch = 'conan-monorepo'
     python_requires = "shared/1.0.0@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"

@@ -8,7 +8,7 @@ class SiqueryConan(ConanFile):
     url = 'https://github.com/Devolutions/siquery-rs.git'
     license = 'Apache-2.0/MIT'
     description = 'A rust library for system information analytics and monitoring.'
-    settings = 'os', 'arch', 'build_type'
+    settings = 'os', 'arch', 'distro', 'build_type'
     #tag = 'v%s' % version
     tag = '2a85336'
     python_requires = "shared/1.0.0@devolutions/stable"

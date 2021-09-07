@@ -8,7 +8,7 @@ class Lz4Conan(ConanFile):
     license = 'BSD'
     url = 'https://github.com/lz4/lz4.git'
     description = 'Description'
-    settings = 'os', 'arch', 'build_type'
+    settings = 'os', 'arch', 'distro', 'build_type'
     tag = 'v%s' % version
     python_requires = "shared/1.0.0@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"

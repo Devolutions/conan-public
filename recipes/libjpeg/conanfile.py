@@ -8,7 +8,7 @@ class JpegConan(ConanFile):
     license = 'Independent JPEG Group'
     url = 'https://github.com/wayk/libjpeg-turbo.git'
     description = 'libjpeg-turbo is a JPEG image codec that uses SIMD instructions to accelerate baseline JPEG compression and decompression'
-    settings = 'os', 'arch', 'build_type'
+    settings = 'os', 'arch', 'distro', 'build_type'
     branch = 'wayk'
     python_requires = "shared/1.0.0@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"

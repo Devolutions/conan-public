@@ -9,7 +9,7 @@ class LizardConan(ConanFile):
     no_copy_source = True
     url = 'https://github.com/Devolutions/lizard.git'
     description = 'A 7-Zip packer that sticks'
-    settings = 'os', 'arch', 'build_type'
+    settings = 'os', 'arch', 'distro', 'build_type'
     branch = 'master'
     python_requires = "shared/1.0.0@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
