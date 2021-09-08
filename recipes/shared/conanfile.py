@@ -301,6 +301,15 @@ class UtilsBase(object):
             err = 'Expected the following architures %s detected %s' % params
             raise RuntimeError(err)
 
+    def strip_binary(self, filename):
+        strip_tool = tools.which("llvm-strip")
+        if strip_tool is None:
+            strip_tool = tools.which("strip")
+        if self.settings.os == 'Linux' or self.settings.os == 'Android':
+            execute_command('%s -s %s' % (strip_tool, filename))
+        elif self.settings.os == 'Macos':
+            execute_command('%s %s' % (strip_tool, filename))
+
     # cargo/rustup helper
 
     def get_cargo_cbake_env(self):

@@ -24,13 +24,8 @@ class SiqueryConan(ConanFile):
     def build(self):
         self.cargo_target = self.get_cargo_target()
         cargo_cbake_env = self.get_cargo_cbake_env()
-        for k, v in cargo_cbake_env.items():
-            print(f'{k}={v}')
 
-        with tools.environment_append(None):
-            for k, v in cargo_cbake_env.items():
-                os.environ[k] = v
-
+        with tools.environment_append(cargo_cbake_env):
             if self.settings.os == 'Windows':
                 os.environ['RUSTFLAGS'] = '-C target-feature=+crt-static'
 
@@ -49,12 +44,6 @@ class SiqueryConan(ConanFile):
         siquery_exe = 'siquery/target/%s/%s/%s' % (self.cargo_target, build_type, exe_name)
 
         if self.settings.build_type == 'Release':
-            if self.settings.os == 'Linux':
-                strip_tool = tools.which("llvm-strip")
-                if strip_tool is None:
-                    strip_tool = tools.which("strip")
-                utils.execute_command('%s -s %s' % (strip_tool, siquery_exe))
-            elif self.settings.os == 'Macos':
-                utils.execute_command('strip %s' % (siquery_exe))
+            self.strip_binary(siquery_exe)
 
         self.copy(siquery_exe, dst='bin', keep_path=False)
