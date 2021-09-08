@@ -39,7 +39,6 @@ class OpensslConan(ConanFile):
         openssl_cmake_dir = os.path.join(openssl_source_dir, 'openssl-cmake')
         git = tools.Git(folder=openssl_cmake_dir)
         git.clone(openssl_cmake_url)
-        git.checkout("cflags-fix")
         git.run("checkout-index -a -f --prefix=../")
 
         if self.settings.os == 'iOS':
