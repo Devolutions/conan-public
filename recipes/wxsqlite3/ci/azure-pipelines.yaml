@@ -1,0 +1,27 @@
+name: $(BuildID)
+
+trigger:
+  branches:
+    include:
+      - master
+
+variables:
+  - group: conan
+
+jobs:
+  - job: macOS
+    pool:
+      name: 'Devolutions - macOS'
+
+    workspace:
+      clean: all
+
+    steps:
+      - checkout: self
+        clean: true
+        fetchDepth: 1
+
+      - script: ./build.py -p macos --debug
+        displayName: Running build.py
+        env:
+          CONAN_PASSWORD: $(CONAN_PASSWORD)

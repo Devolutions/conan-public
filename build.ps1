@@ -148,6 +148,10 @@ function Invoke-TlkBuild {
         $TargetPackages += @('crashpad')
     }
 
+    if ($Platform -eq 'macos') {
+        $TargetPackages += @('wxsqlite3')
+    }
+
     $TargetProfile = "$Platform-$Architecture".ToLower()
     $Aliases = @('latest')
 
