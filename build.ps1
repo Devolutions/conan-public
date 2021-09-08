@@ -139,14 +139,9 @@ function Invoke-TlkBuild {
         )
 
         $TargetPackages += @(
-            'siquery'
+            'siquery',
+            'jetsocat'
         )
-
-        if (@('x86','x86_64') -Contains $Architecture) {
-            $TargetPackages += @(
-                'jetsocat'
-            )
-        }
     }
 
     if ($IsWindows) {
