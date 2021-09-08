@@ -3,6 +3,7 @@ include(host.jinja)
 [settings]
 os=Macos
 os.version=10.9
+distro=None
 compiler=clang
 compiler.version=12
 compiler.libcxx=libc++

@@ -9,7 +9,7 @@ class OpensslConan(ConanFile):
     url = 'https://github.com/openssl/openssl.git'
     no_copy_source = True
     description = 'TLS/SSL and crypto library'
-    settings = 'os', 'arch', 'build_type'
+    settings = 'os', 'arch', 'distro', 'build_type'
     python_requires = "shared/1.0.0@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
 

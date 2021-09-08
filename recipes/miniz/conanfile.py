@@ -8,7 +8,7 @@ class MinizConan(ConanFile):
     license = 'MIT'
     url = 'https://github.com/richgel999/miniz'
     description = 'miniz: Single C source file zlib-replacement library'
-    settings = 'os', 'arch', 'build_type'
+    settings = 'os', 'arch', 'distro', 'build_type'
     python_requires = "shared/1.0.0@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
 

@@ -15,6 +15,7 @@ function Invoke-ConanRecipe
         [string] $ProfileName,
         [Parameter(Mandatory=$true)]
         [string] $BuildType,
+        [string] $Distribution,
         [string[]] $Aliases
     )
 
@@ -23,7 +24,19 @@ function Invoke-ConanRecipe
     $PackageReference = "$PackageName/$PackageVersion@$UserChannel"
 
     Write-Host "building $PackageReference"
-    & 'conan' 'create' "$Recipes/$PackageName" $UserChannel -pr $ProfileName -s build_type=$BuildType
+
+    $CreateParams = @(
+        "$Recipes/$PackageName",
+        $UserChannel,
+        "-pr", $ProfileName,
+        "-s", "build_type=$BuildType"
+    )
+
+    if (-Not [string]::IsNullOrEmpty($Distribution)) {
+        $CreateParams += @("-s", "distro=$Distribution")
+    }
+
+    & 'conan' 'create' $CreateParams
     
     if ($LASTEXITCODE -ne 0) {
         throw "$PackageName creation failure"
@@ -61,10 +74,11 @@ function Invoke-TlkBuild {
 		[string] $Platform,
 		[ValidateSet('x86','x86_64','arm','arm64','aarch64')]
 		[string] $Architecture = "x86_64",
+		[ValidateSet('ubuntu-18.04','ubuntu-20.04','debian-10','alpine-3.14','opensuse-15.2')]
+		[string] $Distribution,
         [string] $UserChannel = "devolutions/stable",
         [ValidateSet('Release','Debug')]
-		[string] $BuildType = "Release",
-        [switch] $IncludePrivate
+		[string] $BuildType = "Release"
 	)
 
     $HostPlatform = Get-TlkPlatform
@@ -77,6 +91,10 @@ function Invoke-TlkBuild {
 
     if ($Architecture -eq 'aarch64') {
         $Architecture = 'arm64'
+    }
+
+    if (($Platform -eq 'linux') -And (-Not $Distribution)) {
+        $Distribution = "ubuntu-18.04"
     }
 
     $HostPackages = @(
@@ -93,8 +111,6 @@ function Invoke-TlkBuild {
     if ($Platform -eq 'Linux') {
         $TargetPackages += @('sysroot')
     }
-
-    $TargetPackages += @('libvpx')
 
     $TargetPackages += @(
         'zlib',
@@ -118,24 +134,18 @@ function Invoke-TlkBuild {
     if (@('windows','macos','linux') -Contains $Platform) {
         $TargetPackages += @(
             'munit',
-            #'libvpx',
+            'libvpx',
             'libwebm'
         )
 
-        if (@('x86','x86_64') -Contains $Architecture) {
-            $TargetPackages += @(
-                'jetsocat',
-                'siquery'
-            )
-        }
+        $TargetPackages += @(
+            'siquery',
+            'jetsocat'
+        )
     }
 
     if ($IsWindows) {
         $TargetPackages += @('crashpad')
-    }
-
-    if ($IncludePrivate) {
-        $TargetPackages += @('freevnc')
     }
 
     $TargetProfile = "$Platform-$Architecture".ToLower()
@@ -159,6 +169,9 @@ function Invoke-TlkBuild {
             ProfileName = $TargetProfile;
             BuildType = $BuildType;
             Aliases = $Aliases;
+        }
+        if (-Not [string]::IsNullOrEmpty($Distribution)) {
+            $params['Distribution'] = $Distribution;
         }
         Invoke-ConanRecipe @params
     }

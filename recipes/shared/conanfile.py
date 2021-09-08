@@ -48,6 +48,15 @@ def get_cmd_output(cmd, cwd=None, verbose=True, shell=False):
         cwd=cwd
     )
 
+def load_file(path):
+    with open(path, 'rb') as handle:
+        tmp = handle.read()
+        return tmp.decode("utf-8", "ignore")
+
+def load_dotenv_file(filename):
+    file = load_file(filename)
+    return dict(line.split("=", 1) for line in file.splitlines())
+
 class UtilsBase(object):
     def build_requirements(self):
         self.output.info("injecting build requirements!")
@@ -84,6 +93,15 @@ class UtilsBase(object):
         try:
             if self.settings.arch_build:
                 return str(self.settings.arch_build)
+        except:
+            pass
+
+        return None
+
+    def get_target_distro(self):
+        try:
+            if self.settings.distro:
+                return str(self.settings.distro)
         except:
             pass
 
@@ -283,7 +301,47 @@ class UtilsBase(object):
             err = 'Expected the following architures %s detected %s' % params
             raise RuntimeError(err)
 
+    def strip_binary(self, filename):
+        strip_tool = tools.which("llvm-strip")
+        if strip_tool is None:
+            strip_tool = tools.which("strip")
+        if self.settings.os == 'Linux' or self.settings.os == 'Android':
+            execute_command('%s -s %s' % (strip_tool, filename))
+        elif self.settings.os == 'Macos':
+            execute_command('%s %s' % (strip_tool, filename))
+
     # cargo/rustup helper
+
+    def get_cargo_cbake_env(self):
+        cbake_home = self.deps_env_info["cbake"].CBAKE_HOME
+        target_os = self.get_target_os()
+        target_arch = self.get_target_arch()
+        target_distro = self.get_target_distro()
+        target_env = {}
+        if target_os == 'Linux':
+            cmake_generator = 'Ninja'
+            try:
+                cmake_sysroot = self.deps_env_info["sysroot"].CMAKE_SYSROOT
+                cmake_toolchain_file = os.path.join(cbake_home, 'cmake', 'linux.toolchain.cmake')
+                cargo_cbake_name = "%s-%s" % (target_distro, target_arch)
+                cmake_source_dir = os.path.join(cbake_home, 'cargo')
+                cmake_binary_dir = os.path.join(self.build_folder, "cargo-cbake-%s" % (cargo_cbake_name))
+                cargo_cbake_dir = cmake_binary_dir
+                execute_command("cmake -G %s -S %s -B %s -DCMAKE_SYSROOT=%s "
+                    "-DCMAKE_TOOLCHAIN_FILE=%s -DCARGO_CBAKE_DIR=%s -DCARGO_CBAKE_NAME=%s" % (
+                    cmake_generator,
+                    cmake_source_dir,
+                    cmake_binary_dir,
+                    cmake_sysroot,
+                    cmake_toolchain_file,
+                    cargo_cbake_dir,
+                    cargo_cbake_name), verbose=True)
+                cargo_dotenv_file = os.path.join(cargo_cbake_dir, "%s.env" % (cargo_cbake_name))
+                target_env = load_dotenv_file(cargo_dotenv_file)
+                return target_env
+            except:
+                pass
+        return target_env
 
     def cargo_build(self, target=None, build_type=None, verbose=False, args=None):
         self.rustup_validate(target)
@@ -330,35 +388,34 @@ class UtilsBase(object):
         else:
             return False
 
-    def cargo_target(self, os, arch):
-        if os == 'Macos':
-            if arch == 'armv8':
+    def get_cargo_target(self):
+        target_os = self.get_target_os()
+        target_arch = self.get_target_arch()
+        if target_os == 'Macos':
+            if target_arch == 'armv8':
                 return 'aarch64-apple-darwin'
-            elif arch == 'x86_64':
+            elif target_arch == 'x86_64':
                 return 'x86_64-apple-darwin'
-        elif os == 'Linux':
-            if arch == 'armv8':
+        elif target_os == 'Linux':
+            if target_arch == 'armv8':
                 return 'aarch64-unknown-linux-gnu'
-            elif arch == 'x86_64':
+            elif target_arch == 'x86_64':
                 return 'x86_64-unknown-linux-gnu'
-            elif arch == 'x86':
+            elif target_arch == 'x86':
                 return 'i686-unknown-linux-gnu'
-        elif os == 'Windows':
-            if arch == 'armv8':
+        elif target_os == 'Windows':
+            if target_arch == 'armv8':
                 return 'aarch64-pc-windows-msvc'
-            elif arch == 'x86_64':
+            elif target_arch == 'x86_64':
                 return 'x86_64-pc-windows-msvc'
-            elif arch == 'x86':
+            elif target_arch == 'x86':
                 return 'i686-pc-windows-msvc'
 
-        raise Exception('Received invalid parameters, cannot determine target! (os: %s arch: %s)' % (os, arch))
+        raise Exception('Received invalid parameters, cannot determine target! (os: %s arch: %s)' % (target_os, target_arch))
 
     def rustup_validate(self, target):
         if not self.rustup_is_installed(target, 'target'):
             self.rustup_install(target, 'target')
-
-        if not self.rustup_is_installed(target, 'toolchain'):
-            self.rustup_install(target, 'toolchain')
 
 class SharedUtils(ConanFile):
     name = "shared"

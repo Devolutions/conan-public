@@ -8,7 +8,7 @@ class MbedtlsConan(ConanFile):
     license = 'Apache 2.0'
     url = 'https://github.com/Devolutions/mbedtls.git'
     description = 'An open source, portable, easy to use, readable and flexible SSL library'
-    settings = 'os', 'arch', 'build_type'
+    settings = 'os', 'arch', 'distro', 'build_type'
     branch = 'wayk'
     python_requires = "shared/1.0.0@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"

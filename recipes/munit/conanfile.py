@@ -8,7 +8,7 @@ class MunitConan(ConanFile):
     license = 'Devolutions'
     url = 'https://github.com/Devolutions/munit.git'
     description = 'µnit is a small testing framework for C'
-    settings = 'os', 'arch', 'build_type'
+    settings = 'os', 'arch', 'distro', 'build_type'
     branch = 'wayk'
     python_requires = "shared/1.0.0@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"

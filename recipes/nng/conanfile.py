@@ -8,7 +8,7 @@ class NngConan(ConanFile):
     url = 'https://github.com/nanomsg/nng.git'
     license = 'MIT'
     description = 'NNG is a socket library that provides several common communication patterns.'
-    settings = 'os', 'arch', 'build_type'
+    settings = 'os', 'arch', 'distro', 'build_type'
     tag = 'v%s' % version
     python_requires = "shared/1.0.0@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"

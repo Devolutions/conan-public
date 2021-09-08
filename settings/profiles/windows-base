@@ -2,6 +2,7 @@ include(host.jinja)
 
 [settings]
 os=Windows
+distro=None
 compiler=clang
 compiler.version=12
 compiler.runtime=MT

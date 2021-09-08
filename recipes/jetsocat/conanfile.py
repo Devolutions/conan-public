@@ -7,28 +7,44 @@ class JetsocatConan(ConanFile):
     version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
     url = 'https://github.com/Devolutions/devolutions-gateway.git'
     license = 'Devolutions'
+    #tag = 'v%s' % version
+    tag = "588d3bc"
     description = 'WebSocket toolkit for Jet protocol related operations.'
-    settings = 'os', 'arch', 'build_type'
+    settings = 'os', 'arch', 'distro', 'build_type'
     python_requires = "shared/1.0.0@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
 
-    def build(self):
-        arch = self.settings.arch
-        if self.settings.os == "Macos":
-            if self.settings.arch == "armv8":
-                arch = "arm64"
+    def source(self):
+        folder = self.name
+        self.output.info('Cloning repo: %s dest: %s branch: %s' % (self.url, folder, self.tag))
+        git = tools.Git(folder=folder)
+        git.clone(self.url)
+        git.checkout(self.tag)
 
-        file = "jetsocat_%s_%s_%s" % (self.settings.os, self.version, arch)
-        if self.settings.os == 'Windows':
-            file += '.exe'
-        url = "https://github.com/Devolutions/devolutions-gateway/releases/download/v%s/%s" % (self.version, file)
-        filename = self.name
-        if self.settings.os == 'Windows':
-            filename += '.exe'  
-        tools.download(url, filename)
+    def build(self):
+        self.cargo_target = self.get_cargo_target()
+        cargo_cbake_env = self.get_cargo_cbake_env()
+
+        tools.chdir("jetsocat")
+
+        with tools.environment_append(cargo_cbake_env):
+            if self.settings.os == 'Windows':
+                os.environ['RUSTFLAGS'] = '-C target-feature=+crt-static'
+
+            with tools.chdir(self.name):
+                self.cargo_build(target=self.cargo_target, build_type=self.settings.build_type)
 
     def package(self):
-        filename = self.name
+        self.cargo_target = self.get_cargo_target()
+        
+        exe_name = self.name
         if self.settings.os == 'Windows':
-            filename += '.exe'  
-        self.copy(filename, dst='bin')
+            exe_name += '.exe'
+
+        build_type = str(self.settings.build_type).lower()
+        jetsocat_exe = 'jetsocat/target/%s/%s/%s' % (self.cargo_target, build_type, exe_name)
+
+        if self.settings.build_type == 'Release':
+            self.strip_binary(jetsocat_exe)
+
+        self.copy(jetsocat_exe, dst='bin', keep_path=False)

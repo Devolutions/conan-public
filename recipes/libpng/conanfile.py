@@ -8,7 +8,7 @@ class TemplateConan(ConanFile):
     license = 'PNG Reference Library License version 2'
     url = 'https://github.com/glennrp/libpng.git'
     description = 'Portable Network Graphics'
-    settings = 'os', 'arch', 'build_type'
+    settings = 'os', 'arch', 'distro', 'build_type'
     tag = 'v%s' % version
     python_requires = "shared/1.0.0@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"

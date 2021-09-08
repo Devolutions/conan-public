@@ -2,5 +2,6 @@
 [settings]
 os=iOS
 os.version=9.3
+distro=None
 compiler=clang
 compiler.libcxx=libc++

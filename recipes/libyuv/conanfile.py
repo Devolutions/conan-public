@@ -9,7 +9,7 @@ class LibyuvConan(ConanFile):
     no_copy_source = True
     url = 'https://github.com/Devolutions/libyuv.git'
     description = 'YUV scaling and conversion functionality'
-    settings = 'os', 'arch', 'build_type'
+    settings = 'os', 'arch', 'distro', 'build_type'
     tag = '639dd4e'
     python_requires = "shared/1.0.0@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"

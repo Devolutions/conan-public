@@ -8,8 +8,8 @@ class CBake(ConanFile):
     url = 'https://github.com/Devolutions/CBake.git'
     license = 'MIT'
     description = 'CBake'
-    branch = 'buildx-export'
-
+    branch = 'master'
+    
     def source(self):
         folder = self.name
         self.output.info('Cloning repo: %s dest: %s branch: %s' % (self.url, folder, self.branch))

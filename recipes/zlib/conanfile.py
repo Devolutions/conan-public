@@ -8,7 +8,7 @@ class ZlibConan(ConanFile):
     license = 'Zlib'
     url = 'https://github.com/madler/zlib.git'
     description = 'zlib is a general purpose data compression library.'
-    settings = 'os', 'arch', 'build_type'
+    settings = 'os', 'arch', 'distro', 'build_type'
     tag = 'v' + version
     python_requires = "shared/1.0.0@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
