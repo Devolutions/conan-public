@@ -10,7 +10,7 @@ class SiqueryConan(ConanFile):
     description = 'A rust library for system information analytics and monitoring.'
     settings = 'os', 'arch', 'distro', 'build_type'
     #tag = 'v%s' % version
-    tag = '2a85336'
+    tag = 'df0c824'
     python_requires = "shared/1.0.0@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
 
@@ -22,25 +22,39 @@ class SiqueryConan(ConanFile):
         git.checkout(self.tag)
 
     def build(self):
-        self.cargo_target = self.cargo_target(self.settings.os, self.settings.arch)
+        self.cargo_target = self.get_cargo_target()
+        cargo_cbake_env = self.get_cargo_cbake_env()
+        for k, v in cargo_cbake_env.items():
+            print(f'{k}={v}')
 
-        if self.settings.os == 'Windows':
-            os.environ['RUSTFLAGS'] = '-C target-feature=+crt-static'
+        with tools.environment_append(None):
+            for k, v in cargo_cbake_env.items():
+                os.environ[k] = v
 
-        with tools.chdir(self.name):
-            self.cargo_build(target=self.cargo_target, build_type=self.settings.build_type)
+            if self.settings.os == 'Windows':
+                os.environ['RUSTFLAGS'] = '-C target-feature=+crt-static'
+
+            with tools.chdir(self.name):
+                self.cargo_build(target=self.cargo_target, build_type=self.settings.build_type)
 
     def package(self):
         utils = self.python_requires["shared"].module
+        self.cargo_target = self.get_cargo_target()
         
-        exe = self.name
+        exe_name = self.name
         if self.settings.os == 'Windows':
-            exe += '.exe'
+            exe_name += '.exe'
+
+        build_type = str(self.settings.build_type).lower()
+        siquery_exe = 'siquery/target/%s/%s/%s' % (self.cargo_target, build_type, exe_name)
 
         if self.settings.build_type == 'Release':
             if self.settings.os == 'Linux':
-                utils.execute_command('strip -s siquery/target/%s/release/%s' % (self.cargo_target, exe))
+                strip_tool = tools.which("llvm-strip")
+                if strip_tool is None:
+                    strip_tool = tools.which("strip")
+                utils.execute_command('%s -s %s' % (strip_tool, siquery_exe))
             elif self.settings.os == 'Macos':
-                utils.execute_command('strip siquery/target/%s/release/%s' % (self.cargo_target, exe))
+                utils.execute_command('strip %s' % (siquery_exe))
 
-        self.copy(exe, src='siquery/target/%s/%s' % (self.cargo_target, str(self.settings.build_type).lower()), dst='bin')
+        self.copy(siquery_exe, dst='bin', keep_path=False)

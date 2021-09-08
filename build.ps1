@@ -78,8 +78,7 @@ function Invoke-TlkBuild {
 		[string] $Distribution,
         [string] $UserChannel = "devolutions/stable",
         [ValidateSet('Release','Debug')]
-		[string] $BuildType = "Release",
-        [switch] $IncludePrivate
+		[string] $BuildType = "Release"
 	)
 
     $HostPlatform = Get-TlkPlatform
@@ -139,20 +138,19 @@ function Invoke-TlkBuild {
             'libwebm'
         )
 
+        $TargetPackages += @(
+            'siquery'
+        )
+
         if (@('x86','x86_64') -Contains $Architecture) {
             $TargetPackages += @(
-                'jetsocat',
-                'siquery'
+                'jetsocat'
             )
         }
     }
 
     if ($IsWindows) {
         $TargetPackages += @('crashpad')
-    }
-
-    if ($IncludePrivate) {
-        $TargetPackages += @('freevnc')
     }
 
     $TargetProfile = "$Platform-$Architecture".ToLower()
