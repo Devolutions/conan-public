@@ -416,6 +416,8 @@ class UtilsBase(object):
     def rustup_validate(self, target):
         if not self.rustup_is_installed(target, 'target'):
             self.rustup_install(target, 'target')
+        if not self.rustup_is_installed(target, 'toolchain'):
+            self.rustup_install(target, 'toolchain')
 
 class SharedUtils(ConanFile):
     name = "shared"
