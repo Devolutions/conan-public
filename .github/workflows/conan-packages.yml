@@ -34,7 +34,7 @@ jobs:
           - os: ios
             runner: macos-latest
           - os: android
-            runner: ubuntu-18.04
+            runner: ubuntu-20.04
             
     steps:
       - name: Check out ${{ github.repository }}
@@ -57,7 +57,7 @@ jobs:
           choco install --no-progress python
           choco install --no-progress vswhere
           choco install --no-progress nasm yasm
-          pip install conan==1.40.0 conan_package_tools==0.35.1 invoke Jinja2 pywin32 --upgrade
+          pip install conan==1.40.0 conan_package_tools==0.35.1 invoke Jinja2 urllib3 pywin32 --upgrade
           iex "& { $(irm https://aka.ms/install-powershell.ps1) } -UseMSI -Quiet"
 
       - name: Configure macOS runner
@@ -69,10 +69,11 @@ jobs:
           brew install cmake
           brew install python
           brew install nasm yasm
-          pip3 install conan==1.40.0 conan_package_tools==0.35.1 invoke Jinja2 --upgrade
+          pip3 install conan==1.40.0 conan_package_tools==0.35.1 invoke Jinja2 urllib3 --upgrade
           brew install --cask powershell
           echo "CONAN_USER_HOME=/tmp" >> $GITHUB_ENV
           echo "CONAN_USE_ALWAYS_SHORT_PATHS=1" >> $GITHUB_ENV
+          sudo rm -rf /Library/Developer/CommandLineTools
 
       - name: Configure Linux runner
         if: runner.os == 'Linux'
@@ -83,7 +84,7 @@ jobs:
           sudo apt install xz-utils
           sudo apt install nasm yasm
           sudo apt install python3 python3-pip python3-wget python3-setuptools
-          pip3 install conan==1.40.0 conan_package_tools==0.35.1 invoke Jinja2 --upgrade
+          pip3 install conan==1.40.0 conan_package_tools==0.35.1 invoke Jinja2 urllib3 --upgrade
           bash <(wget -qO - https://aka.ms/install-powershell.sh)
           echo "CONAN_USER_HOME=/tmp" >> $GITHUB_ENV
           echo "CONAN_USE_ALWAYS_SHORT_PATHS=1" >> $GITHUB_ENV
@@ -91,9 +92,11 @@ jobs:
       - name: Install clang+llvm
         if: runner.os == 'Linux'
         run: |
-          wget -q https://github.com/awakecoding/llvm-prebuilt/releases/download/v2021.2.0/clang+llvm-12.0.1-x86_64-linux.tar.xz
-          tar -xf clang+llvm-12.0.1-x86_64-linux.tar.xz -C /tmp
-          sudo mv /tmp/clang+llvm-12-x86_64-linux /opt/llvm
+          CLANG_LLVM_BASE_URL="https://github.com/awakecoding/llvm-prebuilt/releases/download/v2021.2.3"
+          CLANG_LLVM_NAME="clang+llvm-12.0.1-x86_64-ubuntu-18.04"
+          wget -q "$CLANG_LLVM_BASE_URL/$CLANG_LLVM_NAME.tar.xz"
+          tar -xf $CLANG_LLVM_NAME.tar.xz -C /tmp
+          sudo mv /tmp/CLANG_LLVM_NAME /opt/llvm
           echo "PATH=$PATH:/opt/llvm/bin" >> $GITHUB_ENV
 
       - name: Install Android NDK
