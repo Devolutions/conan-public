@@ -56,6 +56,7 @@ class HalideConan(ConanFile):
         cmake.definitions['WITH_DOCS'] = 'OFF'
         cmake.definitions['WITH_UTILS'] = 'OFF'
         cmake.definitions['WITH_PYTHON_BINDINGS'] = 'OFF'
+        cmake.definitions['TARGET_WEBASSEMBLY'] = 'OFF'
         cmake.definitions['LLVM_DIR'] = os.path.join(self.deps_cpp_info['clang-llvm'].rootpath, 'lib', 'cmake', 'llvm')
 
         install_prefix = os.path.join(self.build_folder, "install")
