@@ -58,7 +58,7 @@ jobs:
           choco install --no-progress python
           choco install --no-progress vswhere
           choco install --no-progress nasm yasm
-          pip install conan==1.40.0 invoke Jinja2 urllib3 requests --upgrade
+          pip install conan==1.40.0 invoke Jinja2 urllib3 chardet requests --upgrade
           iex "& { $(irm https://aka.ms/install-powershell.ps1) } -UseMSI -Quiet"
           echo "CONAN_USE_ALWAYS_SHORT_PATHS=1" >> $Env:GITHUB_ENV
 
@@ -71,7 +71,7 @@ jobs:
           brew install cmake
           brew install python
           brew install nasm yasm
-          pip3 install conan==1.40.0 invoke Jinja2 urllib3 requests --upgrade
+          pip3 install conan==1.40.0 invoke Jinja2 urllib3 chardet requests --upgrade
           brew install --cask powershell
           echo "CONAN_USE_ALWAYS_SHORT_PATHS=1" >> $GITHUB_ENV
           sudo rm -rf /Library/Developer/CommandLineTools
@@ -85,7 +85,7 @@ jobs:
           sudo apt install xz-utils
           sudo apt install nasm yasm
           sudo apt install python3 python3-pip python3-wget python3-setuptools
-          pip3 install conan==1.40.0 invoke Jinja2 urllib3 requests --upgrade
+          pip3 install conan==1.40.0 invoke Jinja2 urllib3 chardet requests --upgrade
           bash <(wget -qO - https://aka.ms/install-powershell.sh)
           echo "CONAN_USE_ALWAYS_SHORT_PATHS=1" >> $GITHUB_ENV
 
