@@ -2,14 +2,13 @@ name: conan packages
 on: workflow_dispatch
 jobs:
   build:
-    name: conan packages [${{matrix.arch}}-${{matrix.os}}] ${{matrix.build_type}}
+    name: conan packages [${{matrix.arch}}-${{matrix.os}}]
     runs-on: ${{matrix.runner}}
     strategy:
       fail-fast: false
       matrix:
         arch: [ x86, x86_64, arm, aarch64 ]
         os: [ windows, macos, linux, ios, android ]
-        build_type: [ Release, Debug ]
 
         exclude:
           - arch: x86
@@ -116,4 +115,4 @@ jobs:
 
       - name: Build conan packages
         run: |
-          pwsh build.ps1 -Platform ${{matrix.os}} -Architecture ${{matrix.arch}} -BuildType ${{matrix.build_type}}
+          pwsh build.ps1 -Platform ${{matrix.os}} -Architecture ${{matrix.arch}} -BuildType Both

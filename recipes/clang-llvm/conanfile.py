@@ -25,11 +25,11 @@ class ClangLlvmConan(ConanFile):
 
     def source(self):
         self.pkg_version = self.version
-        self.pkg_platform = {'Windows':'windows', 'Macos':'macos', 'Linux':'linux'}[str(self.settings.os_build)]
-        self.pkg_arch = "x86_64"
+        self.pkg_platform = {'Windows':'windows','Macos':'macos','Linux':'linux'}[str(self.settings.os_build)]
+        self.pkg_arch = {'x86_64':'x86_64','armv8':'aarch64'}[str(self.settings.arch_build)]
         self.pkg_ext = ".tar.xz"
-        self.dir_name = "clang+llvm-%s-%s-%s" % ("12", self.pkg_arch, self.pkg_platform)
-        release_version = "2021.2.0"
+        self.dir_name = "clang+llvm-%s-%s-%s" % (self.pkg_version, self.pkg_arch, self.pkg_platform)
+        release_version = "2021.2.4"
         archive_name = "%s%s" % (self.dir_name, self.pkg_ext)
         base_url = "https://github.com/awakecoding/llvm-prebuilt/releases/download"
         download_url = "%s/v%s/clang+llvm-%s-%s-%s%s" % (base_url,
@@ -38,10 +38,10 @@ class ClangLlvmConan(ConanFile):
 
     def build(self):
         self.pkg_version = self.version
-        self.pkg_platform = {'Windows':'windows', 'Macos':'macos', 'Linux':'linux'}[str(self.settings.os_build)]
-        self.pkg_arch = "x86_64"
+        self.pkg_platform = {'Windows':'windows','Macos':'macos','Linux':'linux'}[str(self.settings.os_build)]
+        self.pkg_arch = {'x86_64':'x86_64','armv8':'aarch64'}[str(self.settings.arch_build)]
         self.pkg_ext = ".tar.xz"
-        self.dir_name = "clang+llvm-%s-%s-%s" % ("12", self.pkg_arch, self.pkg_platform)
+        self.dir_name = "clang+llvm-%s-%s-%s" % (self.pkg_version, self.pkg_arch, self.pkg_platform)
         archive_name = "%s%s" % (self.dir_name, self.pkg_ext)
         archive_path = os.path.join(self.source_folder, archive_name)
         tools.untargz(archive_path)
