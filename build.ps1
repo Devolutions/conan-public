@@ -161,7 +161,7 @@ function Invoke-TlkBuild {
             PackageName = $Package;
             UserChannel = $UserChannel;
             ProfileName = $HostProfile;
-            BuildType = $BuildType;
+            BuildType = 'Release';
             Aliases = $Aliases;
         }
         Invoke-ConanRecipe @params
