@@ -1,1 +1,0 @@
-# conan-msys2

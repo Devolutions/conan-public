@@ -77,7 +77,7 @@ function Invoke-TlkBuild {
 		[ValidateSet('ubuntu-18.04','ubuntu-20.04','debian-10','alpine-3.14','opensuse-15.2')]
 		[string] $Distribution,
         [string] $UserChannel = "devolutions/stable",
-        [ValidateSet('Release','Debug')]
+        [ValidateSet('Release','Debug','Both')]
 		[string] $BuildType = "Release"
 	)
 
@@ -103,8 +103,8 @@ function Invoke-TlkBuild {
     )
 
     $HostPackages += @('yarc')
-
-    $HostPackages += @('clang-llvm', 'halide')
+    #$HostPackages += @('clang-llvm')
+    $HostPackages += @('halide')
 
     $TargetPackages = @()
 
@@ -161,7 +161,7 @@ function Invoke-TlkBuild {
             PackageName = $Package;
             UserChannel = $UserChannel;
             ProfileName = $HostProfile;
-            BuildType = $BuildType;
+            BuildType = 'Release';
             Aliases = $Aliases;
         }
         Invoke-ConanRecipe @params
@@ -178,7 +178,16 @@ function Invoke-TlkBuild {
         if (-Not [string]::IsNullOrEmpty($Distribution)) {
             $params['Distribution'] = $Distribution;
         }
-        Invoke-ConanRecipe @params
+
+        if ($BuildType -eq 'Both') {
+            $params['BuildType'] = 'Release'
+            Invoke-ConanRecipe @params
+
+            $params['BuildType'] = 'Debug'
+            Invoke-ConanRecipe @params
+        } else {
+            Invoke-ConanRecipe @params
+        }
     }
 }
 

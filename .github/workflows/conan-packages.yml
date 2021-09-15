@@ -2,14 +2,13 @@ name: conan packages
 on: workflow_dispatch
 jobs:
   build:
-    name: conan packages [${{matrix.arch}}-${{matrix.os}}] ${{matrix.build_type}}
+    name: conan packages [${{matrix.arch}}-${{matrix.os}}]
     runs-on: ${{matrix.runner}}
     strategy:
       fail-fast: false
       matrix:
         arch: [ x86, x86_64, arm, aarch64 ]
         os: [ windows, macos, linux, ios, android ]
-        build_type: [ Release, Debug ]
 
         exclude:
           - arch: x86
@@ -51,6 +50,7 @@ jobs:
 
       - name: Configure Windows runner
         if: runner.os == 'Windows'
+        shell: pwsh
         run: |
           choco install --no-progress ninja
           choco install --no-progress cmake
@@ -58,8 +58,9 @@ jobs:
           choco install --no-progress python
           choco install --no-progress vswhere
           choco install --no-progress nasm yasm
-          pip install conan==1.40.0 invoke Jinja2 urllib3 --upgrade
+          pip install conan==1.40.0 invoke Jinja2 urllib3 chardet requests --upgrade
           iex "& { $(irm https://aka.ms/install-powershell.ps1) } -UseMSI -Quiet"
+          echo "CONAN_USE_ALWAYS_SHORT_PATHS=1" >> $Env:GITHUB_ENV
 
       - name: Configure macOS runner
         if: runner.os == 'macOS'
@@ -70,9 +71,8 @@ jobs:
           brew install cmake
           brew install python
           brew install nasm yasm
-          pip3 install conan==1.40.0 invoke Jinja2 urllib3 --upgrade
+          pip3 install conan==1.40.0 invoke Jinja2 urllib3 chardet requests --upgrade
           brew install --cask powershell
-          echo "CONAN_USER_HOME=/tmp" >> $GITHUB_ENV
           echo "CONAN_USE_ALWAYS_SHORT_PATHS=1" >> $GITHUB_ENV
           sudo rm -rf /Library/Developer/CommandLineTools
 
@@ -84,18 +84,16 @@ jobs:
           sudo apt install cmake
           sudo apt install xz-utils
           sudo apt install nasm yasm
-          sudo apt install libsystemd-dev
           sudo apt install python3 python3-pip python3-wget python3-setuptools
-          pip3 install conan==1.40.0 invoke Jinja2 urllib3 --upgrade
+          pip3 install conan==1.40.0 invoke Jinja2 urllib3 chardet requests --upgrade
           bash <(wget -qO - https://aka.ms/install-powershell.sh)
-          echo "CONAN_USER_HOME=/tmp" >> $GITHUB_ENV
           echo "CONAN_USE_ALWAYS_SHORT_PATHS=1" >> $GITHUB_ENV
 
       - name: Install clang+llvm
         if: runner.os == 'Linux'
         run: |
           CLANG_LLVM_OS="ubuntu-$(lsb_release -rs)"
-          CLANG_LLVM_BASE_URL="https://github.com/awakecoding/llvm-prebuilt/releases/download/v2021.2.3"
+          CLANG_LLVM_BASE_URL="https://github.com/awakecoding/llvm-prebuilt/releases/download/v2021.2.4"
           CLANG_LLVM_NAME="clang+llvm-12.0.1-x86_64-${CLANG_LLVM_OS}"
           wget -q "${CLANG_LLVM_BASE_URL}/${CLANG_LLVM_NAME}.tar.xz"
           tar -xf "${CLANG_LLVM_NAME}.tar.xz" -C /tmp
@@ -103,7 +101,7 @@ jobs:
           echo "PATH=$PATH:/opt/llvm/bin" >> $GITHUB_ENV
 
       - name: Install Android NDK
-        if: runner.os == 'Linux'
+        if: matrix.os == 'android'
         run: |
           wget -q https://dl.google.com/android/repository/android-ndk-r21e-linux-x86_64.zip
           unzip -q android-ndk-r21e-linux-x86_64.zip -d /tmp
@@ -117,4 +115,17 @@ jobs:
 
       - name: Build conan packages
         run: |
-          pwsh build.ps1 -Platform ${{matrix.os}} -Architecture ${{matrix.arch}} -BuildType ${{matrix.build_type}}
+          pwsh build.ps1 -Platform ${{matrix.os}} -Architecture ${{matrix.arch}} -BuildType Both
+
+      - name: Package conan cache
+        shell: pwsh
+        run: |
+          $PACKAGE_NAME="conan-${{matrix.arch}}-${{matrix.os}}"
+          mv ~/.conan/data "${PACKAGE_NAME}"
+          tar -czf "${PACKAGE_NAME}.tar.gz" "${PACKAGE_NAME}"
+
+      - name: Upload conan cache
+        uses: actions/upload-artifact@v2
+        with:
+          name: conan-${{matrix.arch}}-${{matrix.os}}
+          path: conan-${{matrix.arch}}-${{matrix.os}}.tar.gz
