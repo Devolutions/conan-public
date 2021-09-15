@@ -118,22 +118,13 @@ jobs:
           pwsh build.ps1 -Platform ${{matrix.os}} -Architecture ${{matrix.arch}} -BuildType Both
 
       - name: Package conan cache
-        if: runner.os != 'Windows'
         run: |
           PACKAGE_NAME="conan-${{matrix.arch}}-${{matrix.os}}"
-          mv ~/.conan ./${PACKAGE_NAME}
-          tar -cJf ${PACKAGE_NAME}.tar.xz ${PACKAGE_NAME}
-
-      - name: Package conan cache
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          $PACKAGE_NAME="conan-${{matrix.arch}}-${{matrix.os}}"
-          mv ~/.conan ./$PACKAGE_NAME
-          cmd.exe /c "7z a -ttar -snl -so $PACKAGE_NAME.tar $PACKAGE_NAME | 7z a -si $PACKAGE_NAME.tar.xz"
+          mv ~/.conan/data ./${PACKAGE_NAME}
+          tar -czf ${PACKAGE_NAME}.tar.gz ${PACKAGE_NAME}
 
       - name: Upload conan cache
         uses: actions/upload-artifact@v2
         with:
           name: conan-${{matrix.arch}}-${{matrix.os}}
-          path: conan-${{matrix.arch}}-${{matrix.os}}.tar.xz
+          path: conan-${{matrix.arch}}-${{matrix.os}}.tar.gz
