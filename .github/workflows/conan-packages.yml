@@ -121,8 +121,8 @@ jobs:
         shell: pwsh
         run: |
           $PACKAGE_NAME="conan-${{matrix.arch}}-${{matrix.os}}"
-          mv ~/.conan/data ./${PACKAGE_NAME}
-          tar -czf ${PACKAGE_NAME}.tar.gz ${PACKAGE_NAME}
+          mv ~/.conan/data "${PACKAGE_NAME}"
+          tar -czf "${PACKAGE_NAME}.tar.gz" "${PACKAGE_NAME}"
 
       - name: Upload conan cache
         uses: actions/upload-artifact@v2
