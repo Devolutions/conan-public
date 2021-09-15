@@ -103,8 +103,8 @@ function Invoke-TlkBuild {
     )
 
     $HostPackages += @('yarc')
-
-    $HostPackages += @('clang-llvm', 'halide')
+    #$HostPackages += @('clang-llvm')
+    $HostPackages += @('halide')
 
     $TargetPackages = @()
 
