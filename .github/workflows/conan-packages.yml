@@ -118,8 +118,9 @@ jobs:
           pwsh build.ps1 -Platform ${{matrix.os}} -Architecture ${{matrix.arch}} -BuildType Both
 
       - name: Package conan cache
+        shell: pwsh
         run: |
-          PACKAGE_NAME="conan-${{matrix.arch}}-${{matrix.os}}"
+          $PACKAGE_NAME="conan-${{matrix.arch}}-${{matrix.os}}"
           mv ~/.conan/data ./${PACKAGE_NAME}
           tar -czf ${PACKAGE_NAME}.tar.gz ${PACKAGE_NAME}
 
