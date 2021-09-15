@@ -129,3 +129,20 @@ jobs:
         with:
           name: conan-${{matrix.arch}}-${{matrix.os}}
           path: conan-${{matrix.arch}}-${{matrix.os}}.tar.gz
+
+  merge:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download conan data
+        uses: actions/download-artifact@v2
+        with:
+          path: conan-data
+
+      - name: Extract conan data
+        working-directory: conan-data
+        run: |
+          mv */*.tar.gz .
+          tar -xf *.tar.gz
+          rmdir *
+          ls -Rl
