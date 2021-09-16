@@ -121,7 +121,10 @@ jobs:
         shell: pwsh
         run: |
           $PACKAGE_NAME="conan-${{matrix.arch}}-${{matrix.os}}"
+          conan remove --locks
           mv ~/.conan/data "${PACKAGE_NAME}"
+          $RemoveList = Get-ChildItem "./${PACKAGE_NAME}" -Include @("build","source") -Directory -Depth 4 -Recurse -Name
+          $RemoveList | ForEach-Object { Remove-Item -Path "./$PACKAGE_NAME/$_" -Recurse -Force }
           tar -czf "${PACKAGE_NAME}.tar.gz" "${PACKAGE_NAME}"
 
       - name: Upload conan cache
@@ -143,6 +146,7 @@ jobs:
         working-directory: conan-data
         run: |
           mv */*.tar.gz .
-          tar -xf *.tar.gz
-          rmdir *
-          ls -Rl
+          rmdir * 2&>/dev/null || true
+          ls -lh
+          find . -name "*.tar.gz" -exec tar -xf {} \;
+
