@@ -137,16 +137,45 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - name: Check out ${{ github.repository }}
+        uses: actions/checkout@v2
+
+      - name: Configure runner
+        run: |
+          sudo apt update
+          sudo apt install python3 python3-pip python3-wget python3-setuptools
+          pip3 install conan==1.40.0 invoke Jinja2 urllib3 chardet requests --upgrade
+          bash <(wget -qO - https://aka.ms/install-powershell.sh)
+          echo "CONAN_USER_HOME=/tmp" >> $GITHUB_ENV
+
+      - name: Configure conan environment
+        run: |
+          conan config init
+          conan config install ./settings
+
       - name: Download conan data
         uses: actions/download-artifact@v2
         with:
-          path: conan-data
+          path: download
 
       - name: Extract conan data
-        working-directory: conan-data
+        working-directory: download
         run: |
           mv */*.tar.gz .
           rmdir * 2&>/dev/null || true
           ls -lh
           find . -name "*.tar.gz" -exec tar -xf {} \;
+          ../merge.ps1
 
+      - name: Package conan data
+        shell: pwsh
+        run: |
+          $PACKAGE_NAME="conan-data"
+          mv "$Env:CONAN_USER_HOME/.conan/data" "${PACKAGE_NAME}"
+          tar -czf "${PACKAGE_NAME}.tar.gz" "${PACKAGE_NAME}"
+
+      - name: Upload conan data
+        uses: actions/upload-artifact@v2
+        with:
+          name: conan-data
+          path: conan-data.tar.gz
