@@ -129,7 +129,7 @@ jobs:
         run: |
           $PACKAGE_NAME="conan-${{matrix.arch}}-${{matrix.os}}"
           conan remove --locks
-          mv ~/.conan/data "${PACKAGE_NAME}"
+          mv "$Env:CONAN_USER_HOME/.conan/data" "${PACKAGE_NAME}"
           $RemoveList = Get-ChildItem "./${PACKAGE_NAME}" -Include @("build","source") -Directory -Depth 4 -Recurse -Name
           $RemoveList | ForEach-Object { Remove-Item -Path "./$PACKAGE_NAME/$_" -Recurse -Force }
           tar -czf "${PACKAGE_NAME}.tar.gz" "${PACKAGE_NAME}"
@@ -170,7 +170,6 @@ jobs:
         run: |
           mv */*.tar.gz .
           rmdir * 2&>/dev/null || true
-          ls -lh
           find . -name "*.tar.gz" -exec tar -xf {} \;
           ../merge.ps1
 
