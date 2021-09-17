@@ -177,7 +177,8 @@ jobs:
         shell: pwsh
         run: |
           $PACKAGE_NAME="conan-data"
-          mv "$Env:CONAN_USER_HOME/.conan/data" "${PACKAGE_NAME}"
+          $CONAN_DATA = Join-Path $Env:CONAN_USER_HOME ".conan" "data"
+          mv "$CONAN_DATA" "${PACKAGE_NAME}"
           tar -czf "${PACKAGE_NAME}.tar.gz" "${PACKAGE_NAME}"
 
       - name: Upload conan data
