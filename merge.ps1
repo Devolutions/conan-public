@@ -8,6 +8,7 @@ if (Test-Path Env:CONAN_USER_HOME) {
     $ConanDataPath = ".conan/data"
 }
 
+Write-Host "conan data path $ConanDataPath"
 New-Item -Path $ConanDataPath -ItemType Directory -ErrorAction SilentlyContinue | Out-Null
 
 foreach ($CacheName in $CacheNames) {
