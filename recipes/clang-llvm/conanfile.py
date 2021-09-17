@@ -13,7 +13,6 @@ class ClangLlvmConan(ConanFile):
     description = 'LLVM Compiler'
     settings = 'os_build', 'arch_build'
     no_copy_source = True
-    short_paths = True
     python_requires = "shared/1.0.0@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
 

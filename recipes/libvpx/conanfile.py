@@ -10,7 +10,6 @@ class LibvpxConan(ConanFile):
     description = 'WebM VP8/VP9 Codec SDK'
     settings = 'os', 'arch', 'distro', 'build_type'
     no_copy_source = True
-    short_paths = True
     branch = 'cmake'
     python_requires = "shared/1.0.0@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
