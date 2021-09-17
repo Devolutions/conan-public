@@ -43,9 +43,11 @@ function Invoke-ConanRecipe
     }
 
     & 'conan' 'export' "$Recipes/$PackageName" $PackageReference
+    & 'conan' 'upload' "$Recipes/$PackageName" "--all" "--skip-upload"
 
     foreach ($Alias in $Aliases) {
         & 'conan' 'alias' "$PackageName/$Alias@$UserChannel" $PackageReference
+        & 'conan' 'upload' "$PackageName/$Alias@$UserChannel" "--all" "--skip-upload"
     }
 }
 
