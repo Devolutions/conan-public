@@ -124,10 +124,9 @@ jobs:
           $PACKAGE_NAME="conan-${{matrix.arch}}-${{matrix.os}}"
           conan remove --locks
           $CONAN_DATA = Join-Path $Env:CONAN_USER_HOME ".conan" "data"
-          Move-Item "$CONAN_DATA" "${PACKAGE_NAME}" -Force
           $RemoveList = Get-ChildItem "./${PACKAGE_NAME}" -Include @("build","source") -Directory -Depth 4 -Recurse -Name
           $RemoveList | ForEach-Object { Remove-Item -Path "./$PACKAGE_NAME/$_" -Recurse -Force }
-          tar -czf "${PACKAGE_NAME}.tar.gz" "${PACKAGE_NAME}"
+          tar -czf "${PACKAGE_NAME}.tar.gz" "${CONAN_DATA}"
 
       - name: Upload conan cache
         uses: actions/upload-artifact@v2
