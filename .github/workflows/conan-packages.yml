@@ -125,7 +125,7 @@ jobs:
           conan remove --locks
           $CONAN_DATA = Join-Path $Env:CONAN_USER_HOME ".conan" "data"
           $RemoveList = Get-ChildItem "${CONAN_DATA}" -Include @("build","source") -Directory -Depth 4 -Recurse -Name
-          $RemoveList | ForEach-Object { Remove-Item -Path "./$PACKAGE_NAME/$_" -Recurse -Force }
+          $RemoveList | ForEach-Object { Remove-Item -Path "$CONAN_DATA/$_" -Recurse -Force }
           tar -czf "${PACKAGE_NAME}.tar.gz" "${CONAN_DATA}"
 
       - name: Upload conan cache
