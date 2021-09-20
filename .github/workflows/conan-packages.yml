@@ -126,7 +126,7 @@ jobs:
           $CONAN_DATA = Join-Path $Env:CONAN_USER_HOME ".conan" "data"
           $RemoveList = Get-ChildItem "${CONAN_DATA}" -Include @("build","source") -Directory -Depth 4 -Recurse -Name
           $RemoveList | ForEach-Object { Remove-Item -Path "$CONAN_DATA/$_" -Recurse -Force }
-          tar -czf "${PACKAGE_NAME}.tar.gz" --strip-components 2 "${CONAN_DATA}"
+          tar -czf "${PACKAGE_NAME}.tar.gz" -C "$Env:CONAN_USER_HOME/.conan" "${CONAN_DATA}"
 
       - name: Upload conan cache
         uses: actions/upload-artifact@v2
@@ -161,10 +161,10 @@ jobs:
 
       - name: Extract conan data
         working-directory: download
+        shell: pwsh
         run: |
-          mv */*.tar.gz .
-          rmdir * 2&>/dev/null || true
-          find . -name "*.tar.gz" -exec tar -xf {} \;
+          $tarballs = Get-ChildItem . -Filter "*.tar.gz" -Recurse
+          $tarballs | ForEach-Object { tar -xf $_.FullName -C $_.Directory }
           ../merge.ps1
 
       - name: Package conan data
