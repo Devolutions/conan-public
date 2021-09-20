@@ -42,16 +42,16 @@ function Invoke-TlkMerge {
     
     foreach ($CacheName in $CacheNames) {
         Write-Host "Importing $CacheName"
-        $PackageNames = Get-ChildItem -Directory "$CacheName/data" -Name
+        $PackageNames = Get-ChildItem -Directory "$CacheName/.conan/data" -Name
         foreach ($PackageName in $PackageNames) {
             Write-Host "Importing $PackageName ($CacheName)"
             New-Item -Path "$ConanDataPath/$PackageName" -ItemType Directory -ErrorAction SilentlyContinue | Out-Null
-            Copy-Item -Path "./$CacheName/data/$PackageName/*" -Destination "$ConanDataPath/$PackageName" `
+            Copy-Item -Path "./$CacheName/.conan/data/$PackageName/*" -Destination "$ConanDataPath/$PackageName" `
                 -Exclude @('metadata.json', 'metadata.json.lock') -Recurse -Force
         }
         $MetadataFiles = Get-ChildItem -Path $CacheName -Include 'metadata.json' -Recurse -Depth 4 -Name
         foreach ($MetadataFile in $MetadataFiles) {
-            $InputFile = "./$CacheName/data/$MetadataFile"
+            $InputFile = "./$CacheName/.conan/data/$MetadataFile"
             $OutputFile = "$ConanDataPath/$MetadataFile"
             Merge-ConanMetadataFile $InputFile $OutputFile
         }
