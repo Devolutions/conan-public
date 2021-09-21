@@ -136,7 +136,6 @@ jobs:
 
   publish:
     needs: build
-    if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     steps:
       - name: Check out ${{ github.repository }}
@@ -166,4 +165,6 @@ jobs:
         run: |
           $Env:CONAN_REMOTE_NAME="devolutions-public"
           $Env:CONAN_REMOTE_URL="https://conan.cloudsmith.io/devolutions/conan-public"
+          $Env:CONAN_LOGIN_USERNAME="${{ secrets.CLOUDSMITH_CONAN_PUBLIC_USERNAME }}"
+          $Env:CONAN_PASSWORD="${{ secrets.CLOUDSMITH_CONAN_PUBLIC_PASSWORD }}"
           ../publish.ps1 -MultiCache
