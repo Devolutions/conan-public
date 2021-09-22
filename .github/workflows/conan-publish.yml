@@ -13,6 +13,7 @@ jobs:
     steps:
       - name: Check out ${{ github.repository }}
         uses: actions/checkout@v2
+
       - name: Configure runner
         run: |
           sudo apt update
@@ -27,16 +28,20 @@ jobs:
           conan config install ./settings
 
       - name: Download conan data
-        uses: actions/download-artifact@v2
-        with:
-          workflow: ${{ github.event.inputs.runId }}
-          path: download
+        working-directory: download
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh run download ${{ github.event.inputs.runId }}
 
       - name: Publish packages
         working-directory: download
-        shell: pwsh
         env:
           CONAN_REMOTE_NAME: "artifactory"
           CONAN_REMOTE_URL: "https://devolutions.jfrog.io/devolutions/api/conan/conan-local"
+          CONAN_LOGIN_USERNAME: ${{ secrets.CONAN_USERNAME }}
+          CONAN_LOGIN_USERNAME_ARTIFACTORY: ${{ secrets.CONAN_USERNAME }}
+          CONAN_PASSWORD: ${{ secrets.CONAN_PASSWORD }}
+          CONAN_PASSWORD_ARTIFACTORY: ${{ secrets.CONAN_PASSWORD }}
         run: |
-          ../publish.ps1 -ConanUsername ${{ secrets.ARTIFACTORY_USERNAME }} -ConanPassword ${{ secrets.ARTIFACTORY_PASSWORD }}
+          pwsh ../publish.ps1
