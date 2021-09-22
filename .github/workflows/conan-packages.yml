@@ -129,7 +129,7 @@ jobs:
           $CONAN_DATA = Join-Path $Env:CONAN_USER_HOME ".conan" "data"
           $RemoveList = Get-ChildItem "${CONAN_DATA}" -Include @("build","source") -Directory -Depth 4 -Recurse -Name
           $RemoveList | ForEach-Object { Remove-Item -Path "$CONAN_DATA/$_" -Recurse -Force }
-          $ConanManifests = Get-ChildItem $CONAN_DATA -Recurse -Include "conanmanifest.txt" -Depth 5
+          $ConanManifests = Get-ChildItem $CONAN_DATA -Recurse -Include "conanmanifest.txt"
           $ConanManifestTime = $Env:CONAN_MANIFEST_TIME
           foreach ($ManifestFile in $ConanManifests) {
             $Manifest = Get-Content $ManifestFile
