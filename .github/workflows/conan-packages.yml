@@ -143,37 +143,3 @@ jobs:
         with:
           name: conan-${{matrix.arch}}-${{matrix.os}}
           path: conan-${{matrix.arch}}-${{matrix.os}}.tar.gz
-
-  publish:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out ${{ github.repository }}
-        uses: actions/checkout@v2
-
-      - name: Configure runner
-        run: |
-          sudo apt update
-          sudo apt install python3 python3-pip python3-wget python3-setuptools
-          pip3 install conan==1.40.0 invoke Jinja2 urllib3 chardet requests --upgrade
-          bash <(wget -qO - https://aka.ms/install-powershell.sh)
-          echo "CONAN_USER_HOME=/tmp" >> $GITHUB_ENV
-
-      - name: Configure conan environment
-        run: |
-          conan config init
-          conan config install ./settings
-
-      - name: Download conan data
-        uses: actions/download-artifact@v2
-        with:
-          path: download
-
-      - name: Publish conan data
-        working-directory: download
-        shell: pwsh
-        run: |
-          $Env:CONAN_REMOTE_NAME="devolutions-public"
-          $Env:CONAN_REMOTE_URL="https://conan.cloudsmith.io/devolutions/conan-public"
-          $Env:CONAN_LOGIN_USERNAME="${{ secrets.CLOUDSMITH_CONAN_PUBLIC_USERNAME }}"
-          $Env:CONAN_PASSWORD="${{ secrets.CLOUDSMITH_CONAN_PUBLIC_PASSWORD }}"
