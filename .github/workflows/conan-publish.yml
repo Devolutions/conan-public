@@ -1,9 +1,10 @@
 name: conan publish
-on: workflow_dispatch
-  inputs:
-    runId:
-      description: 'run id'     
-      required: true
+on:
+  workflow_dispatch:
+    inputs:
+      runId:
+        description: 'run id'     
+        required: true
 jobs:
   publish:
     runs-on: ubuntu-latest
