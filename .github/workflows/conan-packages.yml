@@ -60,7 +60,8 @@ jobs:
           choco install --no-progress nasm yasm
           pip install conan==1.40.0 invoke Jinja2 urllib3 chardet requests --upgrade
           iex "& { $(irm https://aka.ms/install-powershell.ps1) } -UseMSI -Quiet"
-          echo "CONAN_USE_ALWAYS_SHORT_PATHS=1" >> $Env:GITHUB_ENV
+          echo $PSVersionTable
+          echo "CONAN_USER_HOME=C:/tmp" >> $Env:GITHUB_ENV
 
       - name: Configure macOS runner
         if: runner.os == 'macOS'
@@ -73,8 +74,8 @@ jobs:
           brew install nasm yasm
           pip3 install conan==1.40.0 invoke Jinja2 urllib3 chardet requests --upgrade
           brew install --cask powershell
-          echo "CONAN_USE_ALWAYS_SHORT_PATHS=1" >> $GITHUB_ENV
           sudo rm -rf /Library/Developer/CommandLineTools
+          echo "CONAN_USER_HOME=/tmp" >> $GITHUB_ENV
 
       - name: Configure Linux runner
         if: runner.os == 'Linux'
@@ -87,7 +88,7 @@ jobs:
           sudo apt install python3 python3-pip python3-wget python3-setuptools
           pip3 install conan==1.40.0 invoke Jinja2 urllib3 chardet requests --upgrade
           bash <(wget -qO - https://aka.ms/install-powershell.sh)
-          echo "CONAN_USE_ALWAYS_SHORT_PATHS=1" >> $GITHUB_ENV
+          echo "CONAN_USER_HOME=/tmp" >> $GITHUB_ENV
 
       - name: Install clang+llvm
         if: runner.os == 'Linux'
@@ -109,9 +110,12 @@ jobs:
           echo "ANDROID_NDK=/opt/android-ndk" >> $GITHUB_ENV
 
       - name: Configure conan environment
+        shell: pwsh
         run: |
           conan config init
           conan config install ./settings
+          $ConanManifestTime = $(git log -1 --pretty=format:%ct)
+          echo "CONAN_MANIFEST_TIME=$ConanManifestTime" >> $Env:GITHUB_ENV
 
       - name: Build conan packages
         run: |
@@ -121,8 +125,18 @@ jobs:
         shell: pwsh
         run: |
           $PACKAGE_NAME="conan-${{matrix.arch}}-${{matrix.os}}"
-          mv ~/.conan/data "${PACKAGE_NAME}"
-          tar -czf "${PACKAGE_NAME}.tar.gz" "${PACKAGE_NAME}"
+          conan remove --locks
+          $CONAN_DATA = Join-Path $Env:CONAN_USER_HOME ".conan" "data"
+          $RemoveList = Get-ChildItem "${CONAN_DATA}" -Include @("build","source") -Directory -Depth 4 -Recurse -Name
+          $RemoveList | ForEach-Object { Remove-Item -Path "$CONAN_DATA/$_" -Recurse -Force }
+          $ConanManifests = Get-ChildItem $CONAN_DATA -Recurse -Include "conanmanifest.txt"
+          $ConanManifestTime = $Env:CONAN_MANIFEST_TIME
+          foreach ($ManifestFile in $ConanManifests) {
+            $Manifest = Get-Content $ManifestFile
+            $Manifest[0] = $ConanManifestTime
+            $Manifest | Out-File $ManifestFile
+          }
+          tar -czf "${PACKAGE_NAME}.tar.gz" -C "$Env:CONAN_USER_HOME" ".conan"
 
       - name: Upload conan cache
         uses: actions/upload-artifact@v2
