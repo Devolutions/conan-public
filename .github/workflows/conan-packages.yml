@@ -110,9 +110,12 @@ jobs:
           echo "ANDROID_NDK=/opt/android-ndk" >> $GITHUB_ENV
 
       - name: Configure conan environment
+        shell: pwsh
         run: |
           conan config init
           conan config install ./settings
+          $ConanManifestTime = $(git log -1 --pretty=format:%ct)
+          echo "CONAN_MANIFEST_TIME=$ConanManifestTime" >> $Env:GITHUB_ENV
 
       - name: Build conan packages
         run: |
@@ -126,6 +129,13 @@ jobs:
           $CONAN_DATA = Join-Path $Env:CONAN_USER_HOME ".conan" "data"
           $RemoveList = Get-ChildItem "${CONAN_DATA}" -Include @("build","source") -Directory -Depth 4 -Recurse -Name
           $RemoveList | ForEach-Object { Remove-Item -Path "$CONAN_DATA/$_" -Recurse -Force }
+          $ConanManifests = Get-ChildItem $CONAN_DATA -Recurse -Include "conanmanifest.txt" -Depth 5
+          $ConanManifestTime = $Env:CONAN_MANIFEST_TIME
+          foreach ($ManifestFile in $ConanManifests) {
+            $Manifest = Get-Content $ManifestFile
+            $Manifest[0] = $ConanManifestTime
+            $Manifest | Out-File $ManifestFile
+          }
           tar -czf "${PACKAGE_NAME}.tar.gz" -C "$Env:CONAN_USER_HOME" ".conan"
 
       - name: Upload conan cache
@@ -159,7 +169,7 @@ jobs:
         with:
           path: download
 
-      - name: Extract conan data
+      - name: Publish conan data
         working-directory: download
         shell: pwsh
         run: |
@@ -167,4 +177,3 @@ jobs:
           $Env:CONAN_REMOTE_URL="https://conan.cloudsmith.io/devolutions/conan-public"
           $Env:CONAN_LOGIN_USERNAME="${{ secrets.CLOUDSMITH_CONAN_PUBLIC_USERNAME }}"
           $Env:CONAN_PASSWORD="${{ secrets.CLOUDSMITH_CONAN_PUBLIC_PASSWORD }}"
-          ../publish.ps1 -MultiCache
