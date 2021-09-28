@@ -31,11 +31,11 @@ function Invoke-TlkPublish {
     if (-Not (Test-Path Env:CONAN_REMOTE_URL)) {
         throw "CONAN_REMOTE_URL environment variable must be set"
     }
-    
-    $Env:CONAN_NON_INTERACTIVE = "1"
 
-    Write-Host "conan remote name: $($Env:CONAN_REMOTE_NAME)"
-    Write-Host "conan remote url: $($Env:CONAN_REMOTE_URL)"
+    $ConanRemoteName = $Env:CONAN_REMOTE_NAME
+    $ConanRemoteUrl = $Env:CONAN_REMOTE_URL
+    Write-Host "conan remote name: $ConanRemoteName"
+    Write-Host "conan remote url: $ConanRemoteUrl"
 
     $tarballs = Get-ChildItem . -Filter "*.tar.gz" -Recurse
     $tarballs | ForEach-Object {
@@ -49,17 +49,19 @@ function Invoke-TlkPublish {
     $ConanCaches | ForEach-Object {
         $ConanUserHome = $_.Parent
         $CacheName = $ConanUserHome.Name
-        Write-Host "Uploading $CacheName cache"
         $Env:CONAN_USER_HOME="$ConanUserHome"
+        Write-Host "Uploading $CacheName cache"
 
-        conan remote add $Env:CONAN_REMOTE_NAME $Env:CONAN_REMOTE_URL --force
-        conan user -r $Env:CONAN_REMOTE_NAME -p
+        conan remote add $ConanRemoteName $ConanRemoteUrl --force
+        conan remote list
+
+        conan user -r $ConanRemoteName -p
 
         if ($LASTEXITCODE -ne 0) {
             throw "conan user failure!"
         }
 
-        conan upload *@devolutions/stable --all --parallel -r $Env:CONAN_REMOTE_NAME -c
+        conan upload *@devolutions/stable --all --parallel -r $ConanRemoteName -c
 
         if ($LASTEXITCODE -ne 0) {
             throw "conan upload failure!"
