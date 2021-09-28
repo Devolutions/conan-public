@@ -40,6 +40,8 @@ function Invoke-TlkPublish {
         throw "CONAN_PASSWORD environment variable must be set"
     }
     
+    $Env:CONAN_NON_INTERACTIVE = "1"
+
     $tarballs = Get-ChildItem . -Filter "*.tar.gz" -Recurse
     $tarballs | ForEach-Object {
         if (-Not (Test-Path $(Join-Path $_.Directory '.conan'))) {
@@ -55,7 +57,7 @@ function Invoke-TlkPublish {
         Write-Host "Uploading $CacheName cache"
         $Env:CONAN_USER_HOME="$ConanUserHome"
         conan remote add $Env:CONAN_REMOTE_NAME $Env:CONAN_REMOTE_URL --force
-        conan user -p $Env:CONAN_PASSWORD -r $Env:CONAN_REMOTE_NAME $Env:CONAN_LOGIN_USERNAME
+        conan user $Env:CONAN_LOGIN_USERNAME -r $Env:CONAN_REMOTE_NAME -p
         conan upload *@devolutions/stable --all --parallel -r $Env:CONAN_REMOTE_NAME -c
     }
 }

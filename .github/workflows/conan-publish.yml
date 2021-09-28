@@ -1,0 +1,47 @@
+name: conan publish
+on:
+  workflow_dispatch:
+    inputs:
+      runId:
+        description: 'run id'
+        default: "1283642364"
+        required: true
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: artifactory-publish
+    
+    steps:
+      - name: Check out ${{ github.repository }}
+        uses: actions/checkout@v2
+
+      - name: Configure runner
+        run: |
+          sudo apt update
+          sudo apt install python3 python3-pip python3-wget python3-setuptools
+          pip3 install conan==1.40.0 invoke Jinja2 urllib3 chardet requests --upgrade
+          bash <(wget -qO - https://aka.ms/install-powershell.sh)
+          echo "CONAN_USER_HOME=/tmp" >> $GITHUB_ENV
+
+      - name: Configure conan environment
+        run: |
+          conan config init
+          conan config install ./settings
+
+      - name: Download conan data
+        working-directory: download
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh run download ${{ github.event.inputs.runId }}
+
+      - name: Publish packages
+        working-directory: download
+        env:
+          CONAN_NON_INTERACTIVE: 1
+          CONAN_REMOTE_NAME: "artifactory"
+          CONAN_REMOTE_URL: "https://devolutions.jfrog.io/devolutions/api/conan/conan-local"
+          CONAN_LOGIN_USERNAME: ${{ secrets.CONAN_USERNAME }}
+          CONAN_PASSWORD: ${{ secrets.CONAN_PASSWORD }}
+        run: |
+          pwsh ../publish.ps1
