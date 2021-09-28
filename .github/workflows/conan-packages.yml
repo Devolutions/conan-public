@@ -1,9 +1,7 @@
 name: conan packages
 on: 
   workflow_dispatch:
-  push:
-    branches:
-      - merged-workflow
+  
 jobs:
   build:
     name: conan packages [${{matrix.arch}}-${{matrix.os}}]
@@ -175,10 +173,12 @@ jobs:
           path: download
 
       - name: Publish packages
+        run: pwsh ../publish.ps1
         working-directory: download
-        shell: pwsh
         env:
           CONAN_REMOTE_NAME: "artifactory"
           CONAN_REMOTE_URL: "https://devolutions.jfrog.io/devolutions/api/conan/conan-local"
-        run: |
-          ../publish.ps1 -ConanUsername ${{ secrets.ARTIFACTORY_USERNAME }} -ConanPassword ${{ secrets.ARTIFACTORY_PASSWORD }}
+          CONAN_LOGIN_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+          CONAN_LOGIN_USERNAME_ARTIFACTORY: ${{ secrets.ARTIFACTORY_USERNAME }}
+          CONAN_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+          CONAN_PASSWORD_ARTIFACTORY: ${{ secrets.ARTIFACTORY_PASSWORD }}
