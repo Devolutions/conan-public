@@ -29,6 +29,10 @@ function Invoke-TlkPublish {
     Write-Host "conan remote name: $ConanRemoteName"
     Write-Host "conan remote url: $ConanRemoteUrl"
 
+    $ConanUsername = $Env:CONAN_LOGIN_USERNAME
+    $ConanPassword = $Env:CONAN_PASSWORD
+    Write-Host "conan username length: $($ConanUsername.Length)"
+
     $tarballs = Get-ChildItem . -Filter "*.tar.gz" -Recurse
     $tarballs | ForEach-Object {
         if (-Not (Test-Path $(Join-Path $_.Directory '.conan'))) {
