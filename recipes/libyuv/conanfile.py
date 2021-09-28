@@ -10,7 +10,7 @@ class LibyuvConan(ConanFile):
     url = 'https://github.com/Devolutions/libyuv.git'
     description = 'YUV scaling and conversion functionality'
     settings = 'os', 'arch', 'distro', 'build_type'
-    tag = '639dd4e'
+    tag = 'cmake'
     python_requires = "shared/1.0.0@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
 
@@ -33,18 +33,6 @@ class LibyuvConan(ConanFile):
         git.clone(self.url)
         git.checkout(self.tag)
 
-        os.chdir(folder)
-        tools.replace_in_file("CMakeLists.txt",
-            "CMAKE_MINIMUM_REQUIRED( VERSION 2.8 )", "CMAKE_MINIMUM_REQUIRED( VERSION 3.0 )")
-        tools.replace_in_file("CMakeLists.txt",
-            "ADD_EXECUTABLE			( yuvconvert", "#ADD_EXECUTABLE			( yuvconvert")
-        tools.replace_in_file("CMakeLists.txt",
-            "TARGET_LINK_LIBRARIES	( yuvconvert", "#TARGET_LINK_LIBRARIES	( yuvconvert")
-        tools.replace_in_file("CMakeLists.txt",
-            "if (JPEG_FOUND)", "if (JPEG_FALSE)")
-        tools.replace_in_file("CMakeLists.txt",
-            "INCLUDE ( CM_linux_packages.cmake )", "")
-
     def build(self):
         if self.settings.arch == 'universal':
             self.lipo_create(self, self.build_folder)
@@ -53,6 +41,7 @@ class LibyuvConan(ConanFile):
         cmake = CMake(self)
         self.cmake_wrapper(cmake, self.settings, self.options)
 
+        cmake.definitions['MSVC_RUNTIME'] = 'static'
         cmake.definitions['BUILD_SHARED_LIBS'] = 'OFF'
         cmake.definitions['CMAKE_STATIC_LIBRARY_PREFIX_CXX'] = 'lib'
 
