@@ -1,5 +1,7 @@
 name: conan packages
-on: workflow_dispatch
+on: 
+  workflow_dispatch:
+  
 jobs:
   build:
     name: conan packages [${{matrix.arch}}-${{matrix.os}}]
@@ -143,3 +145,40 @@ jobs:
         with:
           name: conan-${{matrix.arch}}-${{matrix.os}}
           path: conan-${{matrix.arch}}-${{matrix.os}}.tar.gz
+
+  publish:
+    runs-on: ubuntu-latest
+    environment: artifactory-publish
+    needs: build
+    
+    steps:
+      - name: Check out ${{ github.repository }}
+        uses: actions/checkout@v2
+      - name: Configure runner
+        run: |
+          sudo apt update
+          sudo apt install python3 python3-pip python3-wget python3-setuptools
+          pip3 install conan==1.40.0 invoke Jinja2 urllib3 chardet requests --upgrade
+          bash <(wget -qO - https://aka.ms/install-powershell.sh)
+          echo "CONAN_USER_HOME=/tmp" >> $GITHUB_ENV
+
+      - name: Configure conan environment
+        run: |
+          conan config init
+          conan config install ./settings
+
+      - name: Download conan data
+        uses: actions/download-artifact@v2
+        with:
+          path: download
+
+      - name: Publish packages
+        run: pwsh ../publish.ps1
+        working-directory: download
+        env:
+          CONAN_REMOTE_NAME: "artifactory"
+          CONAN_REMOTE_URL: "https://devolutions.jfrog.io/devolutions/api/conan/conan-local"
+          CONAN_LOGIN_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+          CONAN_LOGIN_USERNAME_ARTIFACTORY: ${{ secrets.ARTIFACTORY_USERNAME }}
+          CONAN_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+          CONAN_PASSWORD_ARTIFACTORY: ${{ secrets.ARTIFACTORY_PASSWORD }}
