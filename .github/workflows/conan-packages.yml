@@ -179,6 +179,4 @@ jobs:
           CONAN_REMOTE_NAME: "artifactory"
           CONAN_REMOTE_URL: "https://devolutions.jfrog.io/devolutions/api/conan/conan-local"
           CONAN_LOGIN_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-          CONAN_LOGIN_USERNAME_ARTIFACTORY: ${{ secrets.ARTIFACTORY_USERNAME }}
           CONAN_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-          CONAN_PASSWORD_ARTIFACTORY: ${{ secrets.ARTIFACTORY_PASSWORD }}
