@@ -61,6 +61,7 @@ function Invoke-TlkPublish {
         Write-Host "Uploading $CacheName cache"
         $Env:CONAN_USER_HOME="$ConanUserHome"
         conan remote add $Env:CONAN_REMOTE_NAME $Env:CONAN_REMOTE_URL --force
+        conan user -p
         conan upload *@devolutions/stable --all --parallel -r $Env:CONAN_REMOTE_NAME -c
 
         if ($LASTEXITCODE -ne 0) {
