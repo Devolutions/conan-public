@@ -16,14 +16,6 @@ function Invoke-TlkPublish {
         $Env:CONAN_REMOTE_URL = $ConanRemoteUrl
     }
 
-    if (-Not [string]::IsNullOrEmpty($ConanUsername)) {
-        $Env:CONAN_LOGIN_USERNAME = $ConanUsername
-    }
-
-    if (-Not [string]::IsNullOrEmpty($ConanPassword)) {
-        $Env:CONAN_PASSWORD = $ConanPassword
-    }
-
     if (-Not (Test-Path Env:CONAN_REMOTE_NAME)) {
         throw "CONAN_REMOTE_NAME environment variable must be set"
     }
