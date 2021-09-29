@@ -41,7 +41,7 @@ jobs:
           CONAN_NON_INTERACTIVE: 1
           CONAN_REMOTE_NAME: "artifactory"
           CONAN_REMOTE_URL: "https://devolutions.jfrog.io/devolutions/api/conan/conan-local"
-          CONAN_LOGIN_USERNAME: ${{ secrets.CONAN_USERNAME }}
-          CONAN_PASSWORD: ${{ secrets.CONAN_PASSWORD }}
+          CONAN_LOGIN_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+          CONAN_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
         run: |
           pwsh ../publish.ps1
