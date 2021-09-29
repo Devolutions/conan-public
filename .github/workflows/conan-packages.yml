@@ -7,7 +7,7 @@ jobs:
     name: conan packages [${{matrix.arch}}-${{matrix.os}}]
     runs-on: ${{matrix.runner}}
     concurrency: 
-      group: ${{ conan-github.ref }}
+      group: conan-${{ github.ref }}-${{matrix.os}}-${{matrix.arch}}
       cancel-in-progress: true
     strategy:
       fail-fast: false
