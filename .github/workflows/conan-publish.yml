@@ -6,6 +6,8 @@ on:
         description: 'run id'
         default: "1283642364"
         required: true
+
+concurrency: conan-publish
 jobs:
   publish:
     runs-on: ubuntu-latest

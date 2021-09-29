@@ -3,6 +3,9 @@ on:
   workflow_dispatch:
   
 jobs:
+  concurrency: 
+    group: ${{ conan-github.ref }}
+    cancel-in-progress: true
   build:
     name: conan packages [${{matrix.arch}}-${{matrix.os}}]
     runs-on: ${{matrix.runner}}
@@ -147,6 +150,7 @@ jobs:
           path: conan-${{matrix.arch}}-${{matrix.os}}.tar.gz
 
   publish:
+    concurrency: conan-publish
     runs-on: ubuntu-latest
     environment: artifactory-publish
     needs: build
