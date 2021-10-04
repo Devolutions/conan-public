@@ -140,9 +140,11 @@ function Invoke-TlkBuild {
 
         $TargetPackages += @('siquery')
 
-        if (($Platform -ne 'windows') -and ($Architecture -ne 'arm64')) {
-            $TargetPackages += @('jetsocat')
+        if (($Platform -eq 'windows') -and ($Architecture -eq 'arm64')) {
+            break;
         }
+
+        $TargetPackages += @('jetsocat')
     }
 
     if ($IsWindows) {
