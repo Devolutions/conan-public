@@ -32,7 +32,7 @@ class JetsocatConan(ConanFile):
                 os.environ['RUSTFLAGS'] = '-C target-feature=+crt-static'
 
             with tools.chdir(self.name):
-                self.cargo_build(target=self.cargo_target, build_type=self.settings.build_type)
+                self.cargo_build(target=self.cargo_target, build_type=self.settings.build_type, args='-p jetsocat')
 
     def package(self):
         self.cargo_target = self.get_cargo_target()
