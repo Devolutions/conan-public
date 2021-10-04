@@ -44,7 +44,7 @@ class PCREConan(ConanFile):
         
         source_url = 'https://github.com'
         tools.get("{0}/PhilipHazel/pcre2/archive/refs/tags/pcre2-{1}.tar.gz".format(source_url, self.version))
-        extracted_dir = self.name + '-' + self.version
+        extracted_dir = self.name + '-' + self.name + '-' + self.version
         os.rename(extracted_dir, self._source_subfolder)
 
         tools.patch(patch_file='ios-clear_cache.patch', base_path=os.path.join(self._source_subfolder, 'src'))
