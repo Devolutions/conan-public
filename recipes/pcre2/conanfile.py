@@ -42,8 +42,8 @@ class PCREConan(ConanFile):
         if self.settings.arch == 'universal':
             return
         
-        source_url = 'https://codeload.github.com'
-        tools.get("{0}/PhilipHazel/pcre2/tar.gz/refs/tags/pcre2-{1}".format(source_url, self.version))
+        source_url = 'https://github.com'
+        tools.get("{0}/PhilipHazel/pcre2/archive/refs/tags/pcre2-{1}.tar.gz".format(source_url, self.version))
         extracted_dir = self.name + '-' + self.version
         os.rename(extracted_dir, self._source_subfolder)
 
