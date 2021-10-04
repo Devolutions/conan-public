@@ -119,6 +119,7 @@ jobs:
         run: |
           conan config init
           conan config install ./settings
+          conan remote disable conancenter
           $ConanManifestTime = $(git log -1 --pretty=format:%ct)
           echo "CONAN_MANIFEST_TIME=$ConanManifestTime" >> $Env:GITHUB_ENV
 
