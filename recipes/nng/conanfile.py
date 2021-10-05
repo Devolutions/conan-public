@@ -65,6 +65,10 @@ class NngConan(ConanFile):
 
         cmake.configure(source_folder=self.name)
 
+        if self.settings.os == "Windows":
+            tools.replace_in_file("CMakeCache.txt", '/MD', '/MT', strict = False)
+            cmake.configure(source_folder=self.name)
+
         cmake.build()
 
     def package(self):

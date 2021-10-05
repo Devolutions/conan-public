@@ -41,6 +41,10 @@ class Lz4Conan(ConanFile):
         self.cmake_wrapper(cmake, self.settings, self.options)
         cmake.configure(source_folder=os.path.join(self.name, 'contrib', 'cmake_unofficial'))
 
+        if self.settings.os == "Windows":
+            tools.replace_in_file("CMakeCache.txt", '/MD', '/MT', strict = False)
+            cmake.configure(source_folder=os.path.join(self.name, 'contrib', 'cmake_unofficial'))
+
         cmake.build(args=['--target', 'lz4_static'])
 
     def package(self):
