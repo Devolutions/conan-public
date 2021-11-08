@@ -64,7 +64,6 @@ jobs:
           choco install --no-progress vswhere
           choco install --no-progress nasm yasm
           pip install conan==1.40.0 invoke Jinja2 urllib3 chardet requests --upgrade
-          iex "& { $(irm https://aka.ms/install-powershell.ps1) } -UseMSI -Quiet"
           echo $PSVersionTable
           echo "CONAN_USER_HOME=C:/tmp" >> $Env:GITHUB_ENV
 
