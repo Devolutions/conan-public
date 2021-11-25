@@ -77,6 +77,12 @@ class FreerdpConan(ConanFile):
 
         if self.settings.os == 'Linux' or self.settings.os == 'Macos':
             cmake.definitions['WITH_CUPS'] = 'ON'
+            
+        if self.settings.os == "Macos":
+            cmake.definitions['WITH_MACAUDIO'] = 'ON'
+
+        if self.settings.os == "iOS":
+            cmake.definitions['WITH_IOSAUDIO'] = 'ON'
 
         if self.settings.arch in ['x86', 'x86_64']:
             cmake.definitions['WITH_SSE2'] = 'ON'
