@@ -138,7 +138,7 @@ function Invoke-TlkBuild {
             'libwebm'
         )
 
-        $TargetPackages += @('siquery')
+        # $TargetPackages += @('siquery')
 
         if (($Platform -ne 'windows') -or (($Platform -eq 'windows') -and ($Architecture -ne 'arm64'))) {
             $TargetPackages += @('jetsocat')
