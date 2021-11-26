@@ -77,7 +77,7 @@ function Invoke-TlkBuild {
 		[ValidateSet('ubuntu-18.04','ubuntu-20.04','debian-10','alpine-3.14','opensuse-15.2')]
 		[string] $Distribution,
         [string] $UserChannel = "devolutions/stable",
-        [ValidateSet('Release','Debug','Both')]
+        [ValidateSet('Release','RelWithDebInfo','Debug','Both')] # Both == Release + Debug
 		[string] $BuildType = "Release"
 	)
 
@@ -151,6 +151,16 @@ function Invoke-TlkBuild {
 
     if ($Platform -eq 'macos') {
         $TargetPackages += @('wxsqlite3')
+    }
+
+    if (($Platform -eq 'Android') -And ($BuildType -eq 'RelWithDebInfo')) {
+        $TargetPackages = @(
+          'zlib', 
+          'mbedtls', 
+          'openssl', 
+          'winpr', 
+          'freerdp'
+        )
     }
 
     $TargetProfile = "$Platform-$Architecture".ToLower()

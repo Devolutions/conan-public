@@ -14,7 +14,7 @@ jobs:
       matrix:
         arch: [ x86, x86_64, arm, aarch64 ]
         os: [ windows, macos, linux, ios, android ]
-        build_type: [ Debug, Release ]
+        build_type: [ Debug, Release, RelWithDebInfo ]
 
         exclude:
           - arch: x86
@@ -33,6 +33,14 @@ jobs:
             os: macos
           - arch: arm
             os: linux
+          - build_type: RelWithDebInfo
+            os: windows
+          - build_type: RelWithDebInfo
+            os: linux
+          - build_type: RelWithDebInfo
+            os: macos
+          - build_type: RelWithDebInfo
+            os: ios
 
         include:
           - os: windows
@@ -45,7 +53,7 @@ jobs:
             runner: macos-latest
           - os: android
             runner: ubuntu-20.04
-            
+
     steps:
       - name: Check out ${{ github.repository }}
         uses: actions/checkout@v2
