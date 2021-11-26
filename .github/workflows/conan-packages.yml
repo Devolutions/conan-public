@@ -59,12 +59,15 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
+          Write-Host "Perl: $(where.exe perl)"
           choco install --no-progress ninja
           choco install --no-progress cmake
           choco install --no-progress 7zip
           choco install --no-progress python
           choco install --no-progress vswhere
           choco install --no-progress nasm yasm
+          choco install --no-progress activeperl
+          Write-Host "Perl: $(where.exe perl)"
           pip install conan==1.40.0 invoke Jinja2 urllib3 chardet requests --upgrade
           echo $PSVersionTable
           echo "CONAN_USER_HOME=C:/tmp" >> $Env:GITHUB_ENV
