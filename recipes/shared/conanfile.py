@@ -128,7 +128,7 @@ class UtilsBase(object):
                 os_version = "9.3"
 
         if target_os == 'Windows':
-            cmake.generator = 'Visual Studio 16 2019'
+            cmake.generator = 'Visual Studio 17 2022'
             cmake.generator_platform = {
                 'x86': 'Win32',
                 'x86_64': 'x64',
