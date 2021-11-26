@@ -4,16 +4,17 @@ on:
   
 jobs:
   build:
-    name: conan packages [${{matrix.arch}}-${{matrix.os}}]
+    name: conan packages [${{ matrix.arch }}-${{ matrix.os }}-${{ matrix.build_type }}]
     runs-on: ${{matrix.runner}}
     concurrency: 
-      group: conan-${{ github.ref }}-${{matrix.os}}-${{matrix.arch}}
+      group: conan-${{ github.ref }}-${{matrix.os}}-${{matrix.arch}}-${{ matrix.build_type }}
       cancel-in-progress: true
     strategy:
       fail-fast: false
       matrix:
         arch: [ x86, x86_64, arm, aarch64 ]
         os: [ windows, macos, linux, ios, android ]
+        build_type: [ Debug, Release ]
 
         exclude:
           - arch: x86
@@ -126,12 +127,13 @@ jobs:
 
       - name: Build conan packages
         run: |
-          pwsh build.ps1 -Platform ${{matrix.os}} -Architecture ${{matrix.arch}} -BuildType Both
+          pwsh build.ps1 -Platform ${{ matrix.os }} -Architecture ${{ matrix.arch }} -BuildType ${{ matrix.build_type }}
 
       - name: Package conan cache
+        id: package-conan-cache
         shell: pwsh
         run: |
-          $PACKAGE_NAME="conan-${{matrix.arch}}-${{matrix.os}}"
+          $PACKAGE_NAME="conan-${{ matrix.arch }}-${{ matrix.os }}-${{ matrix.build_type }}"
           conan remove --locks
           $CONAN_DATA = Join-Path $Env:CONAN_USER_HOME ".conan" "data"
           $RemoveList = Get-ChildItem "${CONAN_DATA}" -Include @("build","source") -Directory -Depth 4 -Recurse -Name
@@ -144,12 +146,13 @@ jobs:
             $Manifest | Out-File $ManifestFile
           }
           tar -czf "${PACKAGE_NAME}.tar.gz" -C "$Env:CONAN_USER_HOME" ".conan"
+          echo "::set-output name=package_name::$PACKAGE_NAME"
 
       - name: Upload conan cache
         uses: actions/upload-artifact@v2
         with:
-          name: conan-${{matrix.arch}}-${{matrix.os}}
-          path: conan-${{matrix.arch}}-${{matrix.os}}.tar.gz
+          name: ${{ steps.package-conan-cache.outputs.package_name }}
+          path: ${{ steps.package-conan-cache.outputs.package_name }}.tar.gz
 
   publish:
     concurrency: conan-publish
