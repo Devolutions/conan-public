@@ -62,8 +62,11 @@ class FreerdpConan(ConanFile):
         self.add_find_package_case("Findopenssl.cmake", "openssl", "OPENSSL")
         self.add_find_package_case("Findmbedtls.cmake", "mbedtls", "MBEDTLS")
 
-        tools.rename("Findwinpr.cmake", "FindWinPR.cmake")
-        tools.rename("Findmbedtls.cmake", "FindmbedTLS.cmake")
+        try:
+            tools.rename("Findwinpr.cmake", "FindWinPR.cmake")
+            tools.rename("Findmbedtls.cmake", "FindmbedTLS.cmake")
+        except:
+            pass
 
         cmake = CMake(self)
         self.cmake_wrapper(cmake, self.settings, self.options)
