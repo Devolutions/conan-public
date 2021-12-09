@@ -168,6 +168,7 @@ class FreerdpConan(ConanFile):
         with open(file_name, 'r') as f:
             content = f.read()
 
+        content = content + '\n\n' + "set_target_properties(winpr::winpr PROPERTIES IMPORTED_GLOBAL TRUE)"
         content = content + '\n\n' + "add_library(winpr ALIAS winpr::winpr)"
 
         with open(file_name, "w") as handle:

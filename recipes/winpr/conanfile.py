@@ -32,7 +32,7 @@ class WinprConan(ConanFile):
         if self.settings.arch == 'universal':
             return
 
-        folder = self.name
+        folder = 'freerdp'
         self.output.info('Cloning repo: %s dest: %s branch: %s' % (self.url, folder, self.branch))
         git = tools.Git(folder=folder)
         git.clone(self.url)
@@ -63,7 +63,7 @@ class WinprConan(ConanFile):
         # Android
         cmake.definitions['CMAKE_FIND_ROOT_PATH'] = '%s;%s' % (mbedtls_path, zlib_path)
 
-        cmake.configure(source_folder=os.path.join(self.name, self.name))
+        cmake.configure(source_folder=os.path.join("freerdp", self.name))
 
         cmake.build()
 
@@ -81,7 +81,7 @@ class WinprConan(ConanFile):
         else:
             self.copy('config.h', dst='include/winpr')
             self.copy('*.h', src='include/winpr', dst='include/winpr')
-            self.copy('*.h', src='winpr/winpr/include/winpr', dst='include/winpr')
+            self.copy('*.h', src='freerdp/winpr/include/winpr', dst='include/winpr')
 
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)
