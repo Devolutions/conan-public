@@ -1,6 +1,6 @@
 from conans import ConanFile, CMake, tools, python_requires
 import os
-from shutil import copyfile
+from shutil import copy, copyfile, rmtree, copytree
 
 class FreerdpConan(ConanFile):
     name = 'freerdp'
@@ -11,9 +11,10 @@ class FreerdpConan(ConanFile):
     url = 'https://github.com/Devolutions/FreeRDP.git'
     description = 'FreeRDP is a free remote desktop protocol client'
     settings = 'os', 'arch', 'distro', 'build_type'
-    branch = 'devolutions-rdp2'
+    branch = 'devolutions-rdp-rebase-2'
     python_requires = "shared/1.0.0@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
+    generators = "cmake_find_package"
 
     options = {
         'fPIC': [True, False],
@@ -41,26 +42,30 @@ class FreerdpConan(ConanFile):
         git.clone(self.url)
         git.checkout(self.branch)
 
-        devolutions_rdp_dir = os.path.join(folder, 'DevolutionsRdp')
-        for r, d, f in os.walk(os.path.join(devolutions_rdp_dir, "patches")):
-            for item in sorted(f):
-                if '.patch' in item:
-                    print("applying patch: " + item)
-                    tools.patch(base_path=folder, patch_file=os.path.join(r, item))
-
         with open(os.path.join(folder, "CMakeLists.txt"), 'a') as file:
             file.write('\nadd_subdirectory(DevolutionsRdp)')
             
     def build(self):
+        # folder = os.path.join(self.source_folder, self.name)
+        # rmtree(folder, ignore_errors=True)
+        # copytree("/opt/wayk/dev/FreeRDP", folder)
+
+        # with open(os.path.join(folder, "CMakeLists.txt"), 'a') as file:
+        #     file.write('\nadd_subdirectory(DevolutionsRdp)')
+
         if self.settings.arch == 'universal':
             self.lipo_create(self, self.build_folder)
             return
 
+        self.add_winpr_alias("Findwinpr.cmake")
+        self.add_find_package_case("Findwinpr.cmake", "winpr", "WinPR")
+        self.add_find_package_case("Findopenssl.cmake", "openssl", "OPENSSL")
+        self.add_find_package_case("Findmbedtls.cmake", "mbedtls", "MBEDTLS")
+
         cmake = CMake(self)
         self.cmake_wrapper(cmake, self.settings, self.options)
 
-        cmake.definitions['WINPR_IMPORT'] = 'ON'
-        cmake.definitions['ENABLE_TESTING'] = 'OFF'
+        cmake.definitions['FREERDP_UNIFIED_BUILD'] = 'OFF'
         cmake.definitions['WITH_CLIENT_COMMON'] = 'ON'
         cmake.definitions['WITH_CLIENT'] = 'OFF'
         cmake.definitions['WITH_SERVER'] = 'OFF'
@@ -99,9 +104,6 @@ class FreerdpConan(ConanFile):
         zlib_path = self.deps_cpp_info['zlib'].rootpath
         mbedtls_path = self.deps_cpp_info['mbedtls'].rootpath
         cmake.definitions['CMAKE_PREFIX_PATH'] = '%s;%s;%s;%s' % (openssl_path, winpr_path, zlib_path, mbedtls_path)
-
-        cmake.definitions['MBEDTLS_LIB_DIR'] = os.path.join(mbedtls_path, "lib")
-        cmake.definitions['OPENSSL_ROOT_DIR'] = openssl_path
         cmake.definitions['CMAKE_VERBOSE_MAKEFILE'] = 'ON'
 
         cmake.configure(source_folder=self.name)
@@ -155,3 +157,39 @@ class FreerdpConan(ConanFile):
         elif self.settings.os == 'Android':
             for lib in ['m', 'dl', 'log', 'OpenSLES']:
                 self.cpp_info.libs.append(lib)
+
+    def add_winpr_alias(self, file_name):
+        with open(file_name, 'r') as f:
+            content = f.read()
+
+        content = content + '\n\n' + "add_library(winpr ALIAS winpr::winpr)"
+
+        with open(file_name, "w") as handle:
+            handle.write(content)
+
+    def add_find_package_case(self, file_name, name, toNames):
+        with open(file_name, 'r') as f:
+            content = f.read()
+        
+        appendix = ""
+        
+        if not isinstance(toNames, list):
+            toNames = [toNames]
+            
+        for toName in toNames:
+            for key in ["FOUND", "INCLUDE_DIR", "INCLUDE_DIRS", "INCLUDES",
+                        "DEFINITIONS", "LIBRARIES", "LIBRARIES_TARGETS",
+                        "LIBS", "LIBRARY_LIST", "LIB_DIRS"]:
+                appendix = appendix + "set(" + toName + "_" + key + " ${" + name + "_" + key + "})\n"
+            
+        content = content + "\n\n" + appendix
+    
+        with open(file_name, "w") as handle:
+            handle.write(content)
+        
+        # For case-sensitive file-systems, keep all known casings available
+        for toName in toNames:
+            try:
+                shutil.copy(file_name, os.path.join(os.path.dirname(file_name), "Find" + toName + ".cmake"))
+            except:
+                pass

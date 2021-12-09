@@ -4,12 +4,13 @@ import os
 class WinprConan(ConanFile):
     name = 'winpr'
     exports = 'VERSION'
+    # exports_sources = ['FindWinPR.cmake']
     version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
     license = 'Apache 2.0'
     url = 'https://github.com/Devolutions/FreeRDP.git'
     description = 'FreeRDP is a free remote desktop protocol client'
     settings = 'os', 'arch', 'distro', 'build_type'
-    branch = 'devolutions-rdp2'
+    branch = 'devolutions-rdp-rebase-2'
     python_requires = "shared/1.0.0@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
 
@@ -37,13 +38,6 @@ class WinprConan(ConanFile):
         git.clone(self.url)
         git.checkout(self.branch)
 
-        devolutions_rdp_dir = os.path.join(folder, 'DevolutionsRdp')
-        for r, d, f in os.walk(os.path.join(devolutions_rdp_dir, "patches")):
-            for item in sorted(f):
-                if '.patch' in item:
-                    print("applying patch: " + item)
-                    tools.patch(base_path=folder, patch_file=os.path.join(r, item))
-
     def build(self):
         if self.settings.arch == 'universal':
             self.lipo_create(self, self.build_folder)
@@ -52,9 +46,9 @@ class WinprConan(ConanFile):
         cmake = CMake(self)
         self.cmake_wrapper(cmake, self.settings, self.options)
 
-        cmake.definitions['ENABLE_TESTING'] = 'OFF'
-        cmake.definitions['WINPR_ONLY'] = 'ON'
         cmake.definitions['WITH_WINPR_TOOLS'] = 'OFF'
+        cmake.definitions['WITH_MBEDTLS'] = 'ON'
+        cmake.definitions['WITH_OPENSSL'] = 'OFF'
 
         if self.settings.os == 'Linux':
             cmake.definitions['WITH_LIBSYSTEMD'] = 'OFF'
@@ -65,22 +59,29 @@ class WinprConan(ConanFile):
         mbedtls_path = self.deps_cpp_info['mbedtls'].rootpath
         zlib_path = self.deps_cpp_info['zlib'].rootpath
         cmake.definitions['CMAKE_PREFIX_PATH'] = '%s;%s' % (mbedtls_path, zlib_path)
+        
+        # Android
+        cmake.definitions['CMAKE_FIND_ROOT_PATH'] = '%s;%s' % (mbedtls_path, zlib_path)
 
-        cmake.configure(source_folder=self.name)
+        cmake.configure(source_folder=os.path.join(self.name, self.name))
 
         cmake.build()
 
     def package(self):
+        # self.copy("FindWinPR.cmake", ".", ".")
+
         if self.settings.os == 'Windows':
             self.copy('*.lib', dst='lib', keep_path=False)
         else:
+            # tools.rename("libwinpr/libwinpr3.a", "libwinpr/libwinpr.a")
             self.copy('*.a', dst='lib', keep_path=False)
 
         if self.settings.arch == 'universal':
             self.copy('*.h')
         else:
-            self.copy('*.h', src='winpr/winpr/include', dst='include')
-            self.copy('*.h', src='winpr/include/winpr', dst='include/winpr')
+            self.copy('config.h', dst='include/winpr')
+            self.copy('*.h', src='include/winpr', dst='include/winpr')
+            self.copy('*.h', src='winpr/winpr/include/winpr', dst='include/winpr')
 
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)

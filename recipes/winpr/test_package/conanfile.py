@@ -9,13 +9,13 @@ class TestPackageConan(ConanFile):
 
     def test(self):
         if self.settings.os == 'Windows':
-            libs = ['winpr2.lib']
+            libs = ['winpr3.lib']
         else:
-            libs = ['libwinpr2.a']
+            libs = ['libwinpr3.a']
         headers = [
             'sam.h', 'error.h', 'strlst.h', 'wnd.h', 'input.h', 'winsock.h',
             'debug.h', 'shell.h', 'pack.h', 'tools/makecert.h', 'version.h',
-            'pool.h', 'sspi.h', 'synch.h', 'locale.h', 'timezone.h', 'asn1.h',
+            'pool.h', 'sspi.h', 'synch.h', 'timezone.h',
             'nt.h', 'winhttp.h', 'library.h', 'path.h', 'endian.h', 'security.h',
             'sysinfo.h', 'file.h', 'cmdline.h', 'winpr.h', 'comm.h', 'stream.h',
             'sspicli.h', 'registry.h', 'credui.h', 'crypto.h', 'windows.h',
