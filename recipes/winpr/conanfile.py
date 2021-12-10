@@ -9,7 +9,7 @@ class WinprConan(ConanFile):
     url = 'https://github.com/Devolutions/FreeRDP.git'
     description = 'FreeRDP is a free remote desktop protocol client'
     settings = 'os', 'arch', 'distro', 'build_type'
-    branch = 'devolutions-rdp-rebase-2'
+    branch = 'devolutions-rdp-rebase-3'
     python_requires = "shared/1.0.0@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
 
@@ -45,6 +45,7 @@ class WinprConan(ConanFile):
         cmake = CMake(self)
         self.cmake_wrapper(cmake, self.settings, self.options)
 
+        cmake.definitions['WITH_WINPR_DEPRECATED'] = 'ON'
         cmake.definitions['WITH_WINPR_TOOLS'] = 'OFF'
         cmake.definitions['WITH_MBEDTLS'] = 'ON'
         cmake.definitions['WITH_OPENSSL'] = 'OFF'
