@@ -53,7 +53,7 @@ class FreerdpConan(ConanFile):
 
         # Deploy FindWinPR.cmake to build directory and adjust CMAKE_MODULE_PATH so it can be found
         shutil.copy(os.path.join(self.recipe_folder, "FindWinPR.cmake"), dst=self.build_folder)
-        cmake.definitions['CMAKE_MODULE_PATH'] = self.build_folder
+        cmake.definitions['CMAKE_MODULE_PATH'] = self.build_folder.replace('\\', '/')
 
         cmake.definitions['FREERDP_UNIFIED_BUILD'] = 'OFF'
         cmake.definitions['WITH_FREERDP_DEPRECATED'] = 'ON'
