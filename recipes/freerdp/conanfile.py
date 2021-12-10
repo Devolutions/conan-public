@@ -188,7 +188,6 @@ class FreerdpConan(ConanFile):
         add_library(winpr STATIC IMPORTED)
         set_property(TARGET winpr PROPERTY IMPORTED_LOCATION "${WinPR_LIBRARY}")
         set_property(TARGET winpr PROPERTY INCLUDE_DIRECTORIES "${WinPR_INCLUDE_DIR}")
-        add_library(winpr ALIAS winpr::winpr)
         """
 
         with open(file_name, "w") as handle:
