@@ -58,7 +58,7 @@ class FreerdpConan(ConanFile):
             return
 
         self.add_winpr_alias("Findwinpr.cmake")
-        self.add_find_package_case("Findwinpr.cmake", "winpr", "WinPR")
+        #self.add_find_package_case("Findwinpr.cmake", "winpr", "WinPR")
         self.add_find_package_case("Findopenssl.cmake", "openssl", "OPENSSL")
         self.add_find_package_case("Findmbedtls.cmake", "mbedtls", "MBEDTLS")
 
@@ -83,6 +83,7 @@ class FreerdpConan(ConanFile):
         cmake.definitions['WITH_GSTREAMER_0_10'] = 'OFF'
         cmake.definitions['WITH_LIBSYSTEMD'] = 'OFF'
         cmake.definitions['WITH_OPENSSL'] = 'ON'
+        cmake.definitions['WITH_MBEDTLS'] = 'ON'
         cmake.definitions['WITH_ALSA'] = 'OFF'
         cmake.definitions['CHANNEL_URBDRC'] = 'OFF'
 
@@ -168,8 +169,27 @@ class FreerdpConan(ConanFile):
         with open(file_name, 'r') as f:
             content = f.read()
 
-        content = content + '\n\n' + "set_target_properties(winpr::winpr PROPERTIES IMPORTED_GLOBAL TRUE)"
-        content = content + '\n\n' + "add_library(winpr ALIAS winpr::winpr)"
+        # content = content + '\n\n' + "set_target_properties(winpr::winpr PROPERTIES IMPORTED_GLOBAL TRUE)"
+        #content = content + '\n\n' + "add_library(winpr ALIAS winpr::winpr)"
+
+        #content = content.replace('UNKNOWN IMPORTED)', 'STATIC IMPORTED)')
+
+        content = """
+        find_path(WinPR_INCLUDE_DIR
+ 		NAMES winpr/winpr.h
+ 		PATH_SUFFIXES include/winpr)
+
+        find_library(WinPR_LIBRARY
+            NAMES winpr3
+            PATH_SUFFIXES lib)
+
+        message(STATUS "WINPR: ${WinPR_INCLUDE_DIR} ${WinPR_LIBRARY}")
+
+        add_library(winpr STATIC IMPORTED)
+        set_property(TARGET winpr PROPERTY IMPORTED_LOCATION "${WinPR_LIBRARY}")
+        set_property(TARGET winpr PROPERTY INCLUDE_DIRECTORIES "${WinPR_INCLUDE_DIR}")
+        add_library(winpr ALIAS winpr::winpr)
+        """
 
         with open(file_name, "w") as handle:
             handle.write(content)

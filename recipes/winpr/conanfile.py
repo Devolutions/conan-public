@@ -1,5 +1,6 @@
 from conans import ConanFile, CMake, tools, python_requires
 import os
+from shutil import copy, copyfile, rmtree, copytree
 
 class WinprConan(ConanFile):
     name = 'winpr'
@@ -42,6 +43,10 @@ class WinprConan(ConanFile):
         if self.settings.arch == 'universal':
             self.lipo_create(self, self.build_folder)
             return
+
+        # folder = os.path.join(self.source_folder, 'freerdp')
+        # rmtree(folder, ignore_errors=True)
+        # copytree("/opt/wayk/dev/FreeRDP", folder)
 
         cmake = CMake(self)
         self.cmake_wrapper(cmake, self.settings, self.options)
