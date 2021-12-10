@@ -1,11 +1,9 @@
 from conans import ConanFile, CMake, tools, python_requires
 import os
-from shutil import copy, copyfile, rmtree, copytree
 
 class WinprConan(ConanFile):
     name = 'winpr'
     exports = 'VERSION'
-    # exports_sources = ['FindWinPR.cmake']
     version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
     license = 'Apache 2.0'
     url = 'https://github.com/Devolutions/FreeRDP.git'
@@ -44,10 +42,6 @@ class WinprConan(ConanFile):
             self.lipo_create(self, self.build_folder)
             return
 
-        # folder = os.path.join(self.source_folder, 'freerdp')
-        # rmtree(folder, ignore_errors=True)
-        # copytree("/opt/wayk/dev/FreeRDP", folder)
-
         cmake = CMake(self)
         self.cmake_wrapper(cmake, self.settings, self.options)
 
@@ -65,20 +59,17 @@ class WinprConan(ConanFile):
         zlib_path = self.deps_cpp_info['zlib'].rootpath
         cmake.definitions['CMAKE_PREFIX_PATH'] = '%s;%s' % (mbedtls_path, zlib_path)
         
-        # Android
-        cmake.definitions['CMAKE_FIND_ROOT_PATH'] = '%s;%s' % (mbedtls_path, zlib_path)
+        if self.settings.os == 'Android': # Android toolchain overwrites CMAKE_PREFIX_PATH
+            cmake.definitions['CMAKE_FIND_ROOT_PATH'] = '%s;%s' % (mbedtls_path, zlib_path)
 
-        cmake.configure(source_folder=os.path.join("freerdp", self.name))
+        cmake.configure(source_folder=os.path.join('freerdp', self.name))
 
         cmake.build()
 
     def package(self):
-        # self.copy("FindWinPR.cmake", ".", ".")
-
         if self.settings.os == 'Windows':
             self.copy('*.lib', dst='lib', keep_path=False)
         else:
-            # tools.rename("libwinpr/libwinpr3.a", "libwinpr/libwinpr.a")
             self.copy('*.a', dst='lib', keep_path=False)
 
         if self.settings.arch == 'universal':

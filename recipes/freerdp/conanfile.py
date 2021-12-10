@@ -1,10 +1,9 @@
 from conans import ConanFile, CMake, tools, python_requires
 import os
-from shutil import copy, copyfile, rmtree, copytree
-
+import shutil
 class FreerdpConan(ConanFile):
     name = 'freerdp'
-    exports = 'VERSION'
+    exports = ['VERSION', 'FindWinPR.cmake']
     version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
     license = 'Apache 2.0'
     no_copy_source = True
@@ -14,7 +13,6 @@ class FreerdpConan(ConanFile):
     branch = 'devolutions-rdp-rebase-2'
     python_requires = "shared/1.0.0@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
-    generators = "cmake_find_package"
 
     options = {
         'fPIC': [True, False],
@@ -44,32 +42,18 @@ class FreerdpConan(ConanFile):
 
         with open(os.path.join(folder, "CMakeLists.txt"), 'a') as file:
             file.write('\nadd_subdirectory(DevolutionsRdp)')
-            
+
     def build(self):
-        # folder = os.path.join(self.source_folder, self.name)
-        # rmtree(folder, ignore_errors=True)
-        # copytree("/opt/wayk/dev/FreeRDP", folder)
-
-        # with open(os.path.join(folder, "CMakeLists.txt"), 'a') as file:
-        #     file.write('\nadd_subdirectory(DevolutionsRdp)')
-
         if self.settings.arch == 'universal':
             self.lipo_create(self, self.build_folder)
             return
 
-        self.add_winpr_alias("Findwinpr.cmake")
-        #self.add_find_package_case("Findwinpr.cmake", "winpr", "WinPR")
-        self.add_find_package_case("Findopenssl.cmake", "openssl", "OPENSSL")
-        self.add_find_package_case("Findmbedtls.cmake", "mbedtls", "MBEDTLS")
-
-        try:
-            tools.rename("Findwinpr.cmake", "FindWinPR.cmake")
-            tools.rename("Findmbedtls.cmake", "FindmbedTLS.cmake")
-        except:
-            pass
-
         cmake = CMake(self)
         self.cmake_wrapper(cmake, self.settings, self.options)
+
+        # Deploy FindWinPR.cmake to build directory and adjust CMAKE_MODULE_PATH so it can be found
+        shutil.copy(os.path.join(self.recipe_folder, "FindWinPR.cmake"), dst=self.build_folder)
+        cmake.definitions['CMAKE_MODULE_PATH'] = self.build_folder
 
         cmake.definitions['FREERDP_UNIFIED_BUILD'] = 'OFF'
         cmake.definitions['WITH_CLIENT_COMMON'] = 'ON'
@@ -164,58 +148,3 @@ class FreerdpConan(ConanFile):
         elif self.settings.os == 'Android':
             for lib in ['m', 'dl', 'log', 'OpenSLES']:
                 self.cpp_info.libs.append(lib)
-
-    def add_winpr_alias(self, file_name):
-        with open(file_name, 'r') as f:
-            content = f.read()
-
-        # content = content + '\n\n' + "set_target_properties(winpr::winpr PROPERTIES IMPORTED_GLOBAL TRUE)"
-        #content = content + '\n\n' + "add_library(winpr ALIAS winpr::winpr)"
-
-        #content = content.replace('UNKNOWN IMPORTED)', 'STATIC IMPORTED)')
-
-        content = """
-        find_path(WinPR_INCLUDE_DIR
- 		NAMES winpr/winpr.h
- 		PATH_SUFFIXES include/winpr)
-
-        find_library(WinPR_LIBRARY
-            NAMES winpr3
-            PATH_SUFFIXES lib)
-
-        message(STATUS "WINPR: ${WinPR_INCLUDE_DIR} ${WinPR_LIBRARY}")
-
-        add_library(winpr STATIC IMPORTED)
-        set_property(TARGET winpr PROPERTY IMPORTED_LOCATION "${WinPR_LIBRARY}")
-        set_property(TARGET winpr PROPERTY INCLUDE_DIRECTORIES "${WinPR_INCLUDE_DIR}")
-        """
-
-        with open(file_name, "w") as handle:
-            handle.write(content)
-
-    def add_find_package_case(self, file_name, name, toNames):
-        with open(file_name, 'r') as f:
-            content = f.read()
-        
-        appendix = ""
-        
-        if not isinstance(toNames, list):
-            toNames = [toNames]
-            
-        for toName in toNames:
-            for key in ["FOUND", "INCLUDE_DIR", "INCLUDE_DIRS", "INCLUDES",
-                        "DEFINITIONS", "LIBRARIES", "LIBRARIES_TARGETS",
-                        "LIBS", "LIBRARY_LIST", "LIB_DIRS"]:
-                appendix = appendix + "set(" + toName + "_" + key + " ${" + name + "_" + key + "})\n"
-            
-        content = content + "\n\n" + appendix
-    
-        with open(file_name, "w") as handle:
-            handle.write(content)
-        
-        # For case-sensitive file-systems, keep all known casings available
-        for toName in toNames:
-            try:
-                shutil.copy(file_name, os.path.join(os.path.dirname(file_name), "Find" + toName + ".cmake"))
-            except:
-                pass
