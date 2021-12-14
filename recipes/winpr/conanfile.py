@@ -9,7 +9,7 @@ class WinprConan(ConanFile):
     url = 'https://github.com/Devolutions/FreeRDP.git'
     description = 'FreeRDP is a free remote desktop protocol client'
     settings = 'os', 'arch', 'distro', 'build_type'
-    branch = 'devolutions-rdp2'
+    branch = 'devolutions-rdp-rebase-3'
     python_requires = "shared/1.0.0@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
 
@@ -31,18 +31,11 @@ class WinprConan(ConanFile):
         if self.settings.arch == 'universal':
             return
 
-        folder = self.name
+        folder = 'freerdp'
         self.output.info('Cloning repo: %s dest: %s branch: %s' % (self.url, folder, self.branch))
         git = tools.Git(folder=folder)
         git.clone(self.url)
         git.checkout(self.branch)
-
-        devolutions_rdp_dir = os.path.join(folder, 'DevolutionsRdp')
-        for r, d, f in os.walk(os.path.join(devolutions_rdp_dir, "patches")):
-            for item in sorted(f):
-                if '.patch' in item:
-                    print("applying patch: " + item)
-                    tools.patch(base_path=folder, patch_file=os.path.join(r, item))
 
     def build(self):
         if self.settings.arch == 'universal':
@@ -52,9 +45,10 @@ class WinprConan(ConanFile):
         cmake = CMake(self)
         self.cmake_wrapper(cmake, self.settings, self.options)
 
-        cmake.definitions['ENABLE_TESTING'] = 'OFF'
-        cmake.definitions['WINPR_ONLY'] = 'ON'
+        cmake.definitions['WITH_WINPR_DEPRECATED'] = 'ON'
         cmake.definitions['WITH_WINPR_TOOLS'] = 'OFF'
+        cmake.definitions['WITH_MBEDTLS'] = 'ON'
+        cmake.definitions['WITH_OPENSSL'] = 'OFF'
 
         if self.settings.os == 'Linux':
             cmake.definitions['WITH_LIBSYSTEMD'] = 'OFF'
@@ -65,8 +59,11 @@ class WinprConan(ConanFile):
         mbedtls_path = self.deps_cpp_info['mbedtls'].rootpath
         zlib_path = self.deps_cpp_info['zlib'].rootpath
         cmake.definitions['CMAKE_PREFIX_PATH'] = '%s;%s' % (mbedtls_path, zlib_path)
+        
+        if self.settings.os == 'Android': # Android toolchain overwrites CMAKE_PREFIX_PATH
+            cmake.definitions['CMAKE_FIND_ROOT_PATH'] = '%s;%s' % (mbedtls_path, zlib_path)
 
-        cmake.configure(source_folder=self.name)
+        cmake.configure(source_folder=os.path.join('freerdp', self.name))
 
         cmake.build()
 
@@ -79,8 +76,9 @@ class WinprConan(ConanFile):
         if self.settings.arch == 'universal':
             self.copy('*.h')
         else:
-            self.copy('*.h', src='winpr/winpr/include', dst='include')
-            self.copy('*.h', src='winpr/include/winpr', dst='include/winpr')
+            self.copy('config.h', dst='include/winpr')
+            self.copy('*.h', src='include/winpr', dst='include/winpr')
+            self.copy('*.h', src='freerdp/winpr/include/winpr', dst='include/winpr')
 
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)

@@ -1,17 +1,16 @@
 from conans import ConanFile, CMake, tools, python_requires
 import os
-from shutil import copyfile
-
+import shutil
 class FreerdpConan(ConanFile):
     name = 'freerdp'
-    exports = 'VERSION'
+    exports = ['VERSION', 'FindWinPR.cmake']
     version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
     license = 'Apache 2.0'
     no_copy_source = True
     url = 'https://github.com/Devolutions/FreeRDP.git'
     description = 'FreeRDP is a free remote desktop protocol client'
     settings = 'os', 'arch', 'distro', 'build_type'
-    branch = 'devolutions-rdp2'
+    branch = 'devolutions-rdp-rebase-3'
     python_requires = "shared/1.0.0@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
 
@@ -27,7 +26,7 @@ class FreerdpConan(ConanFile):
     def build_requirements(self):
         super().build_requirements()
         self.build_requires('openssl/1.1.1l@devolutions/stable')
-        self.build_requires('winpr/2.3.2@devolutions/stable')
+        self.build_requires('winpr/3.0.0@devolutions/stable')
         self.build_requires('mbedtls/2.16.0@devolutions/stable')
         self.build_requires('zlib/1.2.11@devolutions/stable')
 
@@ -41,16 +40,9 @@ class FreerdpConan(ConanFile):
         git.clone(self.url)
         git.checkout(self.branch)
 
-        devolutions_rdp_dir = os.path.join(folder, 'DevolutionsRdp')
-        for r, d, f in os.walk(os.path.join(devolutions_rdp_dir, "patches")):
-            for item in sorted(f):
-                if '.patch' in item:
-                    print("applying patch: " + item)
-                    tools.patch(base_path=folder, patch_file=os.path.join(r, item))
-
         with open(os.path.join(folder, "CMakeLists.txt"), 'a') as file:
             file.write('\nadd_subdirectory(DevolutionsRdp)')
-            
+
     def build(self):
         if self.settings.arch == 'universal':
             self.lipo_create(self, self.build_folder)
@@ -59,8 +51,12 @@ class FreerdpConan(ConanFile):
         cmake = CMake(self)
         self.cmake_wrapper(cmake, self.settings, self.options)
 
-        cmake.definitions['WINPR_IMPORT'] = 'ON'
-        cmake.definitions['ENABLE_TESTING'] = 'OFF'
+        # Deploy FindWinPR.cmake to build directory and adjust CMAKE_MODULE_PATH so it can be found
+        shutil.copy(os.path.join(self.recipe_folder, "FindWinPR.cmake"), dst=self.build_folder)
+        cmake.definitions['CMAKE_MODULE_PATH'] = self.build_folder.replace('\\', '/')
+
+        cmake.definitions['FREERDP_UNIFIED_BUILD'] = 'OFF'
+        cmake.definitions['WITH_FREERDP_DEPRECATED'] = 'ON'
         cmake.definitions['WITH_CLIENT_COMMON'] = 'ON'
         cmake.definitions['WITH_CLIENT'] = 'OFF'
         cmake.definitions['WITH_SERVER'] = 'OFF'
@@ -72,6 +68,7 @@ class FreerdpConan(ConanFile):
         cmake.definitions['WITH_GSTREAMER_0_10'] = 'OFF'
         cmake.definitions['WITH_LIBSYSTEMD'] = 'OFF'
         cmake.definitions['WITH_OPENSSL'] = 'ON'
+        cmake.definitions['WITH_MBEDTLS'] = 'ON'
         cmake.definitions['WITH_ALSA'] = 'OFF'
         cmake.definitions['CHANNEL_URBDRC'] = 'OFF'
 
@@ -99,9 +96,6 @@ class FreerdpConan(ConanFile):
         zlib_path = self.deps_cpp_info['zlib'].rootpath
         mbedtls_path = self.deps_cpp_info['mbedtls'].rootpath
         cmake.definitions['CMAKE_PREFIX_PATH'] = '%s;%s;%s;%s' % (openssl_path, winpr_path, zlib_path, mbedtls_path)
-
-        cmake.definitions['MBEDTLS_LIB_DIR'] = os.path.join(mbedtls_path, "lib")
-        cmake.definitions['OPENSSL_ROOT_DIR'] = openssl_path
         cmake.definitions['CMAKE_VERBOSE_MAKEFILE'] = 'ON'
 
         cmake.configure(source_folder=self.name)
