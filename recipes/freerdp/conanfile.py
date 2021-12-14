@@ -26,7 +26,7 @@ class FreerdpConan(ConanFile):
     def build_requirements(self):
         super().build_requirements()
         self.build_requires('openssl/1.1.1l@devolutions/stable')
-        self.build_requires('winpr/2.3.2@devolutions/stable')
+        self.build_requires('winpr/3.0.0@devolutions/stable')
         self.build_requires('mbedtls/2.16.0@devolutions/stable')
         self.build_requires('zlib/1.2.11@devolutions/stable')
 
