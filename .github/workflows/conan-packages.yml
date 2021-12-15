@@ -25,10 +25,6 @@ jobs:
             os: ios
           - arch: arm
             os: windows
-          - arch: aarch64
-            os: windows
-          - arch: aarch64
-            os: linux
           - arch: arm
             os: macos
           - arch: arm
