@@ -13,18 +13,18 @@ class TestPackageConan(ConanFile):
         else:
             libs = ['libwinpr3.a']
         headers = [
-            'sam.h', 'error.h', 'strlst.h', 'wnd.h', 'input.h', 'winsock.h',
+            'sam.h', 'error.h', 'strlst.h', 'input.h', 'winsock.h',
             'debug.h', 'shell.h', 'pack.h', 'tools/makecert.h', 'version.h',
             'pool.h', 'sspi.h', 'synch.h', 'timezone.h',
-            'nt.h', 'winhttp.h', 'library.h', 'path.h', 'endian.h', 'security.h',
+            'nt.h', 'library.h', 'path.h', 'endian.h', 'security.h',
             'sysinfo.h', 'file.h', 'cmdline.h', 'winpr.h', 'comm.h', 'stream.h',
-            'sspicli.h', 'registry.h', 'credui.h', 'crypto.h', 'windows.h',
-            'environment.h', 'ini.h', 'spec.h', 'ntlm.h', 'ndr.h', 'intrin.h',
+            'sspicli.h', 'registry.h', 'crypto.h', 'windows.h',
+            'environment.h', 'ini.h', 'spec.h', 'ntlm.h', 'intrin.h',
             'ssl.h', 'thread.h', 'bitstream.h', 'wlog.h', 'handle.h', 'io.h',
-            'user.h', 'clipboard.h', 'credentials.h', 'pipe.h', 'print.h',
-            'wtsapi.h', 'heap.h', 'crt.h', 'interlocked.h', 'memory.h', 'rpc.h',
+            'user.h', 'clipboard.h', 'pipe.h', 'print.h',
+            'wtsapi.h', 'crt.h', 'interlocked.h', 'memory.h', 'rpc.h',
             'wtypes.h', 'dsparse.h', 'schannel.h', 'tchar.h', 'smartcard.h',
-            'platform.h', 'image.h', 'bcrypt.h', 'midl.h', 'collections.h',
+            'platform.h', 'image.h', 'bcrypt.h', 'collections.h',
             'string.h'
         ]
 
