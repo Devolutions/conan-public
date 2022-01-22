@@ -34,8 +34,6 @@ jobs:
           - build_type: RelWithDebInfo
             os: linux
           - build_type: RelWithDebInfo
-            os: macos
-          - build_type: RelWithDebInfo
             os: ios
 
         include:

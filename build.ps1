@@ -153,8 +153,9 @@ function Invoke-TlkBuild {
         $TargetPackages += @('wxsqlite3')
     }
 
-    if (($Platform -eq 'Android') -And ($BuildType -eq 'RelWithDebInfo')) {
+    if ((($Platform -eq 'Android') -Or ($Platform -eq "macos")) -And ($BuildType -eq 'RelWithDebInfo')) {
         $TargetPackages = @(
+          'libjpeg',
           'zlib', 
           'mbedtls', 
           'openssl', 
