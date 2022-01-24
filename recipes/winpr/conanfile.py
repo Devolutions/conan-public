@@ -89,3 +89,7 @@ class WinprConan(ConanFile):
         elif self.settings.os == 'Linux' or self.settings.os == 'Macos':
             for lib in ['pthread', 'm', 'dl']:
                 self.cpp_info.libs.append(lib)
+        elif self.settings.os == 'iOS':
+            for lib in ['Foundation', 'CoreFoundation']:
+              self.cpp_info.exelinkflags.append('-framework %s' % lib)
+            self.cpp_info.sharedlinkflags = self.cpp_info.exelinkflags
