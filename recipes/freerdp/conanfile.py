@@ -56,7 +56,7 @@ class FreerdpConan(ConanFile):
         cmake.definitions['CMAKE_MODULE_PATH'] = self.build_folder.replace('\\', '/')
 
         cmake.definitions['FREERDP_UNIFIED_BUILD'] = 'OFF'
-        cmake.definitions['WITH_FREERDP_DEPRECATED'] = 'ON'
+        cmake.definitions['WITH_FREERDP_DEPRECATED'] = 'OFF'
         cmake.definitions['WITH_CLIENT_COMMON'] = 'ON'
         cmake.definitions['WITH_CLIENT'] = 'OFF'
         cmake.definitions['WITH_SERVER'] = 'OFF'

@@ -45,7 +45,7 @@ class WinprConan(ConanFile):
         cmake = CMake(self)
         self.cmake_wrapper(cmake, self.settings, self.options)
 
-        cmake.definitions['WITH_WINPR_DEPRECATED'] = 'ON'
+        cmake.definitions['WITH_WINPR_DEPRECATED'] = 'OFF'
         cmake.definitions['WITH_WINPR_TOOLS'] = 'OFF'
         cmake.definitions['WITH_MBEDTLS'] = 'ON'
         cmake.definitions['WITH_OPENSSL'] = 'OFF'
