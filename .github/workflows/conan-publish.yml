@@ -7,6 +7,9 @@ on:
         default: "1283642364"
         required: true
 
+env:
+   conan-version: 1.43.4
+
 concurrency: conan-publish
 jobs:
   publish:
@@ -21,7 +24,7 @@ jobs:
         run: |
           sudo apt update
           sudo apt install python3 python3-pip python3-wget python3-setuptools
-          pip3 install conan==1.40.0 invoke Jinja2 urllib3 chardet requests --upgrade
+          pip3 install conan==${{ env.conan-version }} invoke Jinja2 urllib3 chardet requests --upgrade
           bash <(wget -qO - https://aka.ms/install-powershell.sh)
           echo "CONAN_USER_HOME=/tmp" >> $GITHUB_ENV
 
