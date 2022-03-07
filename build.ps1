@@ -128,8 +128,6 @@ function Invoke-TlkBuild {
         'curl'
     )
 
-    $TargetPackages += @('xpp')
-
     if (@('windows','macos','linux') -Contains $Platform) {
         $TargetPackages += @(
             'munit',
