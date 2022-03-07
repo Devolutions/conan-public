@@ -125,8 +125,7 @@ function Invoke-TlkBuild {
         'freerdp',
         'pcre2',
         'nng',
-        'curl',
-        'libyuv'
+        'curl'
     )
 
     $TargetPackages += @('xpp')
