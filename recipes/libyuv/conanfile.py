@@ -7,10 +7,10 @@ class LibyuvConan(ConanFile):
     version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
     license = 'BSD'
     no_copy_source = True
-    url = 'https://github.com/Devolutions/libyuv.git'
+    url = 'https://chromium.googlesource.com/libyuv/libyuv'
     description = 'YUV scaling and conversion functionality'
     settings = 'os', 'arch', 'distro', 'build_type'
-    tag = 'cmake'
+    tag = 'eb6e7bb63738e29efd82ea3cf2a115238a89fa51'
     python_requires = "shared/1.0.0@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
 
