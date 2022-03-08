@@ -125,9 +125,7 @@ function Invoke-TlkBuild {
         'freerdp',
         'pcre2',
         'nng',
-        'curl',
-	'libyuv',
-	'xpp'
+        'curl'
     )
 
     if (@('windows','macos','linux') -Contains $Platform) {
