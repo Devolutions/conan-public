@@ -81,7 +81,7 @@ class FreerdpConan(ConanFile):
         if self.settings.os == "iOS":
             cmake.definitions['WITH_IOSAUDIO'] = 'ON'
             
-        if self.settings.os == "Android"
+        if self.settings.os == "Android":
             cmake.definitions['WITH_MEDIACODEC'] = 'OFF' # Android API 21+
 
         if self.settings.arch in ['x86', 'x86_64']:
