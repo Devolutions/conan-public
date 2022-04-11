@@ -1,16 +1,16 @@
 from conans import ConanFile, tools, CMake, python_requires
 import os
 
-class LibvpxConan(ConanFile):
-    name = 'libvpx'
+class LibreSSLConan(ConanFile):
+    name = 'libressl'
     exports = 'VERSION'
     version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
-    license = 'WebM'
-    url = 'https://github.com/awakecoding/libvpx.git'
-    description = 'WebM VP8/VP9 Codec SDK'
+    license = 'BSD'
+    url = 'https://github.com/awakecoding/LibreSSL.git'
+    description = 'LibreSSL'
     settings = 'os', 'arch', 'distro', 'build_type'
     no_copy_source = True
-    branch = 'cmake'
+    branch = 'devolutions'
     python_requires = "shared/1.0.0@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
 
@@ -43,19 +43,9 @@ class LibvpxConan(ConanFile):
 
         cmake = CMake(self)
         self.cmake_wrapper(cmake, self.settings, self.options)
-
-        cmake.definitions['BUILD_SHARED_LIBS'] = 'OFF'
-        cmake.definitions['CONFIG_MULTITHREAD'] = 'OFF'
-        cmake.definitions['CONFIG_STATIC_MSVCRT'] = 'ON'
-        cmake.definitions['INSTALL_PKG_CONFIG_FILE'] = 'OFF'
-
-        if self.settings.os == "Windows":
-            cmake.definitions['CMAKE_ASM_NASM_COMPILER'] = 'nasm'
-        else:
-            cmake.definitions['CMAKE_ASM_NASM_COMPILER'] = 'yasm'
-
-        if self.settings.os == 'Android' and self.settings.arch == 'x86':
-            cmake.definitions['WITH_SIMD'] = 'OFF'
+        cmake.definitions['CMAKE_INSTALL_LIBEXECDIR'] = "lib"
+        cmake.definitions['BUILD_SHARED_LIBS'] = 'ON' if self.options.shared else 'OFF'
+        cmake.definitions['LIBRESSL_TESTS'] = 'OFF'
 
         cmake.configure(source_folder=self.name)
         
@@ -63,10 +53,13 @@ class LibvpxConan(ConanFile):
         cmake.install()
 
     def package(self):
-        if self.settings.arch == 'universal':
-            self.copy('*.a', dst='lib', keep_path=False)
-            self.copy('*.h', src='include', dst='include')
-            return
+        return
 
     def package_info(self):
-        self.cpp_info.libs = ['vpx']
+        if self.settings.os == 'Windows':
+            self.cpp_info.libs = ['libssl', 'libcrypto', 'libtls']
+        else:
+            self.cpp_info.libs = ['ssl', 'crypto', 'tls']
+
+        self.cpp_info.libs = tools.collect_libs(self)
+        self.env_info.OPENSSL_DIR = self.package_folder
