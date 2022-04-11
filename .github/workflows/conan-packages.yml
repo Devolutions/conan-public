@@ -18,7 +18,7 @@ jobs:
         arch: [ x86, x86_64, arm, aarch64 ]
         os: [ windows, macos, linux, ios, android ]
         build_type: [ Debug, Release, RelWithDebInfo ]
-
+        
         exclude:
           - arch: x86
             os: macos
@@ -72,7 +72,10 @@ jobs:
           choco install --no-progress 7zip
           choco install --no-progress python
           choco install --no-progress vswhere
-          choco install --no-progress nasm yasm
+          choco install --no-progress nasm
+          echo "${Env:ProgramFiles}\NASM" | Out-File -FilePath $Env:GITHUB_PATH -Encoding UTF8 -Append
+          Invoke-WebRequest -Uri 'https://www.tortall.net/projects/yasm/releases/yasm-1.2.0-win64.exe' -OutFile 'yasm.exe'
+          Move-Item .\yasm.exe "${Env:ProgramFiles}\NASM\yasm.exe"
           pip install conan==${{ env.conan-version }} invoke Jinja2 urllib3 chardet requests --upgrade
           echo $PSVersionTable
           echo "CONAN_USER_HOME=C:/tmp" >> $Env:GITHUB_ENV

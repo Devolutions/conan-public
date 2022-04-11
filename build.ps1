@@ -128,6 +128,10 @@ function Invoke-TlkBuild {
         'curl'
     )
 
+    if ($Platform -eq 'windows') {
+        $TargetPackages += @('libcbor', 'libressl', 'libfido2', 'openssh')
+    }
+
     if (@('windows','macos','linux') -Contains $Platform) {
         $TargetPackages += @(
             'munit',
