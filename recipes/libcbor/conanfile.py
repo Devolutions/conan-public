@@ -33,9 +33,26 @@ class LibcborConan(ConanFile):
         git.clone(self.url)
         git.checkout(self.branch)
 
+        tools.replace_in_file(os.path.join(folder, 'CMakeLists.txt'),
+            "cmake_minimum_required(VERSION 2.8)",
+            "cmake_minimum_required(VERSION 3.9)")
+
+        tools.replace_in_file(os.path.join(folder, 'CMakeLists.txt'),
+            "set(use_lto FALSE)",
+            "set(use_lto TRUE)")
+
+        tools.replace_in_file(os.path.join(folder, 'CMakeLists.txt'),
+            "    check_ipo_supported(RESULT use_lto)",
+            "    #check_ipo_supported(RESULT use_lto)")
+
     def build(self):
         cmake = CMake(self)
         self.cmake_wrapper(cmake, self.settings, self.options)
+        
+        cmake.definitions['SANITIZE'] = 'OFF'
+        cmake.definitions['WITH_TESTS'] = 'OFF'
+        cmake.definitions['WITH_EXAMPLES'] = 'OFF'
+
         cmake.configure(source_folder=self.name)
         cmake.build()
         cmake.install()
