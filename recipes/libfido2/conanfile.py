@@ -6,11 +6,11 @@ class LibFIDO2Conan(ConanFile):
     exports = 'VERSION'
     version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
     license = 'BSD'
-    url = 'https://github.com/PowerShell/libfido2'
+    url = 'https://github.com/awakecoding/libfido2'
     description = 'libfido2'
     settings = 'os', 'arch', 'distro', 'build_type'
     no_copy_source = True
-    branch = version
+    branch = 'devolutions'
     python_requires = "shared/1.0.0@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
 
@@ -52,16 +52,19 @@ class LibFIDO2Conan(ConanFile):
             cmake.definitions['BUILD_STATIC_LIBS'] = 'ON'
 
         zlib_path = self.deps_cpp_info['zlib'].rootpath
+        cmake.definitions['ZLIB_ROOT_DIR'] = zlib_path
         cmake.definitions['ZLIB_BIN_DIRS'] = os.path.join(zlib_path, 'bin')
         cmake.definitions['ZLIB_INCLUDE_DIRS'] = os.path.join(zlib_path, 'include')
         cmake.definitions['ZLIB_LIBRARY_DIRS'] = os.path.join(zlib_path, 'lib')
 
         libcbor_path = self.deps_cpp_info['libcbor'].rootpath
+        cmake.definitions['CBOR_ROOT_DIR'] = libcbor_path
         cmake.definitions['CBOR_BIN_DIRS'] = os.path.join(libcbor_path, 'bin')
         cmake.definitions['CBOR_INCLUDE_DIRS'] = os.path.join(libcbor_path, 'include')
         cmake.definitions['CBOR_LIBRARY_DIRS'] = os.path.join(libcbor_path, 'lib')
 
         libressl_path = self.deps_cpp_info['libressl'].rootpath
+        cmake.definitions['CRYPTO_ROOT_DIR'] = libressl_path
         cmake.definitions['CRYPTO_BIN_DIRS'] = os.path.join(libressl_path, 'bin')
         cmake.definitions['CRYPTO_INCLUDE_DIRS'] = os.path.join(libressl_path, 'include')
         cmake.definitions['CRYPTO_LIBRARY_DIRS'] = os.path.join(libressl_path, 'lib')

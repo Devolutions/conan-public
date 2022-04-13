@@ -119,8 +119,10 @@ function Invoke-TlkBuild {
         'lizard',
         'libpng',
         'libjpeg',
+        'libcbor',
         'mbedtls',
         'openssl',
+        'libressl',
         'winpr',
         'freerdp',
         'pcre2',
@@ -128,25 +130,20 @@ function Invoke-TlkBuild {
         'curl'
     )
 
-    if ($Platform -eq 'windows') {
-        $TargetPackages += @('libcbor', 'libressl', 'libfido2', 'openssh')
-    }
-
     if (@('windows','macos','linux') -Contains $Platform) {
         $TargetPackages += @(
             'munit',
             'libvpx',
-            'libwebm'
+            'libwebm',
+            'libfido2'
         )
-
-        # $TargetPackages += @('siquery')
-
-        # if (($Platform -ne 'windows') -or (($Platform -eq 'windows') -and ($Architecture -ne 'arm64'))) {
-        #     $TargetPackages += @('jetsocat')
-        # }
     }
 
-    if ($IsWindows) {
+    if ($Platform -eq 'windows') {
+        $TargetPackages += @('openssh')
+    }
+
+    if ($Platform -eq 'windows') {
         $TargetPackages += @('crashpad')
     }
 
