@@ -130,6 +130,12 @@ function Invoke-TlkBuild {
         'curl'
     )
 
+    if (@('linux','android') -Contains $Platform) {
+        $TargetPackages += @(
+            'libudev-zero'
+        )
+    }
+
     if (@('windows','macos','linux') -Contains $Platform) {
         $TargetPackages += @(
             'munit',
