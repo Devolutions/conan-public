@@ -29,6 +29,9 @@ class LibFIDO2Conan(ConanFile):
         self.build_requires('libcbor/0.9.0@devolutions/stable')
         self.build_requires('libressl/3.4.2@devolutions/stable')
 
+        if self.settings.os == 'Android':
+            self.build_requires('libudev-zero/1.0.0@devolutions/stable')
+
     def source(self):
         folder = self.name
         self.output.info('Cloning repo: %s dest: %s branch: %s' % (self.url, folder, self.branch))
@@ -68,6 +71,10 @@ class LibFIDO2Conan(ConanFile):
         cmake.definitions['CRYPTO_BIN_DIRS'] = os.path.join(libressl_path, 'bin')
         cmake.definitions['CRYPTO_INCLUDE_DIRS'] = os.path.join(libressl_path, 'include')
         cmake.definitions['CRYPTO_LIBRARY_DIRS'] = os.path.join(libressl_path, 'lib')
+
+        if self.settings.os == 'Android':
+            libudev_zero_path = self.deps_cpp_info['libudev-zero'].rootpath
+            cmake.definitions['UDEV_ROOT_DIR'] = libudev_zero_path
 
         cmake.configure(source_folder=self.name)
         cmake.build()
