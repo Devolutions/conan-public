@@ -51,7 +51,13 @@ class Sqlite3SecureConan(ConanFile):
         if self.settings.arch == 'universal':
             return
 
-        self.copy('*.dylib', dst='lib', keep_path=False)
+        if self.settings.os == 'Windows':
+            self.copy('*.lib', dst='lib', keep_path=False)
+            self.copy('*.dll', dst='lib', keep_path=False)
+        else:
+            self.copy('*.a', dst='lib', keep_path=False)
+            self.copy('*.so', dst='lib', keep_path=False)
+            self.copy('*.dylib', dst='lib', keep_path=False)
 
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)
