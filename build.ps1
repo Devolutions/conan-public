@@ -141,7 +141,8 @@ function Invoke-TlkBuild {
             'munit',
             'libvpx',
             'libwebm',
-            'libfido2'
+            'libfido2',
+            'wxsqlite3'
         )
     }
 
@@ -151,10 +152,6 @@ function Invoke-TlkBuild {
 
     if ($Platform -eq 'windows') {
         $TargetPackages += @('crashpad')
-    }
-
-    if ($Platform -eq 'macos') {
-        $TargetPackages += @('wxsqlite3')
     }
 
     if ((($Platform -eq 'Android') -Or ($Platform -eq "macos")) -And ($BuildType -eq 'RelWithDebInfo')) {

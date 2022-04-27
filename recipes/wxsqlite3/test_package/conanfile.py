@@ -8,7 +8,21 @@ class TestPackageConan(ConanFile):
         pass
 
     def test(self):
-        libs = ['libsqlite3secure.dylib']
+        lib_names = ['sqlite3secure']
+
+        if self.settings.os == 'Windows':
+            lib_prefix = ''
+            lib_suffix = '.dll'
+        elif self.settings.os == 'Macos':
+            lib_prefix = 'lib'
+            lib_suffix = '.dylib'
+        else:
+            lib_prefix = 'lib'
+            lib_suffix = '.so'
+
+        libs = []
+        for lib_name in lib_names:
+            libs.append(lib_prefix + lib_name + lib_suffix)
 
         self.output.info('Testing libraries exists:')
         for lib in libs:
