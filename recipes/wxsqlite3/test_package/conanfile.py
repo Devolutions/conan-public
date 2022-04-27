@@ -13,7 +13,7 @@ class TestPackageConan(ConanFile):
         if self.settings.os == 'Windows':
             lib_prefix = ''
             lib_suffix = '.dll'
-        else if self.settings.os == 'macOS'
+        elif self.settings.os == 'macOS'
             lib_prefix = 'lib'
             lib_suffix = '.dylib'
         else:
