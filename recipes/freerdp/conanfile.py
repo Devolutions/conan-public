@@ -98,6 +98,7 @@ class FreerdpConan(ConanFile):
         winpr_path = self.deps_cpp_info['winpr'].rootpath
         zlib_path = self.deps_cpp_info['zlib'].rootpath
         mbedtls_path = self.deps_cpp_info['mbedtls'].rootpath
+        cmake.definitions['OPENSSL_ROOT_DIR'] = openssl_path
         cmake.definitions['CMAKE_PREFIX_PATH'] = '%s;%s;%s;%s' % (openssl_path, winpr_path, zlib_path, mbedtls_path)
         cmake.definitions['CMAKE_VERBOSE_MAKEFILE'] = 'ON'
 
