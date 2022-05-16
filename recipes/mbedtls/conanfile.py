@@ -45,7 +45,7 @@ class MbedtlsConan(ConanFile):
         if self.settings.os == 'Windows':
             cmake.definitions['MSVC_RUNTIME'] = 'static'
 
-        mbedtls_configs = ['MBEDTLS_THREADING_C', 'MBEDTLS_HAVEGE_C', 'MBEDTLS_MD4_C']
+        mbedtls_configs = ['MBEDTLS_THREADING_C', 'MBEDTLS_HAVEGE_C', 'MBEDTLS_MD4_C', 'MBEDTLS_CMAC_C']
         if self.settings.os == 'Windows':
             mbedtls_configs.extend(['MBEDTLS_THREADING_WINDOWS'])
         else:
