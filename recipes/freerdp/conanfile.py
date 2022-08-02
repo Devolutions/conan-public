@@ -10,7 +10,7 @@ class FreerdpConan(ConanFile):
     url = 'https://github.com/Devolutions/FreeRDP.git'
     description = 'FreeRDP is a free remote desktop protocol client'
     settings = 'os', 'arch', 'distro', 'build_type'
-    branch = 'devolutions-rdp-rebase-4'
+    branch = 'devolutions-rdp-rebase-5'
     python_requires = "shared/1.0.0@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
 
@@ -92,7 +92,14 @@ class FreerdpConan(ConanFile):
                 cmake.definitions['WITH_NEON'] = 'ON'
 
         if self.settings.os == 'Windows':
+            cmake.definitions['CMAKE_SYSTEM_VERSION'] = '10.0.19041.0'
             cmake.definitions['MSVC_RUNTIME'] = 'static'
+
+        if self.settings.os == 'Linux':
+            cmake.definitions['WITH_INTERPROCEDURAL_OPTIMIZATION'] = 'OFF' # Currently not working in cbake
+
+        if self.settings.os == 'Android' and self.settings.arch == 'armv7':
+            cmake.definitions['WITH_INTERPROCEDURAL_OPTIMIZATION'] = 'OFF' # IPO doesn't seem to work on android-arm7
 
         openssl_path = self.deps_cpp_info['openssl'].rootpath
         winpr_path = self.deps_cpp_info['winpr'].rootpath

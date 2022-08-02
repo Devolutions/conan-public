@@ -9,7 +9,7 @@ class WinprConan(ConanFile):
     url = 'https://github.com/Devolutions/FreeRDP.git'
     description = 'FreeRDP is a free remote desktop protocol client'
     settings = 'os', 'arch', 'distro', 'build_type'
-    branch = 'devolutions-rdp-rebase-4'
+    branch = 'devolutions-rdp-rebase-5'
     python_requires = "shared/1.0.0@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
 
@@ -54,6 +54,7 @@ class WinprConan(ConanFile):
             cmake.definitions['WITH_LIBSYSTEMD'] = 'OFF'
 
         if self.settings.os == 'Windows':
+            cmake.definitions['CMAKE_SYSTEM_VERSION'] = '10.0.19041.0'
             cmake.definitions['MSVC_RUNTIME'] = 'static'
 
         mbedtls_path = self.deps_cpp_info['mbedtls'].rootpath
@@ -62,6 +63,12 @@ class WinprConan(ConanFile):
         
         if self.settings.os == 'Android': # Android toolchain overwrites CMAKE_PREFIX_PATH
             cmake.definitions['CMAKE_FIND_ROOT_PATH'] = '%s;%s' % (mbedtls_path, zlib_path)
+
+        if self.settings.os == 'Linux':
+            cmake.definitions['WITH_INTERPROCEDURAL_OPTIMIZATION'] = 'OFF' # Currently not working in cbake
+
+        if self.settings.os == 'Android' and self.settings.arch == 'armv7':
+            cmake.definitions['WITH_INTERPROCEDURAL_OPTIMIZATION'] = 'OFF' # IPO doesn't seem to work on android-arm7
 
         cmake.configure(source_folder=os.path.join('freerdp', self.name))
 
