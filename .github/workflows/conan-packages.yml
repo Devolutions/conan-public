@@ -47,7 +47,7 @@ jobs:
           - os: macos
             runner: macos-latest
           - os: linux
-            runner: ubuntu-18.04
+            runner: ubuntu-20.04
           - os: ios
             runner: macos-latest
           - os: android
