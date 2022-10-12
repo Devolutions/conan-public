@@ -40,6 +40,8 @@ class FreerdpConan(ConanFile):
         git.clone(self.url)
         git.checkout(self.branch)
 
+        self.output.info("Current commit: %s" % (git.get_commit()))
+
         with open(os.path.join(folder, "CMakeLists.txt"), 'a') as file:
             file.write('\nadd_subdirectory(DevolutionsRdp)')
 

@@ -37,6 +37,8 @@ class WinprConan(ConanFile):
         git.clone(self.url)
         git.checkout(self.branch)
 
+        self.output.info("Current commit: %s" % (git.get_commit()))
+
     def build(self):
         if self.settings.arch == 'universal':
             self.lipo_create(self, self.build_folder)
