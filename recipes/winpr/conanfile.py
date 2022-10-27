@@ -65,12 +65,17 @@ class WinprConan(ConanFile):
         
         if self.settings.os == 'Android': # Android toolchain overwrites CMAKE_PREFIX_PATH
             cmake.definitions['CMAKE_FIND_ROOT_PATH'] = '%s;%s' % (mbedtls_path, zlib_path)
-
+            
+        # Disable IPO
         if self.settings.os == 'Linux':
             cmake.definitions['WITH_INTERPROCEDURAL_OPTIMIZATION'] = 'OFF' # Currently not working in cbake
 
         if self.settings.os == 'Android' and self.settings.arch == 'armv7':
             cmake.definitions['WITH_INTERPROCEDURAL_OPTIMIZATION'] = 'OFF' # IPO doesn't seem to work on android-arm7
+
+        # Debug builds
+        if self.settings.build_type == 'Debug':
+            cmake.definitions['WITH_INTERPROCEDURAL_OPTIMIZATION'] = 'OFF'
 
         cmake.configure(source_folder=os.path.join('freerdp', self.name))
 

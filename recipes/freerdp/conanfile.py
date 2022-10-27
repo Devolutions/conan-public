@@ -97,11 +97,17 @@ class FreerdpConan(ConanFile):
             cmake.definitions['CMAKE_SYSTEM_VERSION'] = '10.0.19041.0'
             cmake.definitions['MSVC_RUNTIME'] = 'static'
 
-        if self.settings.os == 'Linux':
+        # Disable IPO
+        if self.settings.os == 'Linux' or (self.settings.os == 'Android' and self.settings.arch == 'armv7'):
             cmake.definitions['WITH_INTERPROCEDURAL_OPTIMIZATION'] = 'OFF' # Currently not working in cbake
 
         if self.settings.os == 'Android' and self.settings.arch == 'armv7':
             cmake.definitions['WITH_INTERPROCEDURAL_OPTIMIZATION'] = 'OFF' # IPO doesn't seem to work on android-arm7
+
+        # Debug builds
+        if self.settings.build_type == 'Debug':
+            cmake.definitions['WITH_INTERPROCEDURAL_OPTIMIZATION'] = 'OFF'
+            cmake.definitions['WITH_DEBUG_ALL'] = 'ON'
 
         openssl_path = self.deps_cpp_info['openssl'].rootpath
         winpr_path = self.deps_cpp_info['winpr'].rootpath
