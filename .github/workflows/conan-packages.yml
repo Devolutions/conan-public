@@ -95,6 +95,12 @@ jobs:
           sudo rm -rf /Library/Developer/CommandLineTools
           echo "CONAN_USER_HOME=/tmp" >> $GITHUB_ENV
 
+      - name: Configure macOS runner
+        if: runner.os == 'macOS'
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10' 
+
       - name: Configure Linux runner
         if: runner.os == 'Linux'
         run: |
