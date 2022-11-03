@@ -84,6 +84,12 @@ jobs:
 
       - name: Configure macOS runner
         if: runner.os == 'macOS'
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10' 
+
+      - name: Configure macOS runner
+        if: runner.os == 'macOS'
         env:
           CMAKE_OSX_DEPLOYMENT_TARGET: "10.12"
         run: |
@@ -94,12 +100,6 @@ jobs:
           pip3 install conan==${{ env.conan-version }} invoke Jinja2 urllib3 chardet requests --upgrade
           sudo rm -rf /Library/Developer/CommandLineTools
           echo "CONAN_USER_HOME=/tmp" >> $GITHUB_ENV
-
-      - name: Configure macOS runner
-        if: runner.os == 'macOS'
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10' 
 
       - name: Configure Linux runner
         if: runner.os == 'Linux'
