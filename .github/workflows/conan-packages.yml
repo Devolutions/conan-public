@@ -84,6 +84,12 @@ jobs:
 
       - name: Configure macOS runner
         if: runner.os == 'macOS'
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10' 
+
+      - name: Configure macOS runner
+        if: runner.os == 'macOS'
         env:
           CMAKE_OSX_DEPLOYMENT_TARGET: "10.12"
         run: |
