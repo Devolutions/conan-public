@@ -49,11 +49,21 @@ class TemplateConan(ConanFile):
         cmake.definitions['PNG_SHARED'] = 'OFF'
         cmake.definitions['PNG_TESTS'] = 'OFF'
 
+        zlib_path = self.deps_cpp_info['zlib'].rootpath
+        cmake.definitions['ZLIB_ROOT_DIR'] = zlib_path
+        cmake.definitions['ZLIB_BIN_DIRS'] = os.path.join(zlib_path, 'bin')
+        cmake.definitions['ZLIB_INCLUDE_DIRS'] = os.path.join(zlib_path, 'include')
+        cmake.definitions['ZLIB_LIBRARY_DIRS'] = os.path.join(zlib_path, 'lib')
+
         if self.settings.os == 'Linux':
             cmake.definitions['CMAKE_C_FLAGS_INIT'] = '-fPIC'
-        elif self.settings.os == 'Windows':
+
+        if self.settings.os == 'Windows':
             cmake.definitions['ZLIB_LIBRARY'] = os.path.join(self.deps_cpp_info['zlib'].rootpath, 'lib', 'zlibstatic.lib')
-            cmake.definitions['ZLIB_INCLUDE_DIR'] = os.path.join(self.deps_cpp_info['zlib'].rootpath, 'include')
+        else:
+            cmake.definitions['ZLIB_LIBRARY'] = os.path.join(self.deps_cpp_info['zlib'].rootpath, 'lib', 'zlib.a')
+
+        cmake.definitions['ZLIB_INCLUDE_DIR'] = os.path.join(self.deps_cpp_info['zlib'].rootpath, 'include')
 
         cmake.configure(source_folder=self.name)
 
