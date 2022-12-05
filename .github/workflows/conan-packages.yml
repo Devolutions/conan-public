@@ -169,7 +169,7 @@ jobs:
           echo "package_name=$PACKAGE_NAME" >> $Env:GITHUB_OUTPUT
 
       - name: Upload conan cache
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ steps.package-conan-cache.outputs.package_name }}
           path: ${{ steps.package-conan-cache.outputs.package_name }}.tar.gz
