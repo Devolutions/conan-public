@@ -2,4 +2,4 @@ include(android-base)
 
 [settings]
 arch=armv7
-os.api_level=16
+os.api_level=21

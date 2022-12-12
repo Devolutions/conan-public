@@ -58,11 +58,11 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
+        uses: docker/setup-qemu-action@v2
         if: runner.os == 'Linux'
 
       - name: Set up docker buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
         if: runner.os == 'Linux'
 
       - name: Configure Windows runner
@@ -175,37 +175,7 @@ jobs:
           path: ${{ steps.package-conan-cache.outputs.package_name }}.tar.gz
 
   publish:
-    concurrency: conan-publish
-    runs-on: ubuntu-latest
-    environment: artifactory-publish
     needs: build
     if: github.event_name != 'schedule'
-    
-    steps:
-      - name: Check out ${{ github.repository }}
-        uses: actions/checkout@v3
-      - name: Configure runner
-        run: |
-          sudo apt update
-          sudo apt install python3 python3-pip python3-wget python3-setuptools
-          pip3 install conan==${{ env.conan-version }} invoke Jinja2 urllib3 chardet requests --upgrade
-          echo "CONAN_USER_HOME=/tmp" >> $GITHUB_ENV
-
-      - name: Configure conan environment
-        run: |
-          conan config init
-          conan config install ./settings
-
-      - name: Download conan data
-        uses: actions/download-artifact@v3
-        with:
-          path: download
-
-      - name: Publish packages
-        run: pwsh ../publish.ps1
-        working-directory: download
-        env:
-          CONAN_REMOTE_NAME: "artifactory"
-          CONAN_REMOTE_URL: "https://devolutions.jfrog.io/devolutions/api/conan/conan-local"
-          CONAN_LOGIN_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-          CONAN_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+    uses: ./.github/workflows/conan-publish.yml
+    secrets: inherit
