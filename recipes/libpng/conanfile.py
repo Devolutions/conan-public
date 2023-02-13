@@ -36,6 +36,11 @@ class TemplateConan(ConanFile):
         git.clone(self.url)
         git.checkout(self.tag)
 
+        if self.settings.os == 'Linux' and self.settings.arch == 'armv8':
+            tools.replace_in_file(os.path.join(folder, 'CMakeLists.txt'),
+            "arm/filter_neon.S",
+            "#arm/filter_neon.S")
+
     def build(self):
         if self.settings.arch == 'universal':
             self.lipo_create(self, self.build_folder)
