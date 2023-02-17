@@ -156,9 +156,9 @@ function Invoke-TlkBuild {
 
     if ((($Platform -eq 'Android') -Or ($Platform -eq "macos")) -And ($BuildType -eq 'RelWithDebInfo')) {
         $TargetPackages = @(
+          'zlib', 
           'libpng',
           'libjpeg',
-          'zlib', 
           'mbedtls', 
           'openssl', 
           'winpr', 
