@@ -104,7 +104,28 @@ class FreerdpConan(ConanFile):
         # Debug builds
         if self.settings.build_type == 'Debug':
             cmake.definitions['WITH_INTERPROCEDURAL_OPTIMIZATION'] = 'OFF'
-            cmake.definitions['WITH_DEBUG_ALL'] = 'ON'
+            cmake.definitions['WITH_DEBUG_CAPABILITIES'] = 'ON'
+            cmake.definitions['WITH_DEBUG_CHANNELS'] = 'ON'
+            cmake.definitions['WITH_DEBUG_CLIPRDR'] = 'ON'
+            cmake.definitions['WITH_DEBUG_CODECS'] = 'ON'
+            cmake.definitions['WITH_DEBUG_RDPGFX'] = 'ON'
+            cmake.definitions['WITH_DEBUG_DVC'] = 'ON'
+            cmake.definitions['WITH_DEBUG_TSMF'] = 'ON'
+            cmake.definitions['WITH_DEBUG_KBD'] = 'ON'
+            cmake.definitions['WITH_DEBUG_LICENSE'] = 'ON'
+            cmake.definitions['WITH_DEBUG_NEGO'] = 'ON'
+            cmake.definitions['WITH_DEBUG_NLA'] = 'ON'
+            cmake.definitions['WITH_DEBUG_TSG'] = 'ON'
+            cmake.definitions['WITH_DEBUG_RDP'] = 'ON'
+            cmake.definitions['WITH_DEBUG_RDPEI'] = 'ON'
+            cmake.definitions['WITH_DEBUG_REDIR'] = 'ON'
+            cmake.definitions['WITH_DEBUG_RDPDR'] = 'ON'
+            cmake.definitions['WITH_DEBUG_RFX'] = 'ON'
+            cmake.definitions['WITH_DEBUG_SCARD'] = 'ON'
+            cmake.definitions['WITH_DEBUG_SND'] = 'ON'
+            cmake.definitions['WITH_DEBUG_SVC'] = 'ON'
+            cmake.definitions['WITH_DEBUG_TRANSPORT'] = 'ON'
+            cmake.definitions['WITH_DEBUG_TIMEZONE'] = 'ON'
 
         openssl_path = self.deps_cpp_info['openssl'].rootpath
         winpr_path = self.deps_cpp_info['winpr'].rootpath
