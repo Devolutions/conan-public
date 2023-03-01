@@ -44,6 +44,9 @@ class LibvpxConan(ConanFile):
         cmake = CMake(self)
         self.cmake_wrapper(cmake, self.settings, self.options)
 
+        if self.settings.os == "Windows":
+            cmake.toolset = 'ClangCL'
+
         cmake.definitions['BUILD_SHARED_LIBS'] = 'OFF'
         cmake.definitions['CONFIG_MULTITHREAD'] = 'OFF'
         cmake.definitions['CONFIG_STATIC_MSVCRT'] = 'ON'
