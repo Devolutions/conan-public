@@ -60,6 +60,9 @@ class LibvpxConan(ConanFile):
         if self.settings.os == 'Android' and self.settings.arch == 'x86':
             cmake.definitions['WITH_SIMD'] = 'OFF'
 
+        if self.settings.os == 'Windows' and self.settings.arch == 'armv8':
+            cmake.definitions['CONFIG_RUNTIME_CPU_DETECT'] = 'OFF'
+
         cmake.configure(source_folder=self.name)
         
         cmake.build()
