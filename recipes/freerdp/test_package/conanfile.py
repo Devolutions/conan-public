@@ -46,7 +46,6 @@ class TestPackageConan(ConanFile):
             'freerdp.h',
             'settings.h',
             'version.h',
-            'cache/cache.h',
             'channels/channels.h',
             'client/channels.h',
             'codec/color.h',
