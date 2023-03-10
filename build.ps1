@@ -146,7 +146,7 @@ function Invoke-TlkBuild {
         )
     }
 
-    if ($Platform -eq 'windows') {
+    if (@('windows','macos','linux') -Contains $Platform) {
         $TargetPackages += @('openssh')
     }
 
