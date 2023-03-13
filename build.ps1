@@ -116,6 +116,7 @@ function Invoke-TlkBuild {
         'zlib',
         'lz4',
         'miniz',
+        'cjson',
         'lizard',
         'libpng',
         'libjpeg',
