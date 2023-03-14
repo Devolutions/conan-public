@@ -72,6 +72,7 @@ class FreerdpConan(ConanFile):
         cmake.definitions['WITH_OPENSSL'] = 'ON'
         cmake.definitions['WITH_MBEDTLS'] = 'ON'
         cmake.definitions['WITH_ALSA'] = 'OFF'
+        cmake.definitions['WITH_FUSE'] = 'OFF'
         cmake.definitions['CHANNEL_URBDRC'] = 'OFF'
 
         if self.settings.os == 'Linux' or self.settings.os == 'Macos':
