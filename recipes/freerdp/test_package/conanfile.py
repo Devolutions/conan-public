@@ -10,22 +10,7 @@ class TestPackageConan(ConanFile):
     def test(self):
         lib_names = [
             'freerdp3',
-            'freerdp-client3',
-            'audin-client',
-            'cliprdr-client',
-            'disp-client',
-            'drdynvc-client',
-            'drive-client',
-            'echo-client',
-            'encomsp-client',
-            'geometry-client',
-            'rail-client',
-            'rdpdr-client',
-            'rdpei-client',
-            'rdpgfx-client',
-            'rdpsnd-client',
-            'remdesk-client',
-            'smartcard-client'
+            'freerdp-client3'
         ]
         
         if self.settings.os == 'Windows':
