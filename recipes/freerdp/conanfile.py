@@ -29,6 +29,7 @@ class FreerdpConan(ConanFile):
         self.build_requires('winpr/3.0.0@devolutions/stable')
         self.build_requires('mbedtls/2.16.0@devolutions/stable')
         self.build_requires('zlib/1.2.11@devolutions/stable')
+        self.build_requires('cjson/1.7.15@devolutions/stable')
 
     def source(self):
         if self.settings.arch == 'universal':
@@ -132,8 +133,9 @@ class FreerdpConan(ConanFile):
         winpr_path = self.deps_cpp_info['winpr'].rootpath
         zlib_path = self.deps_cpp_info['zlib'].rootpath
         mbedtls_path = self.deps_cpp_info['mbedtls'].rootpath
+        cjson_path = self.deps_cpp_info['cjson'].rootpath
         cmake.definitions['OPENSSL_ROOT_DIR'] = openssl_path
-        cmake.definitions['CMAKE_PREFIX_PATH'] = '%s;%s;%s;%s' % (openssl_path, winpr_path, zlib_path, mbedtls_path)
+        cmake.definitions['CMAKE_PREFIX_PATH'] = '%s;%s;%s;%s;%s' % (openssl_path, winpr_path, zlib_path, mbedtls_path, cjson_path)
         cmake.definitions['CMAKE_VERBOSE_MAKEFILE'] = 'ON'
 
         cmake.configure(source_folder=self.name)
