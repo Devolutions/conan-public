@@ -110,6 +110,8 @@ function Invoke-TlkBuild {
 
     if ($Platform -eq 'Linux') {
         $TargetPackages += @('sysroot')
+        $TargetPackages += @('webview')
+        $TargetPackages += @('embedded-terminal')
     }
 
     $TargetPackages += @(
