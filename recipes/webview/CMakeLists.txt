@@ -22,5 +22,5 @@ add_definitions(${WEBKIT2_CFLAGS_OTHER})
 
 add_library("WebView" SHARED "src/WebView.c")
 
-target_compile_options("EmbeddedTerminal" PRIVATE -Wall -Werror)
+target_compile_options("WebView" PRIVATE -Wall -Werror)
 target_link_libraries("WebView" ${GTK3_LIBRARIES} ${WEBKIT2_LIBRARIES})
