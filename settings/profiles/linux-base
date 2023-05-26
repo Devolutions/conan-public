@@ -2,7 +2,7 @@ include(host.jinja)
 
 [settings]
 os=Linux
-distro=ubuntu-18.04
+distro=ubuntu-20.04
 compiler=clang
 compiler.version=12
 compiler.libcxx=libstdc++
