@@ -39,7 +39,7 @@ class HalideConan(ConanFile):
     def source(self):
         if self.use_prebuilt:
             self.pkg_version = self.version
-            self.pkg_platform = {'Windows':'windows','Macos':'macos','Linux':'ubuntu-18.04'}[str(self.settings.os_build)]
+            self.pkg_platform = {'Windows':'windows','Macos':'macos','Linux':'ubuntu-20.04'}[str(self.settings.os_build)]
             self.pkg_arch = {'x86_64':'x86_64','armv8':'aarch64'}[str(self.settings.arch_build)]
             self.pkg_ext = ".tar.xz"
             self.dir_name = "halide-%s-%s-%s" % (self.pkg_version, self.pkg_arch, self.pkg_platform)
@@ -59,7 +59,7 @@ class HalideConan(ConanFile):
     def build(self):
         if self.use_prebuilt:
             self.pkg_version = self.version
-            self.pkg_platform = {'Windows':'windows','Macos':'macos','Linux':'ubuntu-18.04'}[str(self.settings.os_build)]
+            self.pkg_platform = {'Windows':'windows','Macos':'macos','Linux':'ubuntu-20.04'}[str(self.settings.os_build)]
             self.pkg_arch = {'x86_64':'x86_64','armv8':'aarch64'}[str(self.settings.arch_build)]
             self.pkg_ext = ".tar.xz"
             self.dir_name = "halide-%s-%s-%s" % (self.pkg_version, self.pkg_arch, self.pkg_platform)

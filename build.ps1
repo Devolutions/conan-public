@@ -94,7 +94,7 @@ function Invoke-TlkBuild {
     }
 
     if (($Platform -eq 'linux') -And (-Not $Distribution)) {
-        $Distribution = "ubuntu-18.04"
+        $Distribution = "ubuntu-20.04"
     }
 
     $HostPackages = @(
