@@ -55,6 +55,7 @@ class WinprConan(ConanFile):
         if self.settings.os == 'Linux':
             cmake.definitions['WITH_LIBSYSTEMD'] = 'OFF'
             cmake.definitions['WITH_UNICODE_BUILTIN'] = 'ON'
+            cmake.definitions['WITH_KRB5'] = 'OFF'
 
         if self.settings.os == 'Windows':
             cmake.definitions['CMAKE_SYSTEM_VERSION'] = '10.0.19041.0'
