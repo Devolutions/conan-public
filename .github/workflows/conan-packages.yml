@@ -28,6 +28,8 @@ jobs:
             os: linux
           - arch: x86
             os: ios
+          - arch: x86
+            os: windows
           - arch: arm
             os: windows
           - arch: arm
