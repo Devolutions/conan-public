@@ -20,16 +20,16 @@ class Sysroot(ConanFile):
         self.distro = str(self.settings.distro)
         self.sysroot_arch = { 'x86_64':'amd64', 'armv8':'arm64' }[str(self.settings.arch)]
         self.sysroot_name = "%s-%s" % (self.distro, self.sysroot_arch)
-        self.export_path = os.path.join(self.package_folder, self.sysroot_name)
+        self.export_dir = os.path.join(self.package_folder, self.sysroot_name)
         os.mkdir(self.package_folder)
-        os.mkdir(self.export_path)
+        os.mkdir(self.export_dir)
 
         print("building %s sysroot" % (self.sysroot_name))
 
         subprocess.run([build_script, "sysroot",
             "-Distribution", self.distro,
             "-Architecture", self.sysroot_arch,
-            "-ExportPath", self.export_path,
+            "-ExportPath", self.export_dir,
             "-SkipPackaging"])
 
     def package(self):
