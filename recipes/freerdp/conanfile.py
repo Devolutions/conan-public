@@ -1,6 +1,6 @@
 from conans import ConanFile, CMake, tools, python_requires
-import os
-import shutil
+import os, shutil
+
 class FreerdpConan(ConanFile):
     name = 'freerdp'
     exports = ['VERSION', 'FindWinPR.cmake']
@@ -10,7 +10,7 @@ class FreerdpConan(ConanFile):
     url = 'https://github.com/Devolutions/FreeRDP.git'
     description = 'FreeRDP is a free remote desktop protocol client'
     settings = 'os', 'arch', 'distro', 'build_type'
-    branch = 'devolutions-rdp-rebase-20230613'
+    branch = 'devolutions-rdp-rebase-20230801'
     python_requires = "shared/1.0.0@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
 
@@ -36,12 +36,17 @@ class FreerdpConan(ConanFile):
             return
 
         folder = self.name
-        self.output.info('Cloning repo: %s dest: %s branch: %s' % (self.url, folder, self.branch))
-        git = tools.Git(folder=folder)
-        git.clone(self.url)
-        git.checkout(self.branch)
 
-        self.output.info("Current commit: %s" % (git.get_commit()))
+        if 'CONAN_SOURCES_PATH' in os.environ:
+            conan_sources_path = os.environ['CONAN_SOURCES_PATH']
+            sources_path = os.path.join(conan_sources_path, self.name)
+            shutil.copytree(sources_path, self.name)
+        else:
+            self.output.info('Cloning repo: %s dest: %s branch: %s' % (self.url, folder, self.branch))
+            git = tools.Git(folder=folder)
+            git.clone(self.url)
+            git.checkout(self.branch)
+            self.output.info("Current commit: %s" % (git.get_commit()))
 
         with open(os.path.join(folder, "CMakeLists.txt"), 'a') as file:
             file.write('\nadd_subdirectory(DevolutionsRdp)')
