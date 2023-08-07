@@ -8,13 +8,13 @@ on:
         required: true
   workflow_call:
     secrets:
-      ARTIFACTORY_USERNAME:
+      ARTIFACTORY_CONAN_USERNAME:
         required: true
-      ARTIFACTORY_PASSWORD:
+      ARTIFACTORY_CONAN_PASSWORD:
         required: true
 
 env:
-   conan-version: 1.60.0
+   conan-version: 1.43.4
 
 concurrency: conan-publish
 jobs:
@@ -66,7 +66,7 @@ jobs:
           CONAN_NON_INTERACTIVE: 1
           CONAN_REMOTE_NAME: "artifactory"
           CONAN_REMOTE_URL: "https://devolutions.jfrog.io/devolutions/api/conan/conan-local"
-          CONAN_LOGIN_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-          CONAN_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+          CONAN_LOGIN_USERNAME: ${{ secrets.ARTIFACTORY_CONAN_USERNAME }}
+          CONAN_PASSWORD: ${{ secrets.ARTIFACTORY_CONAN_PASSWORD }}
         run: |
           pwsh ../publish.ps1
