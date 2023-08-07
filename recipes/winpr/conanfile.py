@@ -1,5 +1,5 @@
 from conans import ConanFile, CMake, tools, python_requires
-import os
+import os, shutil
 
 class WinprConan(ConanFile):
     name = 'winpr'
@@ -9,7 +9,7 @@ class WinprConan(ConanFile):
     url = 'https://github.com/Devolutions/FreeRDP.git'
     description = 'FreeRDP is a free remote desktop protocol client'
     settings = 'os', 'arch', 'distro', 'build_type'
-    branch = 'devolutions-rdp-rebase-20230613'
+    branch = 'devolutions-rdp-rebase-20230801'
     python_requires = "shared/1.0.0@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
 
@@ -32,12 +32,17 @@ class WinprConan(ConanFile):
             return
 
         folder = 'freerdp'
-        self.output.info('Cloning repo: %s dest: %s branch: %s' % (self.url, folder, self.branch))
-        git = tools.Git(folder=folder)
-        git.clone(self.url)
-        git.checkout(self.branch)
 
-        self.output.info("Current commit: %s" % (git.get_commit()))
+        if 'CONAN_SOURCES_PATH' in os.environ:
+            conan_sources_path = os.environ['CONAN_SOURCES_PATH']
+            sources_path = os.path.join(conan_sources_path, folder)
+            shutil.copytree(sources_path, folder)
+        else:
+            self.output.info('Cloning repo: %s dest: %s branch: %s' % (self.url, folder, self.branch))
+            git = tools.Git(folder=folder)
+            git.clone(self.url)
+            git.checkout(self.branch)
+            self.output.info("Current commit: %s" % (git.get_commit()))
 
     def build(self):
         if self.settings.arch == 'universal':
@@ -52,10 +57,14 @@ class WinprConan(ConanFile):
         cmake.definitions['WITH_MBEDTLS'] = 'ON'
         cmake.definitions['WITH_OPENSSL'] = 'OFF'
 
+        if self.settings.os == "Macos":
+            cmake.definitions['WITH_PKCS11'] = 'OFF'
+
         if self.settings.os == 'Linux':
             cmake.definitions['WITH_LIBSYSTEMD'] = 'OFF'
             cmake.definitions['WITH_UNICODE_BUILTIN'] = 'ON'
             cmake.definitions['WITH_KRB5'] = 'OFF'
+            cmake.definitions['WITH_PKCS11'] = 'OFF'
 
         if self.settings.os == 'Windows':
             cmake.definitions['CMAKE_SYSTEM_VERSION'] = '10.0.19041.0'

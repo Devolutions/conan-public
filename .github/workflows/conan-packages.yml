@@ -122,7 +122,7 @@ jobs:
           sudo mv "/tmp/${CLANG_LLVM_NAME}" /opt/llvm
           echo "PATH=$PATH:/opt/llvm/bin" >> $GITHUB_ENV
 
-      - name: Install Android NDK
+      - name: Configure Android NDK
         if: matrix.os == 'android'
         run: |
           wget -q https://dl.google.com/android/repository/android-ndk-r21e-linux-x86_64.zip
