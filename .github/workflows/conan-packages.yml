@@ -125,9 +125,9 @@ jobs:
       - name: Configure Android NDK
         if: matrix.os == 'android'
         run: |
-          wget -q https://dl.google.com/android/repository/android-ndk-r21e-linux-x86_64.zip
-          unzip -q android-ndk-r21e-linux-x86_64.zip -d /tmp
-          sudo mv /tmp/android-ndk-r21e /opt/android-ndk
+          wget -q https://dl.google.com/android/repository/android-ndk-r25c-linux.zip
+          unzip -q android-ndk-r25c-linux.zip -d /tmp
+          sudo mv /tmp/android-ndk-r25c /opt/android-ndk
           echo "ANDROID_NDK=/opt/android-ndk" >> $GITHUB_ENV
 
           ## Pin the cmake version for now, libpng builds are failing on Android x86-64
