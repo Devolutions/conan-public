@@ -71,6 +71,7 @@ class FreerdpConan(ConanFile):
         cmake.definitions['WITH_WAYLAND'] = 'OFF'
         cmake.definitions['WITH_MANPAGES'] = 'OFF'
         cmake.definitions['WITH_FFMPEG'] = 'OFF'
+        cmake.definitions['WITH_SWSCALE'] = 'OFF'
         cmake.definitions['WITH_VAAPI'] = 'OFF'
         cmake.definitions['WITH_GSTREAMER_1_0'] = 'OFF'
         cmake.definitions['WITH_GSTREAMER_0_10'] = 'OFF'
