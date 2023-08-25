@@ -14,7 +14,7 @@ on:
         required: true
 
 env:
-   conan-version: 1.43.4
+   conan-version: 1.60.0
 
 concurrency: conan-publish
 jobs:
