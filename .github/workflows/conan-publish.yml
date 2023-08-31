@@ -22,18 +22,12 @@ jobs:
     runs-on: ubuntu-latest
     environment: artifactory-publish
     strategy:
-      max-parallel: 1
       matrix:
         os: [ windows, macos, linux, ios, android ]
 
     steps:
       - name: Check out ${{ github.repository }}
         uses: actions/checkout@v3
-
-      - name: Configure runner
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.9' 
 
       - name: Configure runner
         run: |
