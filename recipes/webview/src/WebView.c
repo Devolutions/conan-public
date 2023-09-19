@@ -16,6 +16,7 @@ typedef struct web_view{
         callback_js_ready_evnt_fn js_ready_handler;
         callback_context_menu_evnt_fn context_menu_handler;
         callback_script_message_received_evnt_fn script_message_received_handler;
+        callback_get_cookies_evnt_fn get_cookie_handler;
         char* result_eval_js;
         gboolean enable_logging;
         bool executingJavascript;
@@ -60,7 +61,8 @@ LAUNCHER_EXPORT void* webview_new()
     wv->load_failed_handler = 0;
     wv->decide_policy_handler = 0;
     wv->js_ready_handler = 0;
-    wv->view = WEBKIT_WEB_VIEW(webkit_web_view_new());
+    WebKitWebContext* context = webkit_web_context_new ();
+    wv->view = WEBKIT_WEB_VIEW(webkit_web_view_new_with_context (context));
     wv->contentManager = webkit_web_view_get_user_content_manager(wv->view);
     g_signal_connect(wv->view, "load-failed", G_CALLBACK(web_view_load_failed_cb), wv);
 
@@ -277,6 +279,13 @@ LAUNCHER_EXPORT bool set_callback_load_failed(void* view, callback_load_failed_e
     return 1;
 }
 
+LAUNCHER_EXPORT bool set_callback_get_cookie(void* view, callback_get_cookies_evnt_fn handler)
+{
+    webView* wv = (webView*)view;
+    wv->get_cookie_handler = handler;
+    return 1;
+}
+
 LAUNCHER_EXPORT bool set_callback_js_ready(void* view, callback_js_ready_evnt_fn handler)
 {
     webView* wv = (webView*)view;
@@ -461,6 +470,32 @@ LAUNCHER_EXPORT void webview_register_script_message_handler(void* webview, cons
     }
 
     webkit_user_content_manager_register_script_message_handler(wv->contentManager, name);
+}
+
+static void cookies_callback(GObject *cm, GAsyncResult *res, gpointer p){
+    webView* wv = (webView*)p;
+    WebKitWebContext* context = webkit_web_view_get_context (wv->view);
+    WebKitCookieManager* cookiemgr = webkit_web_context_get_cookie_manager (context);
+
+    GList *gl = webkit_cookie_manager_get_cookies_finish(cookiemgr, res, NULL);
+    
+    if (gl == NULL){
+        return;
+    }
+
+    if (wv->get_cookie_handler){
+        char* header = soup_cookies_to_cookie_header((GSList *)gl);
+        wv->get_cookie_handler(header);
+    }
+}
+
+LAUNCHER_EXPORT void webview_get_cookies(void* webview, const gchar* uri)
+{
+    webView* wv = (webView*)webview;
+    WebKitWebContext* context = webkit_web_view_get_context (wv->view);
+    WebKitCookieManager* cookiemgr = webkit_web_context_get_cookie_manager (context);
+
+    webkit_cookie_manager_get_cookies(cookiemgr, uri, NULL, cookies_callback, (gpointer)wv);
 }
 
 LAUNCHER_EXPORT void webview_unregister_script_message_handler(void* webview, const gchar *name, callback_script_message_received_evnt_fn handler)
