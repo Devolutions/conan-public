@@ -57,7 +57,6 @@ LAUNCHER_EXPORT const char* webview_get_navigation_action_request_uri(void* ptr)
     if ((WebKitNavigationAction *)ptr)
     {
         WebKitNavigationAction* action = (WebKitNavigationAction *)ptr;
-        printf("Sucessfull cast into WebKitNavigationAction");
 
         if(!action)
             return NULL;
