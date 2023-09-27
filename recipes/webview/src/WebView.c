@@ -13,6 +13,7 @@ typedef struct web_view{
         callback_load_changed_evnt_fn load_changed_handler;
         callback_load_failed_evnt_fn load_failed_handler;
         callback_decide_policy_evnt_fn decide_policy_handler;
+        callback_decide_new_window_policy_evnt_fn decide_new_window_policy_handler;
         callback_js_ready_evnt_fn js_ready_handler;
         callback_context_menu_evnt_fn context_menu_handler;
         callback_script_message_received_evnt_fn script_message_received_handler;
@@ -48,6 +49,28 @@ LAUNCHER_EXPORT const char* webview_get_decision_uri(void* ptr)
 
     return webkit_uri_request_get_uri(request);
 }
+
+LAUNCHER_EXPORT const char* webview_get_navigation_action_request_uri(void* ptr)
+{
+    WebKitURIRequest* request = NULL;
+    
+    if ((WebKitNavigationAction *)ptr)
+    {
+        WebKitNavigationAction* action = (WebKitNavigationAction *)ptr;
+        printf("Sucessfull cast into WebKitNavigationAction");
+
+        if(!action)
+            return NULL;
+
+        request = webkit_navigation_action_get_request(action);
+    }
+
+     if(!request)
+        return NULL;
+
+    return webkit_uri_request_get_uri(request);
+}
+
 
 LAUNCHER_EXPORT const char* webview_get_uri(void* webview)
 {
@@ -214,6 +237,24 @@ LAUNCHER_EXPORT bool set_callback_decide_policy(void* view, callback_decide_poli
     {
         wv->decide_policy_handler = handler;
         g_signal_connect(wv->view, "decide-policy", G_CALLBACK(wv->decide_policy_handler), NULL);
+    }
+
+    return 1;
+}
+
+LAUNCHER_EXPORT bool set_callback_decide_new_window_policy(void* view, callback_decide_new_window_policy_evnt_fn handler)
+{
+    webView* wv = (webView*)view;
+
+    if (!handler && wv->decide_new_window_policy_handler)
+    {
+        g_signal_handlers_disconnect_by_func(wv->view, G_CALLBACK(wv->decide_new_window_policy_handler), NULL);
+        wv->decide_new_window_policy_handler = handler;
+    }
+    else
+    {
+        wv->decide_new_window_policy_handler = handler;
+        g_signal_connect(wv->view, "create", G_CALLBACK(wv->decide_new_window_policy_handler), NULL);
     }
 
     return 1;
