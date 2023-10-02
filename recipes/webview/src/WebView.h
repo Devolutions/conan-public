@@ -17,6 +17,7 @@ typedef void* (*callback_decide_new_window_policy_evnt_fn)(WebKitWebView* view, 
 typedef void (*callback_get_cookies_evnt_fn)(char* header);
 typedef void (*callback_script_message_received_evnt_fn)(WebKitUserContentManager* contentManager, WebKitJavascriptResult* js_result);
 typedef void (*callback_context_menu_evnt_fn)(WebKitWebView* view, WebKitContextMenu* context_menu, WebKitHitTestResult* hit_test_result, gpointer user_data);
+typedef void (*callback_download_started_evnt_fn)(WebKitContextMenu* context_menu, WebKitDownload* download, gpointer user_data);
 
 LAUNCHER_EXPORT void* webview_new();
 LAUNCHER_EXPORT void* webview_new_ephemeral();
@@ -31,6 +32,7 @@ LAUNCHER_EXPORT bool set_callback_js_ready(void* view, callback_js_ready_evnt_fn
 LAUNCHER_EXPORT bool set_callback_load_changed(void* view, callback_load_changed_evnt_fn handler);
 LAUNCHER_EXPORT bool set_callback_menu(void* view, callback_context_menu_evnt_fn handler);
 LAUNCHER_EXPORT bool set_callback_script_message_received(void* view, callback_script_message_received_evnt_fn handler);
+LAUNCHER_EXPORT bool set_callback_download_started(void* view, callback_download_started_evnt_fn handler);
 LAUNCHER_EXPORT bool set_callback_load_failed(void* view, callback_load_failed_evnt_fn handler);
 LAUNCHER_EXPORT bool set_callback_get_cookie(void* view, callback_get_cookies_evnt_fn handler);
 LAUNCHER_EXPORT void set_cookies_save_path(void* view, const char* path);

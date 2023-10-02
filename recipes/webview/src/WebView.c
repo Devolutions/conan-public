@@ -18,6 +18,7 @@ typedef struct web_view{
         callback_context_menu_evnt_fn context_menu_handler;
         callback_script_message_received_evnt_fn script_message_received_handler;
         callback_get_cookies_evnt_fn get_cookie_handler;
+        callback_download_started_evnt_fn download_started_handler;
         char* result_eval_js;
         gboolean enable_logging;
         bool executingJavascript;
@@ -307,6 +308,25 @@ LAUNCHER_EXPORT bool set_callback_script_message_received(void* view, callback_s
     {
         wv->script_message_received_handler = handler;
         g_signal_connect(wv->contentManager, "script-message-received", G_CALLBACK(wv->script_message_received_handler), NULL);
+    }
+
+    return 1;
+}
+
+LAUNCHER_EXPORT bool set_callback_download_started(void* view, callback_download_started_evnt_fn handler)
+{
+    webView* wv = (webView*)view;
+    WebKitWebContext* context = webkit_web_view_get_context (wv->view);
+
+    if (!handler && wv->download_started_handler)
+    {
+        g_signal_handlers_disconnect_by_func(context, G_CALLBACK(wv->download_started_handler), NULL);
+        wv->download_started_handler = handler;
+    }
+    else
+    {
+        wv->download_started_handler = handler;
+        g_signal_connect(context, "download-started", G_CALLBACK(wv->download_started_handler), NULL);
     }
 
     return 1;
