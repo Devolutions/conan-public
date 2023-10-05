@@ -129,8 +129,7 @@ function Invoke-TlkBuild {
         'winpr',
         'freerdp',
         'pcre2',
-        'nng',
-        'curl'
+        'nng'
     )
 
     if (@('linux','android') -Contains $Platform) {
