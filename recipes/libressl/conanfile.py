@@ -3,16 +3,17 @@ import os
 
 class LibreSSLConan(ConanFile):
     name = 'libressl'
-    exports = 'VERSION'
-    version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
     license = 'BSD'
-    url = 'https://github.com/awakecoding/LibreSSL.git'
+    url = 'https://github.com/PowerShell/LibreSSL.git'
+    version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
     description = 'LibreSSL'
     settings = 'os', 'arch', 'distro', 'build_type'
     no_copy_source = False
-    branch = 'devolutions'
     python_requires = "shared/1.0.0@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
+    exports = ['VERSION',
+        'patches/0001-normalize-library-output-names.patch',
+        'patches/0002-set-default-output-directories.patch']
 
     options = {
         'fPIC': [True, False],
@@ -31,20 +32,26 @@ class LibreSSLConan(ConanFile):
             return
 
         folder = self.name
-        self.output.info('Cloning repo: %s dest: %s branch: %s' % (self.url, folder, self.branch))
+        tag = 'V%s.0' % (self.version)
+        self.output.info('Cloning repo: %s dest: %s tag: %s' % (self.url, folder, tag))
         git = tools.Git(folder=folder)
         git.clone(self.url)
-        git.checkout(self.branch)
+        git.checkout(tag)
+
+        patches_dir = os.path.join(self.recipe_folder, "patches")
+        if os.path.isdir(patches_dir):
+            for patch_file in os.listdir(patches_dir):
+                patch_path = os.path.join(patches_dir, patch_file)
+                self.output.info('Applying patch: %s' % patch_path)
+                tools.patch(base_path=folder, patch_file=patch_path)
 
         if self.settings.os == 'iOS':
             tools.replace_in_file(os.path.join(folder, 'CMakeLists.txt'),
                 "check_function_exists(syslog_r HAVE_SYSLOG_R)",
                 "#check_function_exists(syslog_r HAVE_SYSLOG_R)")
-
             tools.replace_in_file(os.path.join(folder, 'CMakeLists.txt'),
                 "check_function_exists(syslog HAVE_SYSLOG)",
                 "#check_function_exists(syslog HAVE_SYSLOG)")
-
             tools.replace_in_file(os.path.join(folder, 'CMakeLists.txt'),
                 "check_function_exists(explicit_bzero HAVE_EXPLICIT_BZERO)",
                 "#check_function_exists(explicit_bzero HAVE_EXPLICIT_BZERO)")
@@ -56,7 +63,10 @@ class LibreSSLConan(ConanFile):
 
         cmake = CMake(self)
         self.cmake_wrapper(cmake, self.settings, self.options)
+        cmake.definitions['USE_STATIC_MSVC_RUNTIMES'] = 'ON'
         cmake.definitions['CMAKE_INSTALL_LIBEXECDIR'] = "lib"
+        cmake.definitions['CMAKE_SHARED_LIBRARY_PREFIX'] = "lib"
+        cmake.definitions['CMAKE_STATIC_LIBRARY_PREFIX'] = "lib"
         cmake.definitions['BUILD_SHARED_LIBS'] = 'ON' if self.options.shared else 'OFF'
 
         if self.settings.os == 'iOS' or self.settings.os == 'Android':
