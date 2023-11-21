@@ -103,8 +103,6 @@ function Invoke-TlkBuild {
     )
 
     $HostPackages += @('yarc')
-    #$HostPackages += @('clang-llvm')
-    $HostPackages += @('halide')
 
     $TargetPackages = @()
 
@@ -119,7 +117,6 @@ function Invoke-TlkBuild {
         'lz4',
         'miniz',
         'cjson',
-        'lizard',
         'libpng',
         'libjpeg',
         'libcbor',
@@ -128,8 +125,7 @@ function Invoke-TlkBuild {
         'libressl',
         'winpr',
         'freerdp',
-        'pcre2',
-        'nng'
+        'pcre2'
     )
 
     if (@('linux','android') -Contains $Platform) {
@@ -142,7 +138,6 @@ function Invoke-TlkBuild {
         $TargetPackages += @(
             'munit',
             'libvpx',
-            'libwebm',
             'libfido2',
             'wxsqlite3'
         )
