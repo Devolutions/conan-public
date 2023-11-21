@@ -1,18 +1,21 @@
 from conans import ConanFile, tools, CMake, python_requires
-import os
+import os, shutil
 
 class LibvpxConan(ConanFile):
     name = 'libvpx'
-    exports = 'VERSION'
     version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
     license = 'WebM'
-    url = 'https://github.com/awakecoding/libvpx.git'
+    url = 'https://github.com/webmproject/libvpx.git'
     description = 'WebM VP8/VP9 Codec SDK'
     settings = 'os', 'arch', 'distro', 'build_type'
     no_copy_source = True
-    branch = 'cmake'
     python_requires = "shared/1.0.0@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
+    exports = ['VERSION',
+        'patches/CMakeLists.txt',
+        'patches/vpx.pc.in',
+        'patches/vpx_config.h.in',
+        'patches/vpx_version.h.in']
 
     options = {
         'fPIC': [True, False],
@@ -31,10 +34,15 @@ class LibvpxConan(ConanFile):
             return
 
         folder = self.name
-        self.output.info('Cloning repo: %s dest: %s branch: %s' % (self.url, folder, self.branch))
+        tag = 'v%s' % (self.version)
+        self.output.info('Cloning repo: %s dest: %s tag: %s' % (self.url, folder, tag))
         git = tools.Git(folder=folder)
         git.clone(self.url)
-        git.checkout(self.branch)
+        git.checkout(tag)
+
+        patches_dir = os.path.join(self.recipe_folder, "patches")
+        for file in ['CMakeLists.txt','vpx.pc.in','vpx_config.h.in','vpx_version.h.in']:
+            shutil.copy(os.path.join(patches_dir, file), os.path.join(folder, file))
 
     def build(self):
         if self.settings.arch == 'universal':
