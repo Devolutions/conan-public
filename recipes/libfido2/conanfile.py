@@ -1,18 +1,20 @@
 from conans import ConanFile, tools, CMake, python_requires
-import os
+import os, shutil
 
 class LibFIDO2Conan(ConanFile):
     name = 'libfido2'
-    exports = 'VERSION'
     version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
     license = 'BSD'
-    url = 'https://github.com/awakecoding/libfido2'
+    url = 'https://github.com/PowerShell/libfido2'
     description = 'libfido2'
     settings = 'os', 'arch', 'distro', 'build_type'
     no_copy_source = True
-    branch = 'devolutions'
     python_requires = "shared/1.0.0@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
+    exports = ['VERSION',
+        'patches/0001-fix-cmake-dependency-management.patch',
+        'patches/0002-fix-crypto-explicit_bzero-conflict.patch',
+        'patches/0003-use-linux-hid-backend-for-android.patch']
 
     options = {
         'fPIC': [True, False],
@@ -34,10 +36,18 @@ class LibFIDO2Conan(ConanFile):
 
     def source(self):
         folder = self.name
-        self.output.info('Cloning repo: %s dest: %s branch: %s' % (self.url, folder, self.branch))
+        tag = self.version
+        self.output.info('Cloning repo: %s dest: %s tag: %s' % (self.url, folder, tag))
         git = tools.Git(folder=folder)
         git.clone(self.url)
-        git.checkout(self.branch)
+        git.checkout(tag)
+
+        patches_dir = os.path.join(self.recipe_folder, "patches")
+        if os.path.isdir(patches_dir):
+            for patch_file in [f for f in os.listdir(patches_dir) if f.endswith('.patch')]:
+                patch_path = os.path.join(patches_dir, patch_file)
+                self.output.info('Applying patch: %s' % patch_path)
+                tools.patch(base_path=folder, patch_file=patch_path)
 
     def build(self):
         cmake = CMake(self)

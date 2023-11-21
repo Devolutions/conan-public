@@ -1,0 +1,27 @@
+From 6269064597de4db70b07bd0e454d6ac9fe51a137 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Marc-Andr=C3=A9=20Moreau?= <mamoreau@devolutions.net>
+Date: Fri, 15 Apr 2022 10:09:26 -0400
+Subject: [PATCH 2/3] fix undefined LINE_MAX on Android
+
+---
+ udev_device.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/udev_device.c b/udev_device.c
+index e202150..173cbe4 100644
+--- a/udev_device.c
++++ b/udev_device.c
+@@ -26,6 +26,10 @@
+ #include "udev.h"
+ #include "udev_list.h"
+ 
++#ifndef LINE_MAX
++#define LINE_MAX 2048
++#endif
++
+ #ifndef LONG_BIT
+ #define LONG_BIT (sizeof(unsigned long) * 8)
+ #endif
+-- 
+2.25.1
+
