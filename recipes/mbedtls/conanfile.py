@@ -3,15 +3,18 @@ import os
 
 class MbedtlsConan(ConanFile):
     name = 'mbedtls'
-    exports = 'VERSION'
     version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
     license = 'Apache 2.0'
-    url = 'https://github.com/Devolutions/mbedtls.git'
+    url = 'https://github.com/Mbed-TLS/mbedtls'
     description = 'An open source, portable, easy to use, readable and flexible SSL library'
     settings = 'os', 'arch', 'distro', 'build_type'
-    branch = 'wayk'
     python_requires = "shared/1.0.0@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
+    exports = ['VERSION',
+        'patches/0001-add-windows-mutex-implementation-for-threading.patch',
+        'patches/0002-aes-ni-use-target-attributes-for-32-bit-intrinsics.patch',
+        'patches/0003-fix-build-for-windows-arm64-neon-and-aes-extensions.patch',
+        'patches/0004-add-support-for-mbedtls-ssl-verify-external-authmode.patch']
 
     options = {
         'fPIC': [True, False],
@@ -27,9 +30,18 @@ class MbedtlsConan(ConanFile):
             return
 
         folder = self.name
-        self.output.info('Cloning repo: %s dest: %s branch: %s' % (self.url, folder, self.branch))
+        tag = 'v%s' % (self.version)
+        self.output.info('Cloning repo: %s dest: %s tag: %s' % (self.url, folder, tag))
         git = tools.Git(folder=folder)
-        git.clone(self.url, self.branch)
+        git.clone(self.url)
+        git.checkout(tag)
+
+        patches_dir = os.path.join(self.recipe_folder, "patches")
+        if os.path.isdir(patches_dir):
+            for patch_file in os.listdir(patches_dir):
+                patch_path = os.path.join(patches_dir, patch_file)
+                self.output.info('Applying patch: %s' % patch_path)
+                tools.patch(base_path=folder, patch_file=patch_path)
 
     def build(self):
         if self.settings.arch == 'universal':
@@ -42,16 +54,17 @@ class MbedtlsConan(ConanFile):
         cmake.definitions['ENABLE_TESTING'] = 'OFF'
         cmake.definitions['ENABLE_PROGRAMS'] = 'OFF'
 
-        if self.settings.os == 'Windows':
-            cmake.definitions['MSVC_RUNTIME'] = 'static'
+        mbedtls_configs = ['MBEDTLS_THREADING_C']
 
-        mbedtls_configs = ['MBEDTLS_THREADING_C', 'MBEDTLS_HAVEGE_C', 'MBEDTLS_MD4_C', 'MBEDTLS_CMAC_C']
+        if self.settings.os == 'Windows':
+            cmake.definitions['MSVC_STATIC_RUNTIME'] = 'ON'
+
         if self.settings.os == 'Windows':
             mbedtls_configs.extend(['MBEDTLS_THREADING_WINDOWS'])
         else:
             mbedtls_configs.extend(['MBEDTLS_THREADING_PTHREAD'])
 
-        config_h = os.path.join(self.source_folder, 'mbedtls', 'include', 'mbedtls', 'config.h')
+        config_h = os.path.join(self.source_folder, 'mbedtls', 'include', 'mbedtls', 'mbedtls_config.h')
 
         for config in mbedtls_configs:
             config_string = '#define %s' % config
@@ -60,6 +73,7 @@ class MbedtlsConan(ConanFile):
         cmake.configure(source_folder=self.name)
 
         cmake.build()
+        cmake.install()
 
     def package(self):
         if self.settings.os == 'Windows':
@@ -69,4 +83,8 @@ class MbedtlsConan(ConanFile):
         self.copy('*.h', src='include', dst='include')
 
     def package_info(self):
-        self.cpp_info.libs = ['mbedtls', 'mbedx509', 'mbedcrypto']
+        self.cpp_info.libs = ['mbedtls', 'mbedx509', 'mbedcrypto', 'everest', 'p256m']
+
+        if self.settings.os == 'Windows':
+            for lib in ['bcrypt']:
+                self.cpp_info.libs.append(lib)
