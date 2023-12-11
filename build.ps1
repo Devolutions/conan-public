@@ -154,10 +154,6 @@ function Invoke-TlkBuild {
             $TargetPackages += @('openssh')
         }
     
-        if ($Platform -eq 'windows') {
-            $TargetPackages += @('crashpad')
-        }
-    
         if ((($Platform -eq 'Android') -Or ($Platform -eq "macos")) -And ($BuildType -eq 'RelWithDebInfo')) {
             $TargetPackages = @(
               'cjson',

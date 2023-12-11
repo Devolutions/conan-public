@@ -24,7 +24,7 @@ class WinprConan(ConanFile):
 
     def build_requirements(self):
         super().build_requirements()
-        self.build_requires('mbedtls/2.16.0@devolutions/stable')
+        self.build_requires('mbedtls/3.5.1@devolutions/stable')
         self.build_requires('zlib/1.2.11@devolutions/stable')
 
     def source(self):
@@ -56,6 +56,10 @@ class WinprConan(ConanFile):
         cmake.definitions['WITH_WINPR_TOOLS'] = 'OFF'
         cmake.definitions['WITH_MBEDTLS'] = 'ON'
         cmake.definitions['WITH_OPENSSL'] = 'OFF'
+
+        cmake.definitions['WITH_INTERNAL_RC4'] = 'ON'
+        cmake.definitions['WITH_INTERNAL_MD4'] = 'ON'
+        cmake.definitions['WITH_INTERNAL_MD5'] = 'ON'
 
         if self.settings.os == "Macos":
             cmake.definitions['WITH_PKCS11'] = 'OFF'

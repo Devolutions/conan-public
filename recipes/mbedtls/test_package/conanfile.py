@@ -8,25 +8,93 @@ class TestPackageConan(ConanFile):
         pass
 
     def test(self):
+        lib_names = ['mbedtls', 'mbedx509', 'mbedcrypto', 'everest', 'p256m']
+        
         if self.settings.os == 'Windows':
-            libs = ['mbedtls.lib']
+            lib_prefix = ''
+            lib_suffix = '.lib'
         else:
-            libs = ['libmbedtls.a', 'libmbedx509.a', 'libmbedcrypto.a']
+            lib_prefix = 'lib'
+            lib_suffix = '.a'
+
+        libs = []
+        for lib_name in lib_names:
+            libs.append(lib_prefix + lib_name + lib_suffix)
+
         headers = [
-            'aes.h', 'asn1write.h', 'camellia.h', 'cipher_internal.h', 'debug.h',
-            'ecjpake.h', 'error.h', 'md.h', 'memory_buffer_alloc.h', 'pem.h',
-            'pkcs5.h', 'rsa.h', 'ssl.h', 'ssl_ticket.h', 'x509_crl.h', 'aesni.h',
-            'base64.h', 'ccm.h', 'cmac.h', 'des.h', 'ecp.h', 'gcm.h', 'md2.h',
-            'net.h', 'pk.h', 'platform.h', 'rsa_internal.h', 'ssl_cache.h',
-            'threading.h', 'x509_crt.h', 'arc4.h', 'bignum.h', 'certs.h',
-            'compat-1.3.h', 'dhm.h', 'ecp_internal.h', 'havege.h', 'md4.h',
-            'net_sockets.h', 'pk_internal.h', 'platform_time.h', 'sha1.h',
-            'ssl_ciphersuites.h', 'timing.h', 'x509_csr.h', 'aria.h', 'blowfish.h',
-            'check_config.h', 'config.h', 'ecdh.h', 'entropy.h', 'hkdf.h', 'md5.h',
-            'oid.h', 'pkcs11.h', 'platform_util.h', 'sha256.h', 'ssl_cookie.h',
-            'version.h', 'xtea.h', 'asn1.h', 'bn_mul.h', 'cipher.h', 'ctr_drbg.h',
-            'ecdsa.h', 'entropy_poll.h', 'hmac_drbg.h', 'md_internal.h', 'padlock.h',
-            'pkcs12.h', 'ripemd160.h', 'sha512.h', 'ssl_internal.h', 'x509.h'
+            'aes.h',
+            'aria.h',
+            'asn1.h',
+            'asn1write.h',
+            'base64.h',
+            'bignum.h',
+            'build_info.h',
+            'camellia.h',
+            'ccm.h',
+            'chacha20.h',
+            'chachapoly.h',
+            'check_config.h',
+            'cipher.h',
+            'cmac.h',
+            'compat-2.x.h',
+            'config_adjust_legacy_crypto.h',
+            'config_adjust_legacy_from_psa.h',
+            'config_adjust_psa_from_legacy.h',
+            'config_adjust_psa_superset_legacy.h',
+            'config_adjust_ssl.h',
+            'config_adjust_x509.h',
+            'config_psa.h',
+            'constant_time.h',
+            'ctr_drbg.h',
+            'debug.h',
+            'des.h',
+            'dhm.h',
+            'ecdh.h',
+            'ecdsa.h',
+            'ecjpake.h',
+            'ecp.h',
+            'entropy.h',
+            'error.h',
+            'gcm.h',
+            'hkdf.h',
+            'hmac_drbg.h',
+            'lms.h',
+            'mbedtls_config.h',
+            'md.h',
+            'md5.h',
+            'memory_buffer_alloc.h',
+            'net_sockets.h',
+            'nist_kw.h',
+            'oid.h',
+            'pem.h',
+            'pk.h',
+            'pkcs12.h',
+            'pkcs5.h',
+            'pkcs7.h',
+            'platform_time.h',
+            'platform_util.h',
+            'platform.h',
+            'poly1305.h',
+            'private_access.h',
+            'psa_util.h',
+            'ripemd160.h',
+            'rsa.h',
+            'sha1.h',
+            'sha256.h',
+            'sha3.h',
+            'sha512.h',
+            'ssl_cache.h',
+            'ssl_ciphersuites.h',
+            'ssl_cookie.h',
+            'ssl_ticket.h',
+            'ssl.h',
+            'threading.h',
+            'timing.h',
+            'version.h',
+            'x509_crl.h',
+            'x509_crt.h',
+            'x509_csr.h',
+            'x509.h'
         ]
 
         self.output.info('Testing libraries exists:')

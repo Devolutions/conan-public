@@ -1,0 +1,139 @@
+From d9daedc6a2ac60058fe06e7cbc94a5e6310ec23a Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Marc-Andr=C3=A9=20Moreau?= <mamoreau@devolutions.net>
+Date: Mon, 11 Dec 2023 11:02:35 -0500
+Subject: [PATCH] add windows mutex implementation for threading
+
+---
+ include/mbedtls/check_config.h   |  7 +++++
+ include/mbedtls/mbedtls_config.h | 11 ++++++++
+ include/mbedtls/threading.h      | 16 +++++++++++
+ library/threading.c              | 46 ++++++++++++++++++++++++++++++++
+ 4 files changed, 80 insertions(+)
+
+diff --git a/include/mbedtls/check_config.h b/include/mbedtls/check_config.h
+index e479ef3a0..059c8be7e 100644
+--- a/include/mbedtls/check_config.h
++++ b/include/mbedtls/check_config.h
+@@ -1049,6 +1049,13 @@
+ #define MBEDTLS_THREADING_IMPL
+ #endif
+ 
++#if defined(MBEDTLS_THREADING_WINDOWS)
++#if !defined(MBEDTLS_THREADING_C) || defined(MBEDTLS_THREADING_IMPL)
++#error "MBEDTLS_THREADING_WINDOWS defined, but not all prerequisites"
++#endif
++#define MBEDTLS_THREADING_IMPL
++#endif
++
+ #if defined(MBEDTLS_THREADING_ALT)
+ #if !defined(MBEDTLS_THREADING_C) || defined(MBEDTLS_THREADING_IMPL)
+ #error "MBEDTLS_THREADING_ALT defined, but not all prerequisites"
+diff --git a/include/mbedtls/mbedtls_config.h b/include/mbedtls/mbedtls_config.h
+index e1456b9ae..3d3623158 100644
+--- a/include/mbedtls/mbedtls_config.h
++++ b/include/mbedtls/mbedtls_config.h
+@@ -2078,6 +2078,17 @@
+  */
+ //#define MBEDTLS_THREADING_PTHREAD
+ 
++/**
++ * \def MBEDTLS_THREADING_WINDOWS
++ *
++ * Enable the Windows wrapper layer for the threading layer.
++ *
++ * Requires: MBEDTLS_THREADING_C
++ *
++ * Uncomment this to enable Windows mutexes.
++ */
++//#define MBEDTLS_THREADING_WINDOWS
++
+ /**
+  * \def MBEDTLS_USE_PSA_CRYPTO
+  *
+diff --git a/include/mbedtls/threading.h b/include/mbedtls/threading.h
+index ed16a23b1..609013221 100644
+--- a/include/mbedtls/threading.h
++++ b/include/mbedtls/threading.h
+@@ -35,6 +35,22 @@ typedef struct mbedtls_threading_mutex_t {
+ } mbedtls_threading_mutex_t;
+ #endif
+ 
++#if defined(MBEDTLS_THREADING_WINDOWS)
++
++#ifndef WIN32_LEAN_AND_MEAN
++#define WIN32_LEAN_AND_MEAN
++#endif
++
++#include <windows.h>
++
++typedef struct
++{
++    CRITICAL_SECTION cs;
++    char is_valid;
++} mbedtls_threading_mutex_t;
++
++#endif
++
+ #if defined(MBEDTLS_THREADING_ALT)
+ /* You should define the mbedtls_threading_mutex_t type in your header */
+ #include "threading_alt.h"
+diff --git a/library/threading.c b/library/threading.c
+index 52fe8fca9..b36eb0e16 100644
+--- a/library/threading.c
++++ b/library/threading.c
+@@ -113,6 +113,52 @@ int (*mbedtls_mutex_unlock)(mbedtls_threading_mutex_t *) = threading_mutex_unloc
+ 
+ #endif /* MBEDTLS_THREADING_PTHREAD */
+ 
++#if defined(MBEDTLS_THREADING_WINDOWS)
++static void threading_mutex_init_windows( mbedtls_threading_mutex_t *mutex )
++{
++    if( mutex == NULL )
++        return;
++
++    InitializeCriticalSection( &mutex->cs );
++    mutex->is_valid = 1;
++}
++
++static void threading_mutex_free_windows( mbedtls_threading_mutex_t *mutex )
++{
++    if( mutex == NULL || !mutex->is_valid )
++        return;
++
++    DeleteCriticalSection( &mutex->cs );
++    mutex->is_valid = 0;
++}
++
++static int threading_mutex_lock_windows( mbedtls_threading_mutex_t *mutex )
++{
++    if( mutex == NULL || ! mutex->is_valid )
++        return( MBEDTLS_ERR_THREADING_BAD_INPUT_DATA );
++
++    EnterCriticalSection( &mutex->cs );
++    return( 0 );
++}
++
++static int threading_mutex_unlock_windows( mbedtls_threading_mutex_t *mutex )
++{
++    if( mutex == NULL || ! mutex->is_valid )
++        return( MBEDTLS_ERR_THREADING_BAD_INPUT_DATA );
++
++    LeaveCriticalSection( &mutex->cs );
++    return( 0 );
++}
++
++void (*mbedtls_mutex_init)( mbedtls_threading_mutex_t * ) = threading_mutex_init_windows;
++void (*mbedtls_mutex_free)( mbedtls_threading_mutex_t * ) = threading_mutex_free_windows;
++int (*mbedtls_mutex_lock)( mbedtls_threading_mutex_t * ) = threading_mutex_lock_windows;
++int (*mbedtls_mutex_unlock)( mbedtls_threading_mutex_t * ) = threading_mutex_unlock_windows;
++
++#define MUTEX_INIT = { NULL, 0, 0, NULL, NULL, 0 }
++
++#endif /* MBEDTLS_THREADING_WINDOWS */
++
+ #if defined(MBEDTLS_THREADING_ALT)
+ static int threading_mutex_fail(mbedtls_threading_mutex_t *mutex)
+ {
+-- 
+2.25.1
+
