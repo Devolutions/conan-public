@@ -8,52 +8,74 @@ env:
    conan-version: 1.60.0
   
 jobs:
+  generate-matrix:
+    name: generate build matrix
+    runs-on: ubuntu-latest
+    outputs:
+      matrix-json: ${{ steps.generate-matrix.outputs.matrix }}
+    steps:
+      - name: create build matrix
+        id: generate-matrix
+        shell: pwsh
+        run: |
+          $Jobs = @()
+          @('windows', 'macos', 'linux', 'ios', 'android') | Foreach-Object {
+            $Platform = $_
+            $Architectures = @('x86_64', 'aarch64')
+        
+            if($Platform -Eq 'ios' -Or $Platform -Eq 'android') {
+                $Architectures += 'arm'
+            }
+            if($Platform -Eq 'android') {
+                $Architectures += 'x86'
+            }
+        
+            $Architectures | ForEach-Object {
+                $Architecture = $_
+                $BuildTypes = @('Debug', 'Release')
+        
+                if ($Platform -Eq "macos" -Or $Platform -Eq "Android") {
+                    $BuildTypes += "RelWithDebInfo"
+                }
+        
+                $BuildTypes | ForEach-Object {
+                    $BuildType = $_
+                    $Job = @{
+                        name = "[$($Platform.Substring(0, 3))-$Architecture-$BuildType]"
+                        arch = $Architecture
+                        build_type = $BuildType
+                        os = $Platform
+                        runner = switch ($Platform) {
+                            "windows" { "windows-2019" }
+                            { @("macos", "ios") -contains $_ } { "macos-latest" }
+                            { @("linux", "android") -contains $_ } { "ubuntu-20.04" }
+                        }
+                    }
+                    $Jobs += $Job
+                    
+                    if ($Platform -Eq "linux") {
+                        $Job = $Job.Clone()
+                        $Job["distro"] = "ubuntu-22.04"
+                        $Job["name"] = "[$($Platform.Substring(0, 3))-$($Job["distro"])-$Architecture-$BuildType]"
+                        $Jobs += $Job
+                }
+              }
+            }
+          }
+
+          echo "matrix=$($Jobs | ConvertTo-JSON -Compress)" >> $Env:GITHUB_OUTPUT
+
   build:
-    name: conan packages [${{ matrix.arch }}-${{ matrix.os }}-${{ matrix.build_type }}]
+    name: ${{matrix.name}}
     runs-on: ${{matrix.runner}}
+    needs: [generate-matrix]
     concurrency: 
-      group: conan-${{ github.ref }}-${{matrix.os}}-${{matrix.arch}}-${{ matrix.build_type }}
+      group: conan-${{ github.ref }}-${{matrix.name}}
       cancel-in-progress: true
     strategy:
       fail-fast: false
       matrix:
-        arch: [ x86, x86_64, arm, aarch64 ]
-        os: [ windows, macos, linux, ios, android ]
-        build_type: [ Debug, Release, RelWithDebInfo ]
-        
-        exclude:
-          - arch: x86
-            os: macos
-          - arch: x86
-            os: linux
-          - arch: x86
-            os: ios
-          - arch: x86
-            os: windows
-          - arch: arm
-            os: windows
-          - arch: arm
-            os: macos
-          - arch: arm
-            os: linux
-          - build_type: RelWithDebInfo
-            os: windows
-          - build_type: RelWithDebInfo
-            os: linux
-          - build_type: RelWithDebInfo
-            os: ios
-
-        include:
-          - os: windows
-            runner: windows-2019
-          - os: macos
-            runner: macos-latest
-          - os: linux
-            runner: ubuntu-20.04
-          - os: ios
-            runner: macos-latest
-          - os: android
-            runner: ubuntu-20.04
+        include: ${{ fromJson(needs.generate-matrix.outputs.matrix-json) }}
 
     steps:
       - name: Check out ${{ github.repository }}
@@ -143,14 +165,24 @@ jobs:
           echo "CONAN_MANIFEST_TIME=$ConanManifestTime" >> $Env:GITHUB_ENV
 
       - name: Build conan packages
+        shell: pwsh
         run: |
-          pwsh build.ps1 -Platform ${{ matrix.os }} -Architecture ${{ matrix.arch }} -BuildType ${{ matrix.build_type }}
+          if ("${{ matrix.distro }}") {
+            ./build.ps1 -Platform ${{ matrix.os }} -Architecture ${{ matrix.arch }} -BuildType ${{ matrix.build_type }} -Distribution ${{ matrix.distro }}
+          } else {
+            ./build.ps1 -Platform ${{ matrix.os }} -Architecture ${{ matrix.arch }} -BuildType ${{ matrix.build_type }}
+          }
 
       - name: Package conan cache
         id: package-conan-cache
         shell: pwsh
         run: |
           $PACKAGE_NAME="conan-${{ matrix.arch }}-${{ matrix.os }}-${{ matrix.build_type }}"
+
+          if ("${{ matrix.distro }}") {
+            $PACKAGE_NAME += "_${{ matrix.distro }}"
+          }
+
           conan remove --locks
           $CONAN_DATA = Join-Path $Env:CONAN_USER_HOME ".conan" "data"
           $RemoveList = Get-ChildItem "${CONAN_DATA}" -Include @("build","source") -Directory -Depth 4 -Recurse -Name
