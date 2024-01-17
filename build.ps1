@@ -74,7 +74,7 @@ function Invoke-TlkBuild {
 		[string] $Platform,
 		[ValidateSet('x86','x86_64','arm','arm64','aarch64')]
 		[string] $Architecture = "x86_64",
-		[ValidateSet('ubuntu-18.04','ubuntu-20.04','debian-10','alpine-3.14','opensuse-15.2')]
+		[ValidateSet('ubuntu-18.04','ubuntu-20.04','ubuntu-22.04','debian-10','alpine-3.14','opensuse-15.2')]
 		[string] $Distribution,
         [string] $UserChannel = "devolutions/stable",
         [ValidateSet('Release','RelWithDebInfo','Debug','Both')] # Both == Release + Debug
@@ -104,15 +104,7 @@ function Invoke-TlkBuild {
 
     $HostPackages += @('yarc')
 
-    $TargetPackages = @()
-
-    if ($Platform -eq 'Linux') {
-        $TargetPackages += @('sysroot')
-        $TargetPackages += @('webview')
-        $TargetPackages += @('embedded-terminal')
-    }
-
-    $TargetPackages += @(
+    $BasePackages = @(
         'zlib',
         'lz4',
         'miniz',
@@ -128,42 +120,58 @@ function Invoke-TlkBuild {
         'pcre2'
     )
 
-    if (@('linux','android') -Contains $Platform) {
-        $TargetPackages += @(
-            'libudev-zero'
-        )
-    }
+    $TargetPackages = @()
 
-    if (@('windows','macos','linux') -Contains $Platform) {
-        $TargetPackages += @(
-            'munit',
-            'libvpx',
-            'libfido2',
-            'wxsqlite3'
-        )
+    if (($Platform -eq 'Linux') -And ($Distribution -eq "ubuntu-22.04")) {
+        $TargetPackages += @('sysroot')
+        $TargetPackages += @('webview')
     }
+    else {
+        if ($Platform -eq 'Linux') {
+            $TargetPackages += @('sysroot')
+            $TargetPackages += @('webview')
+            $TargetPackages += @('embedded-terminal')
+        }
 
-    if (@('windows','macos','linux') -Contains $Platform) {
-        $TargetPackages += @('openssh')
+        $TargetPackages += $BasePackages
+
+        if (@('linux','android') -Contains $Platform) {
+            $TargetPackages += @(
+                'libudev-zero'
+            )
+        }
+    
+        if (@('windows','macos','linux') -Contains $Platform) {
+            $TargetPackages += @(
+                'munit',
+                'libvpx',
+                'libfido2',
+                'wxsqlite3'
+            )
+        }
+    
+        if (@('windows','macos','linux') -Contains $Platform) {
+            $TargetPackages += @('openssh')
+        }
+    
+        if ($Platform -eq 'windows') {
+            $TargetPackages += @('crashpad')
+        }
+    
+        if ((($Platform -eq 'Android') -Or ($Platform -eq "macos")) -And ($BuildType -eq 'RelWithDebInfo')) {
+            $TargetPackages = @(
+              'cjson',
+              'zlib', 
+              'libpng',
+              'libjpeg',
+              'mbedtls', 
+              'openssl', 
+              'winpr', 
+              'freerdp'
+            )
+        }
     }
-
-    if ($Platform -eq 'windows') {
-        $TargetPackages += @('crashpad')
-    }
-
-    if ((($Platform -eq 'Android') -Or ($Platform -eq "macos")) -And ($BuildType -eq 'RelWithDebInfo')) {
-        $TargetPackages = @(
-          'cjson',
-          'zlib', 
-          'libpng',
-          'libjpeg',
-          'mbedtls', 
-          'openssl', 
-          'winpr', 
-          'freerdp'
-        )
-    }
-
+    
     $TargetProfile = "$Platform-$Architecture".ToLower()
     $Aliases = @('latest')
 

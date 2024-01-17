@@ -140,6 +140,8 @@ LAUNCHER_EXPORT void close_webview(void* webview)
     free(wv);
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 LAUNCHER_EXPORT void evaluate_javascript(void* webview, char *script)
 {
     webView* wv = (webView*)webview;
@@ -147,6 +149,7 @@ LAUNCHER_EXPORT void evaluate_javascript(void* webview, char *script)
     wv->executingJavascript = TRUE;
     webkit_web_view_run_javascript(wkwebview, script, NULL, evaluate_javascript_cb, wv);
 }
+#pragma clang diagnostic pop
 
 LAUNCHER_EXPORT void set_cookies_save_path(void* view, const char* path)
 {
@@ -175,6 +178,8 @@ LAUNCHER_EXPORT void set_proxy(void* view, const gchar *proxyUri)
     webkit_website_data_manager_set_network_proxy_settings(dataManager, WEBKIT_NETWORK_PROXY_MODE_CUSTOM, proxySettings);
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 static void evaluate_javascript_cb(GObject *obj, GAsyncResult *result, gpointer user_data)
 {
     WebKitJavascriptResult* js_result;
@@ -213,6 +218,7 @@ static void evaluate_javascript_cb(GObject *obj, GAsyncResult *result, gpointer 
 
     webkit_javascript_result_unref(js_result);
 }
+#pragma clang diagnostic pop
 
 static gboolean web_view_load_failed_cb(WebKitWebView* view, WebKitLoadEvent load_event, gchar* failing_uri, GError* error, gpointer user_data)
 {
