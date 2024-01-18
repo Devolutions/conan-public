@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.2)
 
 project(WebView C CXX)
 
+set(CMAKE_VERBOSE_MAKEFILE ON CACHE BOOL "ON" FORCE)
+
 set(CMAKE_COLOR_MAKEFILE ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
@@ -33,4 +35,4 @@ endif()
 add_library("WebView" SHARED "src/WebView.c")
 
 target_compile_options("WebView" PRIVATE -Wall -Werror)
-target_link_libraries("WebView" ${GTK3_LIBRARIES} ${LIBSOUP_LIBRARIES} ${WEBKIT2_LIBRARIES})
+target_link_libraries("WebView" ${GTK3_LIBRARIES} ${LIBSOUP_LIBRARIES} ${WEBKIT2GTK_LIBRARIES})
