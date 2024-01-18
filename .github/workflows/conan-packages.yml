@@ -22,11 +22,9 @@ jobs:
           @('windows', 'macos', 'linux', 'ios', 'android') | Foreach-Object {
             $Platform = $_
             $Architectures = @('x86_64', 'aarch64')
-        
-            if($Platform -Eq 'ios' -Or $Platform -Eq 'android') {
-                $Architectures += 'arm'
-            }
+
             if($Platform -Eq 'android') {
+                $Architectures += 'arm'
                 $Architectures += 'x86'
             }
         
