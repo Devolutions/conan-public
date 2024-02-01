@@ -11,13 +11,14 @@
 
 typedef void (*callback_js_ready_evnt_fn)();
 typedef bool (*callback_load_failed_evnt_fn)(char* failed_uri, char* message);
-typedef bool (*callback_load_changed_evnt_fn)(WebKitLoadEvent evnt);
+typedef bool (*callback_load_changed_evnt_fn)(WebKitWebView* view, WebKitLoadEvent load_event, gpointer user_data);
 typedef bool (*callback_decide_policy_evnt_fn)(WebKitWebView* view, gpointer decision, WebKitPolicyDecisionType type);
 typedef void* (*callback_decide_new_window_policy_evnt_fn)(WebKitWebView* view, gpointer action, WebKitNavigationType type);
 typedef void (*callback_get_cookies_evnt_fn)(char* header);
 typedef void (*callback_script_message_received_evnt_fn)(WebKitUserContentManager* contentManager, WebKitJavascriptResult* js_result);
 typedef void (*callback_context_menu_evnt_fn)(WebKitWebView* view, WebKitContextMenu* context_menu, WebKitHitTestResult* hit_test_result, gpointer user_data);
 typedef void (*callback_download_started_evnt_fn)(WebKitContextMenu* context_menu, WebKitDownload* download, gpointer user_data);
+typedef void (*callback_clear_data_manager_finish_evnt_fn)(gboolean clear_successful);
 
 LAUNCHER_EXPORT void* webview_new();
 LAUNCHER_EXPORT void* webview_new_ephemeral();
@@ -29,6 +30,7 @@ LAUNCHER_EXPORT char* get_evaluate_javascript_string(void* view);
 LAUNCHER_EXPORT bool set_callback_decide_policy(void* view, callback_decide_policy_evnt_fn handler);
 LAUNCHER_EXPORT bool set_callback_decide_new_window_policy(void* view, callback_decide_new_window_policy_evnt_fn handler);
 LAUNCHER_EXPORT bool set_callback_js_ready(void* view, callback_js_ready_evnt_fn handler);
+LAUNCHER_EXPORT bool set_callback_clear_data_manager_finish(void* view, callback_clear_data_manager_finish_evnt_fn handler);
 LAUNCHER_EXPORT bool set_callback_load_changed(void* view, callback_load_changed_evnt_fn handler);
 LAUNCHER_EXPORT bool set_callback_menu(void* view, callback_context_menu_evnt_fn handler);
 LAUNCHER_EXPORT bool set_callback_script_message_received(void* view, callback_script_message_received_evnt_fn handler);
@@ -60,9 +62,21 @@ LAUNCHER_EXPORT gboolean webview_get_allow_universal_access_from_file_urls(void*
 LAUNCHER_EXPORT void webview_set_allow_universal_access_from_file_urls(void* webview, gboolean allowed);
 LAUNCHER_EXPORT gboolean webview_get_enable_write_console_messages_to_stdout(void* webview);
 LAUNCHER_EXPORT void webview_set_enable_write_console_messages_to_stdout(void* webview, gboolean enabled);
+LAUNCHER_EXPORT WebKitHardwareAccelerationPolicy webview_get_hardware_acceleration_policy(void* webview);
+LAUNCHER_EXPORT void webview_set_hardware_acceleration_policy(void* webview, WebKitHardwareAccelerationPolicy policy);
+LAUNCHER_EXPORT gboolean webview_get_enable_developer_extras(void* webview);
+LAUNCHER_EXPORT void webview_set_enable_developer_extras(void* webview, gboolean enabled);
+LAUNCHER_EXPORT WebKitCacheModel webview_get_cache_model(void* webview);
+LAUNCHER_EXPORT void webview_set_cache_model(void* webview, WebKitCacheModel cache_model);
 LAUNCHER_EXPORT void webview_register_script_message_handler(void* webview, const gchar *name, callback_script_message_received_evnt_fn handler);
 LAUNCHER_EXPORT void webview_unregister_script_message_handler(void* webview, const gchar *name, callback_script_message_received_evnt_fn handler);
 LAUNCHER_EXPORT void webview_get_cookies(void* webview, const gchar* uri);
 LAUNCHER_EXPORT char* get_js_result_message(void* js_result);
+LAUNCHER_EXPORT void* webview_add_script(void* webview, const gchar* source, WebKitUserContentInjectedFrames injected_frames, WebKitUserScriptInjectionTime injection_time, const gchar* const* allow_list, const gchar* const* block_list);
+LAUNCHER_EXPORT void webview_remove_script(void* webview, void* script);
+LAUNCHER_EXPORT void webview_remove_all_scripts(void* webview);
+LAUNCHER_EXPORT void webview_show_inspector(void* webview);
+LAUNCHER_EXPORT void webview_website_data_manager_clear(void* webview, WebKitWebsiteDataTypes types, GTimeSpan timespan);
+LAUNCHER_EXPORT gboolean webview_website_data_manager_clear_finish(void* webview, GAsyncResult* result, GError** error);
 
 #endif
