@@ -4,6 +4,7 @@
 // https://people.igalia.com/tsaunier/documentation/WebKitGTK/WebKitWebView.html?gi-language=c#WebKitWebView
 static void evaluate_javascript_cb(GObject *obj, GAsyncResult *result, gpointer user_data);
 static gboolean web_view_load_failed_cb(WebKitWebView* view, WebKitLoadEvent load_event, gchar* failing_uri, GError* error, gpointer user_data);
+static void clear_data_manager_cb(GObject *obj, GAsyncResult *result, gpointer user_data);
 char* get_evaluate_javascript_string();
 
 typedef struct web_view{
@@ -19,9 +20,11 @@ typedef struct web_view{
         callback_script_message_received_evnt_fn script_message_received_handler;
         callback_get_cookies_evnt_fn get_cookie_handler;
         callback_download_started_evnt_fn download_started_handler;
+        callback_clear_data_manager_finish_evnt_fn clear_data_manager_finish_handler;
         char* result_eval_js;
         gboolean enable_logging;
         bool executingJavascript;
+        bool clearingDataManager;
         bool destroyObject;
 } webView;
 
@@ -84,6 +87,7 @@ LAUNCHER_EXPORT void* webview_new()
     wv->load_failed_handler = 0;
     wv->decide_policy_handler = 0;
     wv->js_ready_handler = 0;
+    wv->clear_data_manager_finish_handler = 0;
     WebKitWebContext* context = webkit_web_context_new ();
     wv->view = WEBKIT_WEB_VIEW(webkit_web_view_new_with_context (context));
     wv->contentManager = webkit_web_view_get_user_content_manager(wv->view);
@@ -101,8 +105,10 @@ LAUNCHER_EXPORT void* webview_new_ephemeral()
     wv->load_failed_handler = 0;
     wv->decide_policy_handler = 0;
     wv->js_ready_handler = 0;
+    wv->clear_data_manager_finish_handler = 0;
     WebKitWebContext* context = webkit_web_context_new_ephemeral ();
     wv->view = WEBKIT_WEB_VIEW(webkit_web_view_new_with_context (context));
+    wv->contentManager = webkit_web_view_get_user_content_manager(wv->view);
     g_signal_connect(wv->view, "load-failed", G_CALLBACK(web_view_load_failed_cb), wv);
 
     webkit_website_data_manager_set_tls_errors_policy(webkit_web_context_get_website_data_manager(webkit_web_view_get_context(wv->view)), WEBKIT_TLS_ERRORS_POLICY_IGNORE);
@@ -131,7 +137,7 @@ LAUNCHER_EXPORT void close_webview(void* webview)
 {
     webView* wv = (webView*)webview;
 
-    if(wv->executingJavascript)
+    if(wv->executingJavascript || wv->clearingDataManager)
     {
         wv->destroyObject = TRUE;
         return;
@@ -217,6 +223,38 @@ static void evaluate_javascript_cb(GObject *obj, GAsyncResult *result, gpointer 
     }
 
     webkit_javascript_result_unref(js_result);
+}
+#pragma clang diagnostic pop
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+static void clear_data_manager_cb(GObject *obj, GAsyncResult *result, gpointer user_data)
+{
+    GError* error = NULL;
+    webView* wv = (webView*)user_data;
+
+    if(wv->destroyObject)
+    {
+        free(wv);
+        return;
+    }
+
+    gboolean successful = webview_website_data_manager_clear_finish(wv, result, &error);
+
+    wv->clearingDataManager = FALSE;
+
+    if(!successful)
+    {
+        if(wv->enable_logging)
+        {
+            g_warning ("Error clearing data manager: %s", error->message);
+        }
+
+        g_error_free (error);
+    }
+
+    if(wv->clear_data_manager_finish_handler)
+        wv->clear_data_manager_finish_handler(successful);
 }
 #pragma clang diagnostic pop
 
@@ -356,6 +394,13 @@ LAUNCHER_EXPORT bool set_callback_js_ready(void* view, callback_js_ready_evnt_fn
 {
     webView* wv = (webView*)view;
     wv->js_ready_handler = handler;
+    return 1;
+}
+
+LAUNCHER_EXPORT bool set_callback_clear_data_manager_finish(void* view, callback_clear_data_manager_finish_evnt_fn handler)
+{
+    webView* wv = (webView*)view;
+    wv->clear_data_manager_finish_handler = handler;
     return 1;
 }
 
@@ -520,6 +565,48 @@ LAUNCHER_EXPORT void webview_set_enable_write_console_messages_to_stdout(void* w
     webkit_settings_set_enable_write_console_messages_to_stdout(settings, enabled);
 }
 
+LAUNCHER_EXPORT WebKitHardwareAccelerationPolicy webview_get_hardware_acceleration_policy(void* webview)
+{
+    webView* wv = (webView*)webview;
+    WebKitSettings *settings = webkit_web_view_get_settings(wv->view);
+    return webkit_settings_get_hardware_acceleration_policy(settings);
+}
+
+LAUNCHER_EXPORT void webview_set_hardware_acceleration_policy(void* webview, WebKitHardwareAccelerationPolicy policy)
+{
+    webView* wv = (webView*)webview;
+    WebKitSettings *settings = webkit_web_view_get_settings(wv->view);
+    webkit_settings_set_hardware_acceleration_policy(settings, policy);
+}
+
+LAUNCHER_EXPORT gboolean webview_get_enable_developer_extras(void* webview)
+{
+    webView* wv = (webView*)webview;
+    WebKitSettings *settings = webkit_web_view_get_settings(wv->view);
+    return webkit_settings_get_enable_developer_extras(settings);
+}
+
+LAUNCHER_EXPORT void webview_set_enable_developer_extras(void* webview, gboolean enabled)
+{
+    webView* wv = (webView*)webview;
+    WebKitSettings *settings = webkit_web_view_get_settings(wv->view);
+    webkit_settings_set_enable_developer_extras(settings, enabled);
+}
+
+LAUNCHER_EXPORT WebKitCacheModel webview_get_cache_model(void* webview)
+{
+    webView* wv = (webView*)webview;
+    WebKitWebContext* context = webkit_web_view_get_context(wv->view);
+    return webkit_web_context_get_cache_model(context);
+}
+
+LAUNCHER_EXPORT void webview_set_cache_model(void* webview, WebKitCacheModel cache_model)
+{
+    webView* wv = (webView*)webview;
+    WebKitWebContext* context = webkit_web_view_get_context(wv->view);
+    webkit_web_context_set_cache_model(context, cache_model);
+}
+
 LAUNCHER_EXPORT void webview_register_script_message_handler(void* webview, const gchar *name, callback_script_message_received_evnt_fn handler)
 {
     webView* wv = (webView*)webview;
@@ -580,4 +667,53 @@ LAUNCHER_EXPORT char* get_js_result_message(void* js_result)
 {
     JSCValue *val = webkit_javascript_result_get_js_value((WebKitJavascriptResult*)js_result);
     return jsc_value_to_string(val);
+}
+
+LAUNCHER_EXPORT void* webview_add_script(void* webview, const gchar* source, WebKitUserContentInjectedFrames injected_frames, WebKitUserScriptInjectionTime injection_time, const gchar* const* allow_list, const gchar* const* block_list)
+{
+    webView* wv = (webView*)webview;
+
+    WebKitUserScript* script = webkit_user_script_new(source, injected_frames, injection_time, allow_list, block_list);
+    webkit_user_content_manager_add_script(wv->contentManager, script);
+
+    return script;
+}
+
+LAUNCHER_EXPORT void webview_remove_script(void* webview, void* script)
+{
+    webView* wv = (webView*)webview;
+
+    webkit_user_content_manager_remove_script(wv->contentManager, (WebKitUserScript*)script);
+}
+
+LAUNCHER_EXPORT void webview_remove_all_scripts(void* webview)
+{
+    webView* wv = (webView*)webview;
+
+    webkit_user_content_manager_remove_all_scripts(wv->contentManager);
+}
+
+LAUNCHER_EXPORT void webview_show_inspector(void* webview)
+{
+    webView* wv = (webView*)webview;
+
+    WebKitWebInspector *inspector = webkit_web_view_get_inspector(wv->view);
+    webkit_web_inspector_show(inspector);
+}
+
+LAUNCHER_EXPORT void webview_website_data_manager_clear(void* webview, WebKitWebsiteDataTypes types, GTimeSpan timespan)
+{
+    webView* wv = (webView*)webview;
+
+    WebKitWebsiteDataManager* manager = webkit_web_view_get_website_data_manager(wv->view);
+    wv->clearingDataManager = TRUE;
+    webkit_website_data_manager_clear(manager, types, timespan, NULL, clear_data_manager_cb, wv);
+}
+
+LAUNCHER_EXPORT gboolean webview_website_data_manager_clear_finish(void* webview, GAsyncResult* result, GError** error)
+{
+    webView* wv = (webView*)webview;
+
+    WebKitWebsiteDataManager* manager = webkit_web_view_get_website_data_manager(wv->view);
+    return webkit_website_data_manager_clear_finish(manager, result, error);
 }
