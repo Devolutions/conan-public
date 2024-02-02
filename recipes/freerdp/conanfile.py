@@ -10,7 +10,7 @@ class FreerdpConan(ConanFile):
     url = 'https://github.com/Devolutions/FreeRDP.git'
     description = 'FreeRDP is a free remote desktop protocol client'
     settings = 'os', 'arch', 'distro', 'build_type'
-    branch = 'devolutions-rdp-rebase-20231116'
+    branch = 'devolutions-rdp-rebase-20240201'
     python_requires = "shared/1.0.0@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
 
@@ -86,6 +86,7 @@ class FreerdpConan(ConanFile):
             cmake.definitions['WITH_CUPS'] = 'ON'
             
         if self.settings.os == "Macos":
+            cmake.definitions['WITH_OPUS'] = 'OFF'
             cmake.definitions['WITH_MACAUDIO'] = 'ON'
 
         if self.settings.os == "iOS":
