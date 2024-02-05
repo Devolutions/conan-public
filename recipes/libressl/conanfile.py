@@ -12,8 +12,10 @@ class LibreSSLConan(ConanFile):
     python_requires = "shared/1.0.0@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
     exports = ['VERSION',
-        'patches/0001-normalize-library-output-names.patch',
-        'patches/0002-set-default-output-directories.patch']
+        'patches/3.4.2/0001-normalize-library-output-names.patch',
+        'patches/3.4.2/0002-set-default-output-directories.patch',
+        'patches/3.8.2/0001-normalize-library-output-names.patch',
+        'patches/3.8.2/0002-set-default-output-directories.patch']
 
     options = {
         'fPIC': [True, False],
@@ -38,7 +40,7 @@ class LibreSSLConan(ConanFile):
         git.clone(self.url)
         git.checkout(tag)
 
-        patches_dir = os.path.join(self.recipe_folder, "patches")
+        patches_dir = os.path.join(self.recipe_folder, "patches", self.version)
         if os.path.isdir(patches_dir):
             for patch_file in os.listdir(patches_dir):
                 patch_path = os.path.join(patches_dir, patch_file)
@@ -55,6 +57,9 @@ class LibreSSLConan(ConanFile):
             tools.replace_in_file(os.path.join(folder, 'CMakeLists.txt'),
                 "check_function_exists(explicit_bzero HAVE_EXPLICIT_BZERO)",
                 "#check_function_exists(explicit_bzero HAVE_EXPLICIT_BZERO)")
+            tools.replace_in_file(os.path.join(folder, 'include', 'compat', 'endian.h'),
+                "#if defined(__APPLE__) && !defined(HAVE_ENDIAN_H)",
+                "#if defined(__APPLE__)")
 
     def build(self):
         if self.settings.arch == 'universal':
@@ -68,6 +73,9 @@ class LibreSSLConan(ConanFile):
         cmake.definitions['CMAKE_SHARED_LIBRARY_PREFIX'] = "lib"
         cmake.definitions['CMAKE_STATIC_LIBRARY_PREFIX'] = "lib"
         cmake.definitions['BUILD_SHARED_LIBS'] = 'ON' if self.options.shared else 'OFF'
+
+        if self.settings.os == 'Windows' and self.settings.arch == 'armv8':
+            cmake.definitions['CMAKE_SYSTEM_PROCESSOR'] = 'aarch64'
 
         if self.settings.os == 'iOS' or self.settings.os == 'Android':
             cmake.definitions['LIBRESSL_APPS'] = 'OFF'

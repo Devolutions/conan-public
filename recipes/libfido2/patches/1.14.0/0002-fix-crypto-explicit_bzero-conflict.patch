@@ -1,0 +1,39 @@
+From cf2d100da3030cf5283d18800e9d8294c5b8977b Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Marc-Andr=C3=A9=20Moreau?= <mamoreau@devolutions.net>
+Date: Fri, 2 Feb 2024 15:58:43 -0500
+Subject: [PATCH 2/3] fix crypto explicit_bzero conflict
+
+---
+ openbsd-compat/explicit_bzero.c | 2 +-
+ openbsd-compat/openbsd-compat.h | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/openbsd-compat/explicit_bzero.c b/openbsd-compat/explicit_bzero.c
+index ac64e69..e86c5f0 100644
+--- a/openbsd-compat/explicit_bzero.c
++++ b/openbsd-compat/explicit_bzero.c
+@@ -7,7 +7,7 @@
+ 
+ #include "openbsd-compat.h"
+ 
+-#if !defined(HAVE_EXPLICIT_BZERO) && !defined(_WIN32)
++#if !defined(HAVE_EXPLICIT_BZERO) && !defined(_WIN32) && !defined(CRYPTO_EXPLICIT_BZERO)
+ 
+ #include <string.h>
+ 
+diff --git a/openbsd-compat/openbsd-compat.h b/openbsd-compat/openbsd-compat.h
+index 9f1ea3e..601a198 100644
+--- a/openbsd-compat/openbsd-compat.h
++++ b/openbsd-compat/openbsd-compat.h
+@@ -63,7 +63,7 @@ char *strsep(char **, const char *);
+ void *recallocarray(void *, size_t, size_t, size_t);
+ #endif
+ 
+-#if !defined(HAVE_EXPLICIT_BZERO)
++#if !defined(HAVE_EXPLICIT_BZERO) || defined(CRYPTO_EXPLICIT_BZERO)
+ void explicit_bzero(void *, size_t);
+ #endif
+ 
+-- 
+2.25.1
+

@@ -1,0 +1,166 @@
+From 376cbcae5cc9e864613cc21126f5e031d13e0400 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Marc-Andr=C3=A9=20Moreau?= <mamoreau@devolutions.net>
+Date: Fri, 2 Feb 2024 15:57:26 -0500
+Subject: [PATCH 1/3] fix cmake dependency management
+
+---
+ CMakeLists.txt | 119 ++++++++++++++++++++++++++++++++++++++++++++-----
+ 1 file changed, 108 insertions(+), 11 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index d385fa5..481eb5a 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -76,7 +76,7 @@ if(NOT MSVC)
+ 	if(APPLE)
+ 		set(FIDO_CFLAGS "${FIDO_CFLAGS} -D_DARWIN_C_SOURCE")
+ 		set(FIDO_CFLAGS "${FIDO_CFLAGS} -D__STDC_WANT_LIB_EXT1__=1")
+-	elseif((CMAKE_SYSTEM_NAME STREQUAL "Linux") OR MINGW OR CYGWIN)
++	elseif((CMAKE_SYSTEM_NAME STREQUAL "Linux") OR MINGW OR CYGWIN OR ANDROID)
+ 		set(FIDO_CFLAGS "${FIDO_CFLAGS} -D_GNU_SOURCE")
+ 		set(FIDO_CFLAGS "${FIDO_CFLAGS} -D_DEFAULT_SOURCE")
+ 	elseif(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD" OR
+@@ -119,6 +119,11 @@ check_symbol_exists(sysconf unistd.h HAVE_SYSCONF)
+ check_symbol_exists(timespecsub sys/time.h HAVE_TIMESPECSUB)
+ check_symbol_exists(timingsafe_bcmp string.h HAVE_TIMINGSAFE_BCMP)
+ 
++if(CMAKE_SYSTEM_NAME STREQUAL "Android")
++    set(HAVE_EXPLICIT_BZERO OFF)
++    add_definitions(-DCRYPTO_EXPLICIT_BZERO)
++endif()
++
+ set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
+ try_compile(HAVE_POSIX_IOCTL
+     "${CMAKE_CURRENT_BINARY_DIR}/posix_ioctl_check.o"
+@@ -220,19 +225,90 @@ if(MSVC)
+ 	add_compile_options(/Qspectre) # add Spectre mitigation compiler option. (https://docs.microsoft.com/en-us/cpp/build/reference/qspectre?view=vs-2017)
+ 	
+ else()
+-	include(FindPkgConfig)
+-	pkg_search_module(CBOR libcbor)
+-	pkg_search_module(CRYPTO libcrypto)
+-	pkg_search_module(ZLIB zlib)
++	# detect zlib
++
++	if(ZLIB_ROOT_DIR)
++		list(PREPEND CMAKE_FIND_ROOT_PATH ${ZLIB_ROOT_DIR})
++	endif()
++
++	find_path(ZLIB_INCLUDE_DIR
++		NAMES "zlib.h")
++
++	find_library(ZLIB_LIBRARY
++		NAMES zlib z)
++
++	get_filename_component(ZLIB_LIBRARY_DIR ${ZLIB_LIBRARY} DIRECTORY CACHE)
++
++	add_library(zlib STATIC IMPORTED GLOBAL)
++	set_target_properties(zlib PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${ZLIB_INCLUDE_DIR}")
++	set_target_properties(zlib PROPERTIES IMPORTED_LOCATION "${ZLIB_LIBRARY}")
++
++	# detect libcbor
+ 
+-	if(NOT CBOR_FOUND AND NOT HAVE_CBOR_H)
+-		message(FATAL_ERROR "could not find libcbor")
++	if(CBOR_ROOT_DIR)
++		list(PREPEND CMAKE_FIND_ROOT_PATH ${CBOR_ROOT_DIR})
+ 	endif()
+-	if(NOT CRYPTO_FOUND AND NOT HAVE_OPENSSLV_H)
+-		message(FATAL_ERROR "could not find libcrypto")
++
++	find_path(CBOR_INCLUDE_DIR
++		NAMES "cbor.h")
++
++	find_library(CBOR_LIBRARY
++		NAMES libcbor cbor)
++
++	get_filename_component(CBOR_LIBRARY_DIR ${CBOR_LIBRARY} DIRECTORY CACHE)
++
++	add_library(libcbor STATIC IMPORTED GLOBAL)
++	set_target_properties(libcbor PROPERTIES IMPORTED_LOCATION "${CBOR_LIBRARY}")
++ 
++	# detect libressl
++
++	if(CRYPTO_ROOT_DIR)
++		list(PREPEND CMAKE_FIND_ROOT_PATH ${CRYPTO_ROOT_DIR})
++	endif()
++
++	find_path(CRYPTO_INCLUDE_DIR
++		NAMES "openssl/opensslv.h")
++
++	find_library(CRYPTO_LIBRARY
++		NAMES libcrypto crypto)
++
++	get_filename_component(CRYPTO_LIBRARY_DIR ${CRYPTO_LIBRARY} DIRECTORY CACHE)
++
++	add_library(libcrypto STATIC IMPORTED GLOBAL)
++	set_target_properties(libcrypto PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${CRYPTO_INCLUDE_DIR}")
++	set_target_properties(libcrypto PROPERTIES IMPORTED_LOCATION "${CRYPTO_LIBRARY}")
++
++	include(FindPkgConfig)
++
++	include_directories("${ZLIB_INCLUDE_DIR}")
++	include_directories("${CBOR_INCLUDE_DIR}")
++	include_directories("${CRYPTO_INCLUDE_DIR}")
++
++	message(STATUS "ZLIB_INCLUDE_DIR: ${ZLIB_INCLUDE_DIR}")
++	message(STATUS "ZLIB_LIBRARY: ${ZLIB_LIBRARY}")
++	message(STATUS "CBOR_INCLUDE_DIR: ${CBOR_INCLUDE_DIR}")
++	message(STATUS "CBOR_LIBRARY: ${CBOR_LIBRARY}")
++	message(STATUS "CRYPTO_INCLUDE_DIR: ${CRYPTO_INCLUDE_DIR}")
++	message(STATUS "CRYPTO_LIBRARY: ${CRYPTO_LIBRARY}")
++
++	if (NOT (ZLIB_LIBRARY AND CBOR_LIBRARY AND CRYPTO_LIBRARY))
++		pkg_search_module(CBOR libcbor)
++		pkg_search_module(CRYPTO libcrypto)
++		pkg_search_module(ZLIB zlib)
++
++		if(NOT CBOR_FOUND AND NOT HAVE_CBOR_H)
++			message(FATAL_ERROR "could not find libcbor")
++		endif()
++		if(NOT CRYPTO_FOUND AND NOT HAVE_OPENSSLV_H)
++			message(FATAL_ERROR "could not find libcrypto")
++		endif()
++		if(NOT ZLIB_FOUND)
++			message(FATAL_ERROR "could not find zlib")
++		endif()
+ 	endif()
+-	if(NOT ZLIB_FOUND)
+-		message(FATAL_ERROR "could not find zlib")
++
++	if(NOT ZLIB_LIBRARIES)
++		set(ZLIB_LIBRARIES "zlib")
+ 	endif()
+ 
+ 	if(NOT CBOR_LIBRARIES)
+@@ -256,6 +332,27 @@ else()
+ 				set(BASE_LIBRARIES ${BASE_LIBRARIES} rt)
+ 			endif()
+ 		endif()
++	elseif(CMAKE_SYSTEM_NAME STREQUAL "Android")
++		if(UDEV_ROOT_DIR)
++			list(PREPEND CMAKE_FIND_ROOT_PATH ${UDEV_ROOT_DIR})
++		endif()
++
++		find_path(UDEV_INCLUDE_DIR
++			NAMES "libudev.h")
++
++		find_library(UDEV_LIBRARY
++			NAMES libudev-zero.a libudev)
++
++		add_library(udev STATIC IMPORTED GLOBAL)
++		set_target_properties(udev PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${UDEV_INCLUDE_DIR}")
++		set_target_properties(udev PROPERTIES IMPORTED_LOCATION "${UDEV_LIBRARY}")
++
++		include_directories("${UDEV_INCLUDE_DIR}")
++
++		set(UDEV_LIBRARIES "udev")
++
++		message(STATUS "UDEV_INCLUDE_DIR: ${UDEV_INCLUDE_DIR}")
++		message(STATUS "UDEV_LIBRARY: ${UDEV_LIBRARY}")
+ 	else()
+ 		set(NFC_LINUX OFF)
+ 	endif()
+-- 
+2.25.1
+

@@ -44,7 +44,7 @@ jobs:
                         build_type = $BuildType
                         os = $Platform
                         runner = switch ($Platform) {
-                            "windows" { "windows-2019" }
+                            "windows" { "windows-2022" }
                             { @("macos", "ios") -contains $_ } { "macos-latest" }
                             { @("linux", "android") -contains $_ } { "ubuntu-20.04" }
                         }
