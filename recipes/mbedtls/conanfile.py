@@ -14,7 +14,8 @@ class MbedtlsConan(ConanFile):
         'patches/0001-add-windows-mutex-implementation-for-threading.patch',
         'patches/0002-aes-ni-use-target-attributes-for-32-bit-intrinsics.patch',
         'patches/0003-fix-build-for-windows-arm64-neon-and-aes-extensions.patch',
-        'patches/0004-add-support-for-mbedtls-ssl-verify-external-authmode.patch']
+        'patches/0004-add-support-for-mbedtls-ssl-verify-external-authmode.patch',
+        'patches/0005-fix-tls13-keys-cast-build-warning.patch']
 
     options = {
         'fPIC': [True, False],
@@ -55,6 +56,7 @@ class MbedtlsConan(ConanFile):
         cmake.definitions['ENABLE_PROGRAMS'] = 'OFF'
 
         mbedtls_configs = ['MBEDTLS_THREADING_C']
+        mbedtls_configs.extend(['MBEDTLS_SSL_PROTO_TLS1_3'])
 
         if self.settings.os == 'Windows':
             cmake.definitions['MSVC_STATIC_RUNTIME'] = 'ON'
