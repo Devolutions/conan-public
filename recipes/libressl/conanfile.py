@@ -57,6 +57,12 @@ class LibreSSLConan(ConanFile):
             tools.replace_in_file(os.path.join(folder, 'CMakeLists.txt'),
                 "check_function_exists(explicit_bzero HAVE_EXPLICIT_BZERO)",
                 "#check_function_exists(explicit_bzero HAVE_EXPLICIT_BZERO)")
+            tools.replace_in_file(os.path.join(folder, 'CMakeLists.txt'),
+                "check_function_exists(reallocarray HAVE_REALLOCARRAY)",
+                "#check_function_exists(reallocarray HAVE_REALLOCARRAY)")
+            tools.replace_in_file(os.path.join(folder, 'CMakeLists.txt'),
+                "check_function_exists(timingsafe_memcmp HAVE_TIMINGSAFE_MEMCMP)",
+                "#check_function_exists(timingsafe_memcmp HAVE_TIMINGSAFE_MEMCMP)")
             tools.replace_in_file(os.path.join(folder, 'include', 'compat', 'endian.h'),
                 "#if defined(__APPLE__) && !defined(HAVE_ENDIAN_H)",
                 "#if defined(__APPLE__)")
