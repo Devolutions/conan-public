@@ -27,7 +27,7 @@ jobs:
 
     steps:
       - name: Check out ${{ github.repository }}
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Configure runner
         run: |
@@ -42,7 +42,7 @@ jobs:
           conan config install ./settings
 
       - name: Download conan data
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         if: github.event.inputs.runId == ''
         with:
           path: download
