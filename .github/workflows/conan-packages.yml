@@ -32,7 +32,7 @@ jobs:
                 $Architecture = $_
                 $BuildTypes = @('Debug', 'Release')
         
-                if ($Platform -Eq "macos" -Or $Platform -Eq "Android") {
+                if ($Platform -Eq "windows" -Or $Platform -Eq "macos" -Or $Platform -Eq "Android") {
                     $BuildTypes += "RelWithDebInfo"
                 }
         

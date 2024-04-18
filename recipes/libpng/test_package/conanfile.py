@@ -10,6 +10,8 @@ class TestPackageConan(ConanFile):
     def test(self):
         if self.settings.os == 'Windows' and self.settings.build_type == 'Release':
             libs = ['libpng16_static.lib']
+        elif self.settings.os == 'Windows' and self.settings.build_type == 'RelWithDebInfo':
+            libs = ['libpng16_static.lib']
         elif self.settings.os == 'Windows' and self.settings.build_type == 'Debug':
             libs = ['libpng16_staticd.lib']
         else:
