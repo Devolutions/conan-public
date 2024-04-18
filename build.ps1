@@ -154,15 +154,16 @@ function Invoke-TlkBuild {
             $TargetPackages += @('openssh')
         }
     
-        if ((($Platform -eq 'Android') -Or ($Platform -eq "macos")) -And ($BuildType -eq 'RelWithDebInfo')) {
+        if ((($Platform -eq 'windows') -Or ($Platform -eq 'android') -Or ($Platform -eq "macos")) -And ($BuildType -eq 'RelWithDebInfo')) {
             $TargetPackages = @(
-              'cjson',
               'zlib', 
+              'cjson',
               'libpng',
               'libjpeg',
               'mbedtls', 
+              'libressl',
               'openssl', 
-              'winpr', 
+              'winpr',
               'freerdp'
             )
         }

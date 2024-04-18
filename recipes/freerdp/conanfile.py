@@ -153,6 +153,7 @@ class FreerdpConan(ConanFile):
         if self.settings.os == 'Windows':
             self.copy('*.lib', dst='lib', keep_path=False)
             self.copy('*.dll', dst='lib', keep_path=False)
+            self.copy('*.pdb', dst='lib', keep_path=False)
         else:
             self.copy('*.a', dst='lib', keep_path=False)
             self.copy('*.so', dst='lib', keep_path=False)
