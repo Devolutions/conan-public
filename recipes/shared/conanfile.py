@@ -137,7 +137,7 @@ class UtilsBase(object):
                 'arm64': 'ARM64'  # add arm64 to list just for safety
             }[target_arch]
         elif target_os == 'Macos':
-            osx_arch = { 'x86_64': 'x86_64', 'armv8': 'arm64', 'universal': 'universal' }[target_arch]
+            osx_arch = { 'x86_64': 'x86_64', 'armv8': 'arm64', 'arm64': 'arm64', 'universal': 'universal' }[target_arch]
             cmake.definitions['CMAKE_OSX_DEPLOYMENT_TARGET'] = os_version
             cmake.definitions['CMAKE_OSX_ARCHITECTURES'] = osx_arch
             cmake.generator = 'Ninja'
@@ -149,7 +149,7 @@ class UtilsBase(object):
             except:
                 pass
         elif target_os == 'iOS':
-            ios_arch = { 'x86': 'i386', 'x86_64': 'x86_64', 'armv8': 'arm64', 'armv7': 'armv7', 'universal': 'universal' }[target_arch]
+            ios_arch = { 'x86': 'i386', 'x86_64': 'x86_64', 'armv8': 'arm64', 'arm64' : 'arm64', 'armv7': 'armv7', 'universal': 'universal' }[target_arch]
             cmake.definitions['CMAKE_TOOLCHAIN_FILE'] = os.path.join(cbake_home, 'cmake', 'ios-%s.toolchain.cmake' % ios_arch)
             cmake.definitions['IOS_DEPLOYMENT_TARGET'] = os_version
             cmake.generator = 'Ninja'
