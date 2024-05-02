@@ -49,6 +49,9 @@ jobs:
                             { @("linux", "android") -contains $_ } { "ubuntu-20.04" }
                         }
                     }
+                    if ($Platform -Eq "macos" -And $Architecture -Eq "x86_64") {
+                      $Job.runner = "macos-13"
+                    }
                     $Jobs += $Job
                     
                     if ($Platform -Eq "linux") {
@@ -220,7 +223,7 @@ jobs:
     steps:
       - name: Send slack notification
         id: slack
-        uses: slackapi/slack-github-action@v1.24.0
+        uses: slackapi/slack-github-action@v1.26.0
         with:
           payload: |
             {
