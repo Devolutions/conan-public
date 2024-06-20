@@ -120,7 +120,6 @@ jobs:
         run: |
           brew install ninja
           brew install cmake
-          brew install python
           brew install nasm yasm
           pip3 install conan==${{ env.conan-version }} invoke Jinja2 urllib3 chardet requests --upgrade
           sudo rm -rf /Library/Developer/CommandLineTools
