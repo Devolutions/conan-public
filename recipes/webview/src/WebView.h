@@ -68,6 +68,8 @@ LAUNCHER_EXPORT gboolean webview_get_enable_developer_extras(void* webview);
 LAUNCHER_EXPORT void webview_set_enable_developer_extras(void* webview, gboolean enabled);
 LAUNCHER_EXPORT WebKitCacheModel webview_get_cache_model(void* webview);
 LAUNCHER_EXPORT void webview_set_cache_model(void* webview, WebKitCacheModel cache_model);
+LAUNCHER_EXPORT gdouble webview_get_zoom_level(void* webview);
+LAUNCHER_EXPORT void webview_set_zoom_level(void* webview, gdouble zoom_level);
 LAUNCHER_EXPORT void webview_register_script_message_handler(void* webview, const gchar *name, callback_script_message_received_evnt_fn handler);
 LAUNCHER_EXPORT void webview_unregister_script_message_handler(void* webview, const gchar *name, callback_script_message_received_evnt_fn handler);
 LAUNCHER_EXPORT void webview_get_cookies(void* webview, const gchar* uri);

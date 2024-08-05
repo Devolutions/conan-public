@@ -607,6 +607,18 @@ LAUNCHER_EXPORT void webview_set_cache_model(void* webview, WebKitCacheModel cac
     webkit_web_context_set_cache_model(context, cache_model);
 }
 
+LAUNCHER_EXPORT gdouble webview_get_zoom_level(void* webview)
+{
+    webView* wv = (webView*)webview;
+    return webkit_web_view_get_zoom_level(wv->view);
+}
+
+LAUNCHER_EXPORT void webview_set_zoom_level(void* webview, gdouble zoom_level)
+{
+    webView* wv = (webView*)webview;
+    webkit_web_view_set_zoom_level(wv->view, zoom_level);
+}
+
 LAUNCHER_EXPORT void webview_register_script_message_handler(void* webview, const gchar *name, callback_script_message_received_evnt_fn handler)
 {
     webView* wv = (webView*)webview;
