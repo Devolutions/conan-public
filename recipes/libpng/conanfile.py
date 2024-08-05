@@ -1,5 +1,7 @@
 from conans import ConanFile, CMake, tools, python_requires
 import os
+import sys
+import fileinput
 
 class TemplateConan(ConanFile):
     name = 'libpng'
@@ -24,7 +26,7 @@ class TemplateConan(ConanFile):
 
     def build_requirements(self):
         super().build_requirements()
-        self.build_requires('zlib/1.3@devolutions/stable')
+        self.build_requires('zlib/1.3.1@devolutions/stable')
 
     def source(self):
         if self.settings.arch == 'universal':
@@ -40,6 +42,14 @@ class TemplateConan(ConanFile):
             tools.replace_in_file(os.path.join(folder, 'CMakeLists.txt'),
             "arm/filter_neon.S",
             "#arm/filter_neon.S")
+
+        # Modern Android NDK requires modern CMake policies
+        for line in fileinput.input([os.path.join(folder, "CMakeLists.txt")], inplace=True):
+            if line.strip().startswith('cmake_minimum_required'):
+                line = 'cmake_minimum_required(VERSION 3.6)\n'
+            if line.strip().startswith('cmake_policy'):
+                line = 'cmake_policy(VERSION 3.6)\n'
+            sys.stdout.write(line)
 
     def build(self):
         if self.settings.arch == 'universal':

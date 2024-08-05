@@ -25,7 +25,7 @@ class WinprConan(ConanFile):
     def build_requirements(self):
         super().build_requirements()
         self.build_requires('mbedtls/3.5.1@devolutions/stable')
-        self.build_requires('zlib/1.3@devolutions/stable')
+        self.build_requires('zlib/1.3.1@devolutions/stable')
 
     def source(self):
         if self.settings.arch == 'universal':

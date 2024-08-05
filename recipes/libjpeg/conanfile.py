@@ -1,5 +1,7 @@
 from conans import ConanFile, tools, python_requires, CMake
 import os
+import sys
+import fileinput
 
 class JpegConan(ConanFile):
     name = 'libjpeg'
@@ -30,6 +32,12 @@ class JpegConan(ConanFile):
         self.output.info('Cloning repo: %s dest: %s branch: %s' % (self.url, folder, self.branch))
         git = tools.Git(folder=folder)
         git.clone(self.url, branch=self.branch)
+
+        # Modern Android NDK requires modern CMake policies
+        for line in fileinput.input([os.path.join(folder, "CMakeLists.txt")], inplace=True):
+            if line.strip().startswith('cmake_minimum_required'):
+                line = 'cmake_minimum_required(VERSION 3.6)\n'
+            sys.stdout.write(line)
 
     def build(self):
         if self.settings.arch == 'universal':

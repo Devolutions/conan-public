@@ -36,7 +36,7 @@ class PCREConan(ConanFile):
     _source_subfolder = 'source_subfolder'
     _build_subfolder = 'build_subfolder'
 
-    requires = 'zlib/1.3@devolutions/stable'
+    requires = 'zlib/1.3.1@devolutions/stable'
 
     def source(self):
         if self.settings.arch == 'universal':

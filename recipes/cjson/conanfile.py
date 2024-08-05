@@ -1,7 +1,9 @@
 from conans import ConanFile, tools, CMake, python_requires
 import os
+import sys
+import fileinput
 
-class MinizConan(ConanFile):
+class CjsonConan(ConanFile):
     name = 'cjson'
     exports = 'VERSION'
     version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
@@ -32,6 +34,12 @@ class MinizConan(ConanFile):
         git = tools.Git(folder=folder)
         git.clone(self.url)
         git.checkout(self.branch)
+
+        # Modern Android NDK requires modern CMake policies
+        for line in fileinput.input([os.path.join(folder, "CMakeLists.txt")], inplace=True):
+            if line.strip().startswith('cmake_minimum_required'):
+                line = 'cmake_minimum_required(VERSION 3.6)\n'
+            sys.stdout.write(line)
 
     def build(self):
         if self.settings.arch == 'universal':
