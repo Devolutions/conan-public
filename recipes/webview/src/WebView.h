@@ -10,6 +10,7 @@
 #endif
 
 typedef void (*callback_js_ready_evnt_fn)();
+typedef void (*callback_js_error_evnt_fn)(char* error_message);
 typedef bool (*callback_load_failed_evnt_fn)(char* failed_uri, char* message);
 typedef bool (*callback_load_changed_evnt_fn)(WebKitWebView* view, WebKitLoadEvent load_event, gpointer user_data);
 typedef bool (*callback_decide_policy_evnt_fn)(WebKitWebView* view, gpointer decision, WebKitPolicyDecisionType type);
@@ -30,6 +31,7 @@ LAUNCHER_EXPORT char* get_evaluate_javascript_string(void* view);
 LAUNCHER_EXPORT bool set_callback_decide_policy(void* view, callback_decide_policy_evnt_fn handler);
 LAUNCHER_EXPORT bool set_callback_decide_new_window_policy(void* view, callback_decide_new_window_policy_evnt_fn handler);
 LAUNCHER_EXPORT bool set_callback_js_ready(void* view, callback_js_ready_evnt_fn handler);
+LAUNCHER_EXPORT bool set_callback_js_error(void* view, callback_js_error_evnt_fn handler);
 LAUNCHER_EXPORT bool set_callback_clear_data_manager_finish(void* view, callback_clear_data_manager_finish_evnt_fn handler);
 LAUNCHER_EXPORT bool set_callback_load_changed(void* view, callback_load_changed_evnt_fn handler);
 LAUNCHER_EXPORT bool set_callback_menu(void* view, callback_context_menu_evnt_fn handler);
