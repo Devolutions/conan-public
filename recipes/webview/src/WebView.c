@@ -16,6 +16,7 @@ typedef struct web_view{
         callback_decide_policy_evnt_fn decide_policy_handler;
         callback_decide_new_window_policy_evnt_fn decide_new_window_policy_handler;
         callback_js_ready_evnt_fn js_ready_handler;
+        callback_js_error_evnt_fn js_error_handler;
         callback_context_menu_evnt_fn context_menu_handler;
         callback_script_message_received_evnt_fn script_message_received_handler;
         callback_get_cookies_evnt_fn get_cookie_handler;
@@ -87,6 +88,7 @@ LAUNCHER_EXPORT void* webview_new()
     wv->load_failed_handler = 0;
     wv->decide_policy_handler = 0;
     wv->js_ready_handler = 0;
+    wv->js_error_handler = 0;
     wv->clear_data_manager_finish_handler = 0;
     WebKitWebContext* context = webkit_web_context_new ();
     wv->view = WEBKIT_WEB_VIEW(webkit_web_view_new_with_context (context));
@@ -105,6 +107,7 @@ LAUNCHER_EXPORT void* webview_new_ephemeral()
     wv->load_failed_handler = 0;
     wv->decide_policy_handler = 0;
     wv->js_ready_handler = 0;
+    wv->js_error_handler = 0;
     wv->clear_data_manager_finish_handler = 0;
     WebKitWebContext* context = webkit_web_context_new_ephemeral ();
     wv->view = WEBKIT_WEB_VIEW(webkit_web_view_new_with_context (context));
@@ -209,6 +212,9 @@ static void evaluate_javascript_cb(GObject *obj, GAsyncResult *result, gpointer 
         {
             g_warning ("Error running javascript: %s", error->message);
         }
+
+        if(wv->js_error_handler)
+            wv->js_error_handler(error->message);
 
         g_error_free (error);
         return;
@@ -394,6 +400,13 @@ LAUNCHER_EXPORT bool set_callback_js_ready(void* view, callback_js_ready_evnt_fn
 {
     webView* wv = (webView*)view;
     wv->js_ready_handler = handler;
+    return 1;
+}
+
+LAUNCHER_EXPORT bool set_callback_js_error(void* view, callback_js_error_evnt_fn handler)
+{
+    webView* wv = (webView*)view;
+    wv->js_error_handler = handler;
     return 1;
 }
 
