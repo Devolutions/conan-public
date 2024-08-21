@@ -11,6 +11,7 @@ typedef struct web_view{
         WebKitWebView* view;
         WebKitUserContentManager* contentManager;
         WebKitNetworkProxySettings* proxySettings;
+        callback_authenticate_fn authenticate_handler;
         callback_load_changed_evnt_fn load_changed_handler;
         callback_load_failed_evnt_fn load_failed_handler;
         callback_decide_policy_evnt_fn decide_policy_handler;
@@ -55,6 +56,33 @@ LAUNCHER_EXPORT const char* webview_get_decision_uri(void* ptr)
     return webkit_uri_request_get_uri(request);
 }
 
+LAUNCHER_EXPORT void webkit_authenticate_request(void* req, void* cred)
+{
+    WebKitAuthenticationRequest* request = (WebKitAuthenticationRequest*)req;
+    WebKitCredential* credentials = (WebKitCredential*)cred;
+
+    webkit_authentication_request_authenticate(request, credentials);
+}
+
+LAUNCHER_EXPORT gboolean webkit_authentication_is_retry(void* req)
+{
+    WebKitAuthenticationRequest* request = (WebKitAuthenticationRequest*)req;
+
+    return webkit_authentication_request_is_retry(request);
+}
+
+LAUNCHER_EXPORT WebKitCredential* webkit_create_credential(const gchar* username, const gchar* password, WebKitCredentialPersistence persistence)
+{
+    return webkit_credential_new(username, password, persistence);
+}
+
+LAUNCHER_EXPORT WebKitAuthenticationScheme get_webKit_authentication_request_authentication_scheme(void* req)
+{
+    WebKitAuthenticationRequest* request = (WebKitAuthenticationRequest*)req;
+
+    return webkit_authentication_request_get_scheme(request);
+}
+
 LAUNCHER_EXPORT const char* webview_get_navigation_action_request_uri(void* ptr)
 {
     WebKitURIRequest* request = NULL;
@@ -90,6 +118,7 @@ LAUNCHER_EXPORT void* webview_new()
     wv->js_ready_handler = 0;
     wv->js_error_handler = 0;
     wv->clear_data_manager_finish_handler = 0;
+    wv->authenticate_handler = 0;
     WebKitWebContext* context = webkit_web_context_new ();
     wv->view = WEBKIT_WEB_VIEW(webkit_web_view_new_with_context (context));
     wv->contentManager = webkit_web_view_get_user_content_manager(wv->view);
@@ -109,6 +138,7 @@ LAUNCHER_EXPORT void* webview_new_ephemeral()
     wv->js_ready_handler = 0;
     wv->js_error_handler = 0;
     wv->clear_data_manager_finish_handler = 0;
+    wv->authenticate_handler = 0;
     WebKitWebContext* context = webkit_web_context_new_ephemeral ();
     wv->view = WEBKIT_WEB_VIEW(webkit_web_view_new_with_context (context));
     wv->contentManager = webkit_web_view_get_user_content_manager(wv->view);
@@ -272,6 +302,24 @@ static gboolean web_view_load_failed_cb(WebKitWebView* view, WebKitLoadEvent loa
         return wv->load_failed_handler(failing_uri, error->message);
 
     return FALSE;
+}
+
+LAUNCHER_EXPORT bool set_callback_authenticate(void* view, callback_authenticate_fn handler)
+{
+   webView* wv = (webView*)view; 
+
+   if (!handler && wv->authenticate_handler)
+    {
+        g_signal_handlers_disconnect_by_func(wv->view, G_CALLBACK(wv->authenticate_handler), NULL);
+        wv->authenticate_handler = handler;
+    }
+    else
+    {
+        wv->authenticate_handler = handler;
+        g_signal_connect(wv->view, "authenticate", G_CALLBACK(wv->authenticate_handler), NULL);
+    }
+
+    return 1;
 }
 
 LAUNCHER_EXPORT bool set_callback_decide_policy(void* view, callback_decide_policy_evnt_fn handler)
