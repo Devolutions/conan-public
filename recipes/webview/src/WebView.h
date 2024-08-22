@@ -9,6 +9,7 @@
     #define LAUNCHER_EXPORT __attribute__ ((visibility("default")))
 #endif
 
+typedef bool (*callback_authenticate_fn)(WebKitWebView* view, WebKitAuthenticationRequest* request, gpointer user_data);
 typedef void (*callback_js_ready_evnt_fn)();
 typedef void (*callback_js_error_evnt_fn)(char* error_message);
 typedef bool (*callback_load_failed_evnt_fn)(char* failed_uri, char* message);
@@ -28,6 +29,7 @@ LAUNCHER_EXPORT void load_html(void* view, char *html);
 LAUNCHER_EXPORT void close_webview();
 LAUNCHER_EXPORT void evaluate_javascript(void* view, char *script);
 LAUNCHER_EXPORT char* get_evaluate_javascript_string(void* view);
+LAUNCHER_EXPORT bool set_callback_authenticate(void* view, callback_authenticate_fn handler);
 LAUNCHER_EXPORT bool set_callback_decide_policy(void* view, callback_decide_policy_evnt_fn handler);
 LAUNCHER_EXPORT bool set_callback_decide_new_window_policy(void* view, callback_decide_new_window_policy_evnt_fn handler);
 LAUNCHER_EXPORT bool set_callback_js_ready(void* view, callback_js_ready_evnt_fn handler);
@@ -44,6 +46,10 @@ LAUNCHER_EXPORT void set_enable_logging(void* view, gboolean enable);
 LAUNCHER_EXPORT void set_proxy(void* view, const gchar *proxyUri);
 LAUNCHER_EXPORT const char* webview_get_uri(void* view);
 LAUNCHER_EXPORT const char* webview_get_decision_uri(void* decision);
+LAUNCHER_EXPORT void webkit_authenticate_request(void* req, void* cred);
+LAUNCHER_EXPORT gboolean webkit_authentication_is_retry(void* req);
+LAUNCHER_EXPORT WebKitCredential* webkit_create_credential(const gchar* username, const gchar* password, WebKitCredentialPersistence persistence);
+LAUNCHER_EXPORT WebKitAuthenticationScheme get_webKit_authentication_request_authentication_scheme(void* request);
 LAUNCHER_EXPORT const char* webview_get_navigation_action_request_uri(void* decision);
 LAUNCHER_EXPORT void* webview_get_view(void* webview);
 LAUNCHER_EXPORT void webview_reload_page(void* webview, bool bypassCache);
