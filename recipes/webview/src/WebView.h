@@ -26,7 +26,7 @@ LAUNCHER_EXPORT void* webview_new();
 LAUNCHER_EXPORT void* webview_new_ephemeral();
 LAUNCHER_EXPORT void load_uri(void* view, char *uri);
 LAUNCHER_EXPORT void load_html(void* view, char *html);
-LAUNCHER_EXPORT void close_webview();
+LAUNCHER_EXPORT void close_webview(void* webview);
 LAUNCHER_EXPORT void evaluate_javascript(void* view, char *script);
 LAUNCHER_EXPORT char* get_evaluate_javascript_string(void* view);
 LAUNCHER_EXPORT bool set_callback_authenticate(void* view, callback_authenticate_fn handler);
@@ -43,7 +43,7 @@ LAUNCHER_EXPORT bool set_callback_load_failed(void* view, callback_load_failed_e
 LAUNCHER_EXPORT bool set_callback_get_cookie(void* view, callback_get_cookies_evnt_fn handler);
 LAUNCHER_EXPORT void set_cookies_save_path(void* view, const char* path);
 LAUNCHER_EXPORT void set_enable_logging(void* view, gboolean enable);
-LAUNCHER_EXPORT void set_proxy(void* view, const gchar *proxyUri);
+LAUNCHER_EXPORT void set_proxy(void* view, const gchar *proxyUri, const gchar * const *ignore_hosts, WebKitNetworkProxyMode proxyMode);
 LAUNCHER_EXPORT const char* webview_get_uri(void* view);
 LAUNCHER_EXPORT const char* webview_get_decision_uri(void* decision);
 LAUNCHER_EXPORT void webkit_authenticate_request(void* req, void* cred);
