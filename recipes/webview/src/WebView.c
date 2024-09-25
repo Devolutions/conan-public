@@ -5,7 +5,6 @@
 static void evaluate_javascript_cb(GObject *obj, GAsyncResult *result, gpointer user_data);
 static gboolean web_view_load_failed_cb(WebKitWebView* view, WebKitLoadEvent load_event, gchar* failing_uri, GError* error, gpointer user_data);
 static void clear_data_manager_cb(GObject *obj, GAsyncResult *result, gpointer user_data);
-char* get_evaluate_javascript_string();
 
 typedef struct web_view{
         WebKitWebView* view;
@@ -208,13 +207,18 @@ LAUNCHER_EXPORT void set_enable_logging(void* view, gboolean enable)
     wv->enable_logging = enable;
 }
 
-LAUNCHER_EXPORT void set_proxy(void* view, const gchar *proxyUri)
+LAUNCHER_EXPORT void set_proxy(void* view, const gchar *proxyUri, const gchar * const *ignore_hosts, WebKitNetworkProxyMode proxyMode)
 {
     webView* wv = (webView*)view;
     WebKitWebContext* context = webkit_web_view_get_context (wv->view);
     WebKitWebsiteDataManager* dataManager = webkit_web_context_get_website_data_manager(context);
-    WebKitNetworkProxySettings* proxySettings = webkit_network_proxy_settings_new(proxyUri, NULL);
-    webkit_website_data_manager_set_network_proxy_settings(dataManager, WEBKIT_NETWORK_PROXY_MODE_CUSTOM, proxySettings);
+    WebKitNetworkProxySettings* proxySettings = NULL;
+
+    if (proxyMode == WEBKIT_NETWORK_PROXY_MODE_CUSTOM) {
+        proxySettings = webkit_network_proxy_settings_new(proxyUri, ignore_hosts);
+    }
+
+    webkit_website_data_manager_set_network_proxy_settings(dataManager, proxyMode, proxySettings);
 }
 
 #pragma clang diagnostic push
