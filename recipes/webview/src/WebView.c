@@ -2,9 +2,9 @@
 #include <stdlib.h>
 
 // https://people.igalia.com/tsaunier/documentation/WebKitGTK/WebKitWebView.html?gi-language=c#WebKitWebView
-static void evaluate_javascript_cb(GObject *obj, GAsyncResult *result, gpointer user_data);
+static void evaluate_javascript_cb(GObject* obj, GAsyncResult* result, gpointer user_data);
 static gboolean web_view_load_failed_cb(WebKitWebView* view, WebKitLoadEvent load_event, gchar* failing_uri, GError* error, gpointer user_data);
-static void clear_data_manager_cb(GObject *obj, GAsyncResult *result, gpointer user_data);
+static void clear_data_manager_cb(GObject* obj, GAsyncResult* result, gpointer user_data);
 
 typedef struct web_view{
         WebKitWebView* view;
@@ -86,9 +86,9 @@ LAUNCHER_EXPORT const char* webview_get_navigation_action_request_uri(void* ptr)
 {
     WebKitURIRequest* request = NULL;
     
-    if ((WebKitNavigationAction *)ptr)
+    if ((WebKitNavigationAction*)ptr)
     {
-        WebKitNavigationAction* action = (WebKitNavigationAction *)ptr;
+        WebKitNavigationAction* action = (WebKitNavigationAction*)ptr;
 
         if(!action)
             return NULL;
@@ -153,13 +153,13 @@ LAUNCHER_EXPORT void* webview_get_view(void* webview)
     return ((webView*)webview)->view;
 }
 
-LAUNCHER_EXPORT void load_html(void* webview, char *html)
+LAUNCHER_EXPORT void load_html(void* webview, char* html)
 {
     WebKitWebView* wkwv = ((webView*)webview)->view;
     webkit_web_view_load_html(wkwv, html, NULL);
 }
 
-LAUNCHER_EXPORT void load_uri(void* webview, char *uri)
+LAUNCHER_EXPORT void load_uri(void* webview, char* uri)
 {
     WebKitWebView* wkwv = ((webView*)webview)->view;
     webkit_web_view_load_uri(wkwv, uri);
@@ -178,16 +178,13 @@ LAUNCHER_EXPORT void close_webview(void* webview)
     free(wv);
 }
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-LAUNCHER_EXPORT void evaluate_javascript(void* webview, char *script)
+LAUNCHER_EXPORT void evaluate_javascript(void* webview, char* script)
 {
     webView* wv = (webView*)webview;
     WebKitWebView* wkwebview = wv->view;
     wv->executingJavascript = TRUE;
     webkit_web_view_run_javascript(wkwebview, script, NULL, evaluate_javascript_cb, wv);
 }
-#pragma clang diagnostic pop
 
 LAUNCHER_EXPORT void set_cookies_save_path(void* view, const char* path)
 {
@@ -207,23 +204,20 @@ LAUNCHER_EXPORT void set_enable_logging(void* view, gboolean enable)
     wv->enable_logging = enable;
 }
 
-LAUNCHER_EXPORT void set_proxy(void* view, const gchar *proxyUri, const gchar * const *ignore_hosts, WebKitNetworkProxyMode proxyMode)
+LAUNCHER_EXPORT void set_proxy(void* view, const gchar* proxy_uri, const gchar* const* ignore_hosts, WebKitNetworkProxyMode proxy_mode)
 {
     webView* wv = (webView*)view;
     WebKitWebContext* context = webkit_web_view_get_context (wv->view);
     WebKitWebsiteDataManager* dataManager = webkit_web_context_get_website_data_manager(context);
-    WebKitNetworkProxySettings* proxySettings = NULL;
+    WebKitNetworkProxySettings* proxy_settings = NULL;
 
-    if (proxyMode == WEBKIT_NETWORK_PROXY_MODE_CUSTOM) {
-        proxySettings = webkit_network_proxy_settings_new(proxyUri, ignore_hosts);
-    }
+    if (proxy_mode == WEBKIT_NETWORK_PROXY_MODE_CUSTOM)
+        proxy_settings = webkit_network_proxy_settings_new(proxy_uri, ignore_hosts);
 
-    webkit_website_data_manager_set_network_proxy_settings(dataManager, proxyMode, proxySettings);
+    webkit_website_data_manager_set_network_proxy_settings(dataManager, proxy_mode, proxy_settings);
 }
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-static void evaluate_javascript_cb(GObject *obj, GAsyncResult *result, gpointer user_data)
+static void evaluate_javascript_cb(GObject* obj, GAsyncResult* result, gpointer user_data)
 {
     WebKitJavascriptResult* js_result;
     JSCValue* value;
@@ -264,11 +258,8 @@ static void evaluate_javascript_cb(GObject *obj, GAsyncResult *result, gpointer 
 
     webkit_javascript_result_unref(js_result);
 }
-#pragma clang diagnostic pop
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-static void clear_data_manager_cb(GObject *obj, GAsyncResult *result, gpointer user_data)
+static void clear_data_manager_cb(GObject* obj, GAsyncResult* result, gpointer user_data)
 {
     GError* error = NULL;
     webView* wv = (webView*)user_data;
@@ -296,7 +287,6 @@ static void clear_data_manager_cb(GObject *obj, GAsyncResult *result, gpointer u
     if(wv->clear_data_manager_finish_handler)
         wv->clear_data_manager_finish_handler(successful);
 }
-#pragma clang diagnostic pop
 
 static gboolean web_view_load_failed_cb(WebKitWebView* view, WebKitLoadEvent load_event, gchar* failing_uri, GError* error, gpointer user_data)
 {
@@ -524,11 +514,11 @@ LAUNCHER_EXPORT void webview_go_forward(void* webview)
     webkit_web_view_go_forward(wv->view);
 }
 
-LAUNCHER_EXPORT WebKitFindController* webview_search_start(void* webview, const gchar *search_text, gboolean case_sensitive, gboolean forward, gboolean wrap, gboolean only_word_start, gboolean treat_camelcase_as_word_start)
+LAUNCHER_EXPORT WebKitFindController* webview_search_start(void* webview, const gchar* search_text, gboolean case_sensitive, gboolean forward, gboolean wrap, gboolean only_word_start, gboolean treat_camelcase_as_word_start)
 {
     webView* wv = (webView*)webview;
 
-    WebKitFindController *findController = webkit_web_view_get_find_controller(wv->view);
+    WebKitFindController* findController = webkit_web_view_get_find_controller(wv->view);
 
     gint32 searchOptions = WEBKIT_FIND_OPTIONS_NONE;
 
@@ -591,70 +581,70 @@ LAUNCHER_EXPORT WebKitPrintOperationResponse webview_print_operation_run_dialog(
 LAUNCHER_EXPORT gboolean webview_get_allow_file_access_from_file_urls(void* webview)
 {
     webView* wv = (webView*)webview;
-    WebKitSettings *settings = webkit_web_view_get_settings(wv->view);
+    WebKitSettings* settings = webkit_web_view_get_settings(wv->view);
     return webkit_settings_get_allow_file_access_from_file_urls(settings);
 }
 
 LAUNCHER_EXPORT void webview_set_allow_file_access_from_file_urls(void* webview, gboolean allowed)
 {
     webView* wv = (webView*)webview;
-    WebKitSettings *settings = webkit_web_view_get_settings(wv->view);
+    WebKitSettings* settings = webkit_web_view_get_settings(wv->view);
     webkit_settings_set_allow_file_access_from_file_urls(settings, allowed);
 }
 
 LAUNCHER_EXPORT gboolean webview_get_allow_universal_access_from_file_urls(void* webview)
 {
     webView* wv = (webView*)webview;
-    WebKitSettings *settings = webkit_web_view_get_settings(wv->view);
+    WebKitSettings* settings = webkit_web_view_get_settings(wv->view);
     return webkit_settings_get_allow_universal_access_from_file_urls(settings);
 }
 
 LAUNCHER_EXPORT void webview_set_allow_universal_access_from_file_urls(void* webview, gboolean allowed)
 {
     webView* wv = (webView*)webview;
-    WebKitSettings *settings = webkit_web_view_get_settings(wv->view);
+    WebKitSettings* settings = webkit_web_view_get_settings(wv->view);
     webkit_settings_set_allow_universal_access_from_file_urls(settings, allowed);
 }
 
 LAUNCHER_EXPORT gboolean webview_get_enable_write_console_messages_to_stdout(void* webview)
 {
     webView* wv = (webView*)webview;
-    WebKitSettings *settings = webkit_web_view_get_settings(wv->view);
+    WebKitSettings* settings = webkit_web_view_get_settings(wv->view);
     return webkit_settings_get_enable_write_console_messages_to_stdout(settings);
 }
 
 LAUNCHER_EXPORT void webview_set_enable_write_console_messages_to_stdout(void* webview, gboolean enabled)
 {
     webView* wv = (webView*)webview;
-    WebKitSettings *settings = webkit_web_view_get_settings(wv->view);
+    WebKitSettings* settings = webkit_web_view_get_settings(wv->view);
     webkit_settings_set_enable_write_console_messages_to_stdout(settings, enabled);
 }
 
 LAUNCHER_EXPORT WebKitHardwareAccelerationPolicy webview_get_hardware_acceleration_policy(void* webview)
 {
     webView* wv = (webView*)webview;
-    WebKitSettings *settings = webkit_web_view_get_settings(wv->view);
+    WebKitSettings* settings = webkit_web_view_get_settings(wv->view);
     return webkit_settings_get_hardware_acceleration_policy(settings);
 }
 
 LAUNCHER_EXPORT void webview_set_hardware_acceleration_policy(void* webview, WebKitHardwareAccelerationPolicy policy)
 {
     webView* wv = (webView*)webview;
-    WebKitSettings *settings = webkit_web_view_get_settings(wv->view);
+    WebKitSettings* settings = webkit_web_view_get_settings(wv->view);
     webkit_settings_set_hardware_acceleration_policy(settings, policy);
 }
 
 LAUNCHER_EXPORT gboolean webview_get_enable_developer_extras(void* webview)
 {
     webView* wv = (webView*)webview;
-    WebKitSettings *settings = webkit_web_view_get_settings(wv->view);
+    WebKitSettings* settings = webkit_web_view_get_settings(wv->view);
     return webkit_settings_get_enable_developer_extras(settings);
 }
 
 LAUNCHER_EXPORT void webview_set_enable_developer_extras(void* webview, gboolean enabled)
 {
     webView* wv = (webView*)webview;
-    WebKitSettings *settings = webkit_web_view_get_settings(wv->view);
+    WebKitSettings* settings = webkit_web_view_get_settings(wv->view);
     webkit_settings_set_enable_developer_extras(settings, enabled);
 }
 
@@ -684,7 +674,7 @@ LAUNCHER_EXPORT void webview_set_zoom_level(void* webview, gdouble zoom_level)
     webkit_web_view_set_zoom_level(wv->view, zoom_level);
 }
 
-LAUNCHER_EXPORT void webview_register_script_message_handler(void* webview, const gchar *name, callback_script_message_received_evnt_fn handler)
+LAUNCHER_EXPORT void webview_register_script_message_handler(void* webview, const gchar* name, callback_script_message_received_evnt_fn handler)
 {
     webView* wv = (webView*)webview;
 
@@ -702,19 +692,24 @@ LAUNCHER_EXPORT void webview_register_script_message_handler(void* webview, cons
     webkit_user_content_manager_register_script_message_handler(wv->contentManager, name);
 }
 
-static void cookies_callback(GObject *cm, GAsyncResult *res, gpointer p){
-    webView* wv = (webView*)p;
+static void cookies_callback(GObject* obj, GAsyncResult* result, gpointer user_data){
+    webView* wv = (webView*)user_data;
     WebKitWebContext* context = webkit_web_view_get_context (wv->view);
     WebKitCookieManager* cookiemgr = webkit_web_context_get_cookie_manager (context);
 
-    GList *gl = webkit_cookie_manager_get_cookies_finish(cookiemgr, res, NULL);
-    
-    if (gl == NULL){
+    GError* error = NULL;
+    GList* gl = webkit_cookie_manager_get_cookies_finish(cookiemgr, result, &error);
+
+    if (!gl){
+        if (error && wv->enable_logging)
+            g_warning ("Error retrieving cookies: %s", error->message);
+
+        g_error_free(error);
         return;
     }
 
     if (wv->get_cookie_handler){
-        char* header = soup_cookies_to_cookie_header((GSList *)gl);
+        char* header = soup_cookies_to_cookie_header((GSList*)gl);
         wv->get_cookie_handler(header);
     }
 }
@@ -728,7 +723,7 @@ LAUNCHER_EXPORT void webview_get_cookies(void* webview, const gchar* uri)
     webkit_cookie_manager_get_cookies(cookiemgr, uri, NULL, cookies_callback, (gpointer)wv);
 }
 
-LAUNCHER_EXPORT void webview_unregister_script_message_handler(void* webview, const gchar *name, callback_script_message_received_evnt_fn handler)
+LAUNCHER_EXPORT void webview_unregister_script_message_handler(void* webview, const gchar* name, callback_script_message_received_evnt_fn handler)
 {
     webView* wv = (webView*)webview;
 
@@ -742,7 +737,7 @@ LAUNCHER_EXPORT void webview_unregister_script_message_handler(void* webview, co
 
 LAUNCHER_EXPORT char* get_js_result_message(void* js_result)
 {
-    JSCValue *val = webkit_javascript_result_get_js_value((WebKitJavascriptResult*)js_result);
+    JSCValue* val = webkit_javascript_result_get_js_value((WebKitJavascriptResult*)js_result);
     return jsc_value_to_string(val);
 }
 
@@ -774,7 +769,7 @@ LAUNCHER_EXPORT void webview_show_inspector(void* webview)
 {
     webView* wv = (webView*)webview;
 
-    WebKitWebInspector *inspector = webkit_web_view_get_inspector(wv->view);
+    WebKitWebInspector* inspector = webkit_web_view_get_inspector(wv->view);
     webkit_web_inspector_show(inspector);
 }
 
