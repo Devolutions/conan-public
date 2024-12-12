@@ -39,7 +39,7 @@ jobs:
                 $BuildTypes | ForEach-Object {
                     $BuildType = $_
                     $Job = @{
-                        name = "[$($Platform.Substring(0, 3))-$Architecture-$BuildType]"
+                        name = "[$Platform-$Architecture-$BuildType]"
                         arch = $Architecture
                         build_type = $BuildType
                         os = $Platform
@@ -55,11 +55,20 @@ jobs:
                     $Jobs += $Job
                     
                     if ($Platform -Eq "linux") {
+                        # default distro target
+                        $Job["distro"] = "ubuntu-20.04"
+                        $Job["name"] = "[$($Job["distro"])-$Architecture-$BuildType]"
+
+                        $Job = $Job.Clone()
+                        $Job["distro"] = "ubuntu-18.04"
+                        $Job["name"] = "[$($Job["distro"])-$Architecture-$BuildType]"
+                        $Jobs += $Job
+
                         $Job = $Job.Clone()
                         $Job["distro"] = "ubuntu-22.04"
-                        $Job["name"] = "[$($Platform.Substring(0, 3))-$($Job["distro"])-$Architecture-$BuildType]"
+                        $Job["name"] = "[$($Job["distro"])-$Architecture-$BuildType]"
                         $Jobs += $Job
-                }
+                    }
               }
             }
           }
@@ -135,18 +144,11 @@ jobs:
           pip3 install conan==${{ env.conan-version }} invoke Jinja2 urllib3 chardet requests --upgrade
           echo "CONAN_USER_HOME=/tmp" >> $GITHUB_ENV
 
-      - name: Install clang+llvm
-        if: runner.os == 'Linux'
-        run: |
-          CLANG_LLVM_OS="ubuntu-22.04"
-          CLANG_LLVM_BASE_URL="https://github.com/awakecoding/llvm-prebuilt/releases/download/v2023.3.0"
-          CLANG_LLVM_NAME="clang+llvm-14.0.6-x86_64-${CLANG_LLVM_OS}"
-          wget -q "${CLANG_LLVM_BASE_URL}/${CLANG_LLVM_NAME}.tar.xz"
-          tar -xf "${CLANG_LLVM_NAME}.tar.xz" -C /tmp
-          sudo mv "/tmp/${CLANG_LLVM_NAME}" /opt/llvm
-          echo "PATH=$PATH:/opt/llvm/bin" >> $GITHUB_ENV
-          ldd --version
-          ls /usr/lib/gcc/*/*/libstdc++.so
+      - name: Setup LLVM
+        uses: Devolutions/actions-public/setup-llvm@v1
+        if: runner.os == 'linux'
+        with:
+          version: "18.1.8"
 
       - name: Configure Android NDK
         if: matrix.os == 'android'
@@ -181,10 +183,10 @@ jobs:
         id: package-conan-cache
         shell: pwsh
         run: |
-          $PACKAGE_NAME="conan-${{ matrix.arch }}-${{ matrix.os }}-${{ matrix.build_type }}"
-
           if ("${{ matrix.distro }}") {
-            $PACKAGE_NAME += "_${{ matrix.distro }}"
+            $PACKAGE_NAME="conan-${{ matrix.arch }}-${{ matrix.distro }}-${{ matrix.build_type }}"
+          } else {
+            $PACKAGE_NAME="conan-${{ matrix.arch }}-${{ matrix.os }}-${{ matrix.build_type }}"
           }
 
           conan remove --locks

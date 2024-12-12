@@ -1,5 +1,5 @@
 
-cmake_minimum_required(VERSION 3.2)
+cmake_minimum_required(VERSION 3.15)
 
 project(EmbeddedTerminal C CXX)
 
@@ -22,5 +22,4 @@ add_definitions(${VTE_CFLAGS_OTHER})
 
 add_library("EmbeddedTerminal" SHARED "src/EmbeddedTerminal.c")
 
-target_compile_options("EmbeddedTerminal" PRIVATE -Wall -Werror)
 target_link_libraries("EmbeddedTerminal" ${GTK3_LIBRARIES} ${VTE_LIBRARIES})
