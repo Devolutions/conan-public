@@ -59,7 +59,12 @@ jobs:
                         $Job["distro"] = "ubuntu-22.04"
                         $Job["name"] = "[$($Platform.Substring(0, 3))-$($Job["distro"])-$Architecture-$BuildType]"
                         $Jobs += $Job
-                }
+
+                        $Job = $Job.Clone()
+                        $Job["distro"] = "ubuntu-18.04"
+                        $Job["name"] = "[$($Platform.Substring(0, 3))-$($Job["distro"])-$Architecture-$BuildType]"
+                        $Jobs += $Job
+                    }
               }
             }
           }
