@@ -8,7 +8,8 @@ class CBake(ConanFile):
     url = 'https://github.com/Devolutions/CBake.git'
     license = 'MIT'
     description = 'CBake'
-    branch = 'master'
+    #branch = 'master'
+    branch = 'a69a0fceac3207e7676770787864d85be7bc67a8'
     
     def source(self):
         folder = self.name
