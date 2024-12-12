@@ -1,5 +1,5 @@
 
-cmake_minimum_required(VERSION 3.2)
+cmake_minimum_required(VERSION 3.15)
 
 project(WebView C CXX)
 
@@ -34,5 +34,4 @@ endif()
 
 add_library("WebView" SHARED "src/WebView.c")
 
-target_compile_options("WebView" PRIVATE -Wall -Werror)
 target_link_libraries("WebView" ${GTK3_LIBRARIES} ${LIBSOUP_LIBRARIES} ${WEBKIT2GTK_LIBRARIES})
