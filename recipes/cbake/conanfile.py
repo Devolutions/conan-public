@@ -9,7 +9,7 @@ class CBake(ConanFile):
     license = 'MIT'
     description = 'CBake'
     #branch = 'master'
-    branch = 'a69a0fceac3207e7676770787864d85be7bc67a8'
+    branch = 'fix-sysroot-trimming'
     
     def source(self):
         folder = self.name
