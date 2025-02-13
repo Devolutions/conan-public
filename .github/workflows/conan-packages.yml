@@ -46,7 +46,7 @@ jobs:
                         runner = switch ($Platform) {
                             "windows" { "windows-2022" }
                             { @("macos", "ios") -contains $_ } { "macos-latest" }
-                            { @("linux", "android") -contains $_ } { "ubuntu-20.04" }
+                            { @("linux", "android") -contains $_ } { "ubuntu-22.04" }
                         }
                     }
                     if ($Platform -Eq "macos" -And $Architecture -Eq "x86_64") {
@@ -139,8 +139,8 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           CLANG_LLVM_OS="ubuntu-$(lsb_release -rs)"
-          CLANG_LLVM_BASE_URL="https://github.com/awakecoding/llvm-prebuilt/releases/download/v2021.2.4"
-          CLANG_LLVM_NAME="clang+llvm-12.0.1-x86_64-${CLANG_LLVM_OS}"
+          CLANG_LLVM_BASE_URL="https://github.com/awakecoding/llvm-prebuilt/releases/download/v2023.3.0"
+          CLANG_LLVM_NAME="clang+llvm-14.0.6-x86_64-${CLANG_LLVM_OS}"
           wget -q "${CLANG_LLVM_BASE_URL}/${CLANG_LLVM_NAME}.tar.xz"
           tar -xf "${CLANG_LLVM_NAME}.tar.xz" -C /tmp
           sudo mv "/tmp/${CLANG_LLVM_NAME}" /opt/llvm
