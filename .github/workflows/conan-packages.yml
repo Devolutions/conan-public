@@ -84,6 +84,8 @@ jobs:
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
+        with:
+          image: tonistiigi/binfmt:qemu-v7.0.0-28 # https://github.com/docker/setup-qemu-action/issues/198
         if: runner.os == 'Linux'
 
       - name: Set up docker buildx
