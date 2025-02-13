@@ -138,7 +138,7 @@ jobs:
       - name: Install clang+llvm
         if: runner.os == 'Linux'
         run: |
-          CLANG_LLVM_OS="ubuntu-$(lsb_release -rs)"
+          CLANG_LLVM_OS="ubuntu-20.04"
           CLANG_LLVM_BASE_URL="https://github.com/awakecoding/llvm-prebuilt/releases/download/v2023.3.0"
           CLANG_LLVM_NAME="clang+llvm-14.0.6-x86_64-${CLANG_LLVM_OS}"
           wget -q "${CLANG_LLVM_BASE_URL}/${CLANG_LLVM_NAME}.tar.xz"
