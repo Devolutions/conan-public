@@ -23,7 +23,7 @@ jobs:
     environment: artifactory-publish
     strategy:
       matrix:
-        os: [ windows, macos, linux, ios, android ]
+        os: [ windows, macos, ios, android, ubuntu-18.04, ubuntu-20.04, ubuntu-22.04 ]
 
     steps:
       - name: Check out ${{ github.repository }}
@@ -60,7 +60,7 @@ jobs:
         shell: pwsh
         run: Get-ChildItem | Where-Object { !$_.FullName.Contains('${{ matrix.os }}') } | Remove-Item -Recurse
 
-      - name: Publish packages
+      - name: Publish packages ${{ matrix.os }}
         working-directory: download
         env:
           CONAN_NON_INTERACTIVE: 1
