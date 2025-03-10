@@ -152,6 +152,7 @@ class UtilsBase(object):
             ios_arch = { 'x86': 'i386', 'x86_64': 'x86_64', 'armv8': 'arm64', 'arm64' : 'arm64', 'armv7': 'armv7', 'universal': 'universal' }[target_arch]
             cmake.definitions['CMAKE_TOOLCHAIN_FILE'] = os.path.join(cbake_home, 'cmake', 'ios-%s.toolchain.cmake' % ios_arch)
             cmake.definitions['IOS_DEPLOYMENT_TARGET'] = os_version
+            cmake.definitions['CMAKE_OSX_ARCHITECTURES'] = ios_arch
             cmake.generator = 'Ninja'
         elif target_os == 'Android':
             abi = {'armv7': 'armeabi-v7a with NEON', 'armv8': 'arm64-v8a', 'x86': 'x86', 'x86_64': 'x86_64'}[target_arch]
