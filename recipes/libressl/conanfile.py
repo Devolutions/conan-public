@@ -58,12 +58,6 @@ class LibreSSLConan(ConanFile):
                 "check_function_exists(syslog HAVE_SYSLOG)",
                 "#check_function_exists(syslog HAVE_SYSLOG)")
             tools.replace_in_file(os.path.join(folder, 'CMakeLists.txt'),
-                "check_function_exists(explicit_bzero HAVE_EXPLICIT_BZERO)",
-                "#check_function_exists(explicit_bzero HAVE_EXPLICIT_BZERO)")
-            tools.replace_in_file(os.path.join(folder, 'CMakeLists.txt'),
-                "check_function_exists(reallocarray HAVE_REALLOCARRAY)",
-                "#check_function_exists(reallocarray HAVE_REALLOCARRAY)")
-            tools.replace_in_file(os.path.join(folder, 'CMakeLists.txt'),
                 "check_function_exists(timingsafe_memcmp HAVE_TIMINGSAFE_MEMCMP)",
                 "#check_function_exists(timingsafe_memcmp HAVE_TIMINGSAFE_MEMCMP)")
             tools.replace_in_file(os.path.join(folder, 'include', 'compat', 'endian.h'),
