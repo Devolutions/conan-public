@@ -17,7 +17,10 @@ class LibFIDO2Conan(ConanFile):
         'patches/1.10.0/0003-use-linux-hid-backend-for-android.patch',
         'patches/1.14.0/0001-fix-cmake-dependency-management.patch',
         'patches/1.14.0/0002-fix-crypto-explicit_bzero-conflict.patch',
-        'patches/1.14.0/0003-use-linux-hid-backend-for-android.patch']
+        'patches/1.14.0/0003-use-linux-hid-backend-for-android.patch',
+        'patches/1.15.0/0001-fix-cmake-dependency-management.patch',
+        'patches/1.15.0/0002-fix-crypto-explicit_bzero-conflict.patch',
+        'patches/1.15.0/0003-use-linux-hid-backend-for-android.patch']
 
     options = {
         'fPIC': [True, False],
@@ -45,12 +48,13 @@ class LibFIDO2Conan(ConanFile):
         git.clone(self.url)
         git.checkout(tag)
 
+        git = tools.Git(folder=folder)
         patches_dir = os.path.join(self.recipe_folder, "patches", self.version)
         if os.path.isdir(patches_dir):
             for patch_file in [f for f in os.listdir(patches_dir) if f.endswith('.patch')]:
                 patch_path = os.path.join(patches_dir, patch_file)
                 self.output.info('Applying patch: %s' % patch_path)
-                tools.patch(base_path=folder, patch_file=patch_path)
+                git.run('apply --whitespace=nowarn %s' % (patch_path))
 
     def build(self):
         cmake = CMake(self)
