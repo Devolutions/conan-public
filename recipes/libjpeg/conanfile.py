@@ -8,12 +8,15 @@ class JpegConan(ConanFile):
     exports = 'VERSION'
     version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
     license = 'Independent JPEG Group'
-    url = 'https://github.com/wayk/libjpeg-turbo.git'
+    url = 'https://github.com/libjpeg-turbo/libjpeg-turbo.git'
     description = 'libjpeg-turbo is a JPEG image codec that uses SIMD instructions to accelerate baseline JPEG compression and decompression'
     settings = 'os', 'arch', 'distro', 'build_type'
-    branch = 'wayk'
     python_requires = "shared/1.0.0@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
+    exports = ['VERSION',
+        'patches/2.1.0/0001-cmake-build-fixes.patch',
+        'patches/2.1.5.1/0001-cmake-build-fixes.patch',
+        'patches/3.1.0/0001-cmake-build-fixes.patch']
 
     options = {
         'fPIC': [True, False],
@@ -25,13 +28,22 @@ class JpegConan(ConanFile):
     }
 
     def source(self):
-        if self.settings.arch == 'universal':
-            return
-
         folder = self.name
-        self.output.info('Cloning repo: %s dest: %s branch: %s' % (self.url, folder, self.branch))
+        tag = self.version
+        if tag == "2.1.0":
+            tag = 'aa829dc' # we pinned this commit a while back even if it's not 2.1.0
+        self.output.info('Cloning repo: %s dest: %s tag: %s' % (self.url, folder, tag))
         git = tools.Git(folder=folder)
-        git.clone(self.url, branch=self.branch)
+        git.clone(self.url)
+        git.checkout(tag)
+
+        git = tools.Git(folder=folder)
+        patches_dir = os.path.join(self.recipe_folder, "patches", self.version)
+        if os.path.isdir(patches_dir):
+            for patch_file in os.listdir(patches_dir):
+                patch_path = os.path.join(patches_dir, patch_file)
+                self.output.info('Applying patch: %s' % patch_path)
+                git.run('apply --whitespace=nowarn %s' % (patch_path))
 
         # Modern Android NDK requires modern CMake policies
         for line in fileinput.input([os.path.join(folder, "CMakeLists.txt")], inplace=True):
@@ -40,14 +52,14 @@ class JpegConan(ConanFile):
             sys.stdout.write(line)
 
     def build(self):
-        if self.settings.arch == 'universal':
-            self.lipo_create(self, self.build_folder)
-            return
-
         cmake = CMake(self)
         self.cmake_wrapper(cmake, self.settings, self.options)
 
-        cmake.definitions['ENABLE_TESTING'] = 'OFF'
+        cmake.definitions["CMAKE_INSTALL_INCLUDEDIR:PATH"] = "include"
+        cmake.definitions["CMAKE_INSTALL_LIBDIR:PATH"] = "lib"
+        cmake.definitions["CMAKE_INSTALL_BINDIR:PATH"] = "bin"
+        cmake.definitions["CMAKE_INSTALL_DATAROOTDIR:PATH"] = "share"
+
         cmake.definitions['ENABLE_SHARED'] = 'OFF'
         cmake.definitions['ENABLE_STATIC'] = 'ON'
 
@@ -61,22 +73,13 @@ class JpegConan(ConanFile):
         cmake.configure(source_folder=self.name)
 
         cmake.build()
+        cmake.install()
 
     def package(self):
-        if self.settings.os == 'Windows':
-            self.copy('*.lib', dst='lib', keep_path=False)
-        elif self.settings.arch == 'universal':
-            self.copy('*.a', dst='lib', keep_path=False)
-        else:
-            self.copy('*.a', dst='lib')
-
-        if self.settings.arch == 'universal':
-            self.copy('*.h', src='include', dst='include')
-        else:
-            for header in ['jpeglib.h', 'jerror.h', 'turbojpeg.h', 'jmorecfg.h']:
-                self.copy(header, src=self.name, dst='include')
-
-            self.copy('jconfig.h', dst='include')
+        for folder in ["bin", "share", "lib/cmake", "lib/pkgconfig"]:
+            folder_path = os.path.join(self.package_folder, folder)
+            if os.path.exists(folder_path):
+                tools.rmdir(folder_path)
 
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)
