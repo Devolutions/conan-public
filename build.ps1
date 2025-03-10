@@ -113,7 +113,6 @@ function Invoke-TlkBuild {
         'libjpeg',
         'libcbor',
         'mbedtls',
-        'openssl',
         'libressl',
         'winpr',
         'freerdp',
@@ -162,7 +161,6 @@ function Invoke-TlkBuild {
               'libjpeg',
               'mbedtls', 
               'libressl',
-              'openssl', 
               'winpr',
               'freerdp'
             )
