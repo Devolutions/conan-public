@@ -15,7 +15,9 @@ class LibreSSLConan(ConanFile):
         'patches/3.4.2/0001-normalize-library-output-names.patch',
         'patches/3.4.2/0002-set-default-output-directories.patch',
         'patches/3.8.2/0001-normalize-library-output-names.patch',
-        'patches/3.8.2/0002-set-default-output-directories.patch']
+        'patches/3.8.2/0002-set-default-output-directories.patch',
+        'patches/3.9.2/0001-normalize-library-output-names.patch',
+        'patches/3.9.2/0002-set-default-output-directories.patch']
 
     options = {
         'fPIC': [True, False],
@@ -40,12 +42,13 @@ class LibreSSLConan(ConanFile):
         git.clone(self.url)
         git.checkout(tag)
 
+        git = tools.Git(folder=folder)
         patches_dir = os.path.join(self.recipe_folder, "patches", self.version)
         if os.path.isdir(patches_dir):
             for patch_file in os.listdir(patches_dir):
                 patch_path = os.path.join(patches_dir, patch_file)
                 self.output.info('Applying patch: %s' % patch_path)
-                tools.patch(base_path=folder, patch_file=patch_path)
+                git.run('apply --whitespace=nowarn %s' % (patch_path))
 
         if self.settings.os == 'iOS':
             tools.replace_in_file(os.path.join(folder, 'CMakeLists.txt'),

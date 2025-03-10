@@ -32,7 +32,7 @@ class LibFIDO2Conan(ConanFile):
         super().build_requirements()
         self.build_requires('zlib/1.3.1@devolutions/stable')
         self.build_requires('libcbor/0.10.2@devolutions/stable')
-        self.build_requires('libressl/3.8.2@devolutions/stable')
+        self.build_requires('libressl/3.9.2@devolutions/stable')
 
         if self.settings.os == 'Android':
             self.build_requires('libudev-zero/1.0.0@devolutions/stable')

@@ -27,7 +27,7 @@ class OpenSSHConan(ConanFile):
         super().build_requirements()
         self.build_requires('zlib/1.3.1@devolutions/stable')
         self.build_requires('libcbor/0.10.2@devolutions/stable')
-        self.build_requires('libressl/3.8.2@devolutions/stable')
+        self.build_requires('libressl/3.9.2@devolutions/stable')
         self.build_requires('libfido2/1.14.0@devolutions/stable')
 
     def source(self):
