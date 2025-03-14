@@ -1,4 +1,4 @@
-From a1af75d301ab1253995d8ae72251e37273bf7bde Mon Sep 17 00:00:00 2001
+From abc7cd2ae8107ad01270ccde48edc86e38ed5b66 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Marc-Andr=C3=A9=20Moreau?= <mamoreau@devolutions.net>
 Date: Tue, 11 Mar 2025 16:43:35 -0400
 Subject: [PATCH] cmake build fixes
@@ -6,8 +6,9 @@ Subject: [PATCH] cmake build fixes
 ---
  CMakeLists.txt      | 24 ++++++++++++++++++++++++
  simd/CMakeLists.txt | 19 +++++++++++++++++++
+ src/jconfigint.h.in |  3 +++
  src/jmorecfg.h      |  2 ++
- 3 files changed, 45 insertions(+)
+ 4 files changed, 48 insertions(+)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
 index 9c4e5e2d..26161d3d 100644
@@ -88,6 +89,18 @@ index aecc9a27..3cf3dfa6 100644
    # Test whether gas-preprocessor.pl would be needed to build the GAS
    # implementation of the Neon SIMD extensions.  If so, then automatically
    # enable the full Neon intrinsics implementation.
+diff --git a/src/jconfigint.h.in b/src/jconfigint.h.in
+index 5c14e32a..650f15f1 100644
+--- a/src/jconfigint.h.in
++++ b/src/jconfigint.h.in
+@@ -73,4 +73,7 @@
+ /* Use accelerated SIMD routines. */
+ #cmakedefine WITH_SIMD 1
+ 
++/* Disable getenv usage  */
++#define NO_GETENV
++
+ #endif
 diff --git a/src/jmorecfg.h b/src/jmorecfg.h
 index 89c7842c..a4e318e5 100644
 --- a/src/jmorecfg.h
