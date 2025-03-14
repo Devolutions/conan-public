@@ -1,13 +1,14 @@
-From 347e26bc8977204d515878ee76938610a3144810 Mon Sep 17 00:00:00 2001
+From 5f4e62fa406e19fdec7944df54bb29879c42e1da Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Marc-Andr=C3=A9=20Moreau?= <mamoreau@devolutions.net>
 Date: Mon, 10 Mar 2025 15:58:58 -0400
 Subject: [PATCH] cmake build fixes
 
 ---
  CMakeLists.txt      | 24 ++++++++++++++++++++++++
+ jconfig.h.in        |  3 +++
  jmorecfg.h          |  2 ++
  simd/CMakeLists.txt | 19 +++++++++++++++++++
- 3 files changed, 45 insertions(+)
+ 4 files changed, 48 insertions(+)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
 index eefba16b..0879918c 100644
@@ -44,6 +45,20 @@ index eefba16b..0879918c 100644
  include(cmakescripts/PackageInfo.cmake)
  
  # Detect CPU type and whether we're building 64-bit or 32-bit code
+diff --git a/jconfig.h.in b/jconfig.h.in
+index e0180122..b5383597 100644
+--- a/jconfig.h.in
++++ b/jconfig.h.in
+@@ -21,6 +21,9 @@
+ /* Use accelerated SIMD routines. */
+ #cmakedefine WITH_SIMD 1
+ 
++/* Disable getenv usage  */
++#define NO_GETENV
++
+ /*
+  * Define BITS_IN_JSAMPLE as either
+  *   8   for 8-bit sample values (the usual setting)
 diff --git a/jmorecfg.h b/jmorecfg.h
 index b33a9919..2981431c 100644
 --- a/jmorecfg.h
