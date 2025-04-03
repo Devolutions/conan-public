@@ -111,6 +111,10 @@ jobs:
           choco install --no-progress python
           choco install --no-progress vswhere
           choco install --no-progress nasm
+
+          # https://github.com/actions/runner-images/issues/11926
+          choco install cmake --version 3.31.6 --force
+
           echo "${Env:ProgramFiles}\NASM" | Out-File -FilePath $Env:GITHUB_PATH -Encoding UTF8 -Append
           Invoke-WebRequest -Uri 'https://www.tortall.net/projects/yasm/releases/yasm-1.2.0-win64.exe' -OutFile 'yasm.exe'
           Move-Item .\yasm.exe "${Env:ProgramFiles}\NASM\yasm.exe"
@@ -140,7 +144,12 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get -o Acquire::Retries=3 update
-          sudo apt-get install ninja-build cmake xz-utils nasm yasm python3 python3-pip python3-wget python3-setuptools
+          sudo apt-get install ninja-build xz-utils nasm yasm python3 python3-pip python3-wget python3-setuptools
+
+          # https://github.com/actions/runner-images/issues/11926
+          sudo apt-get install cmake=3.31.6
+          sudo ln -sf /usr/bin/cmake /usr/local/bin/cmake
+
           pip3 install conan==${{ env.conan-version }} invoke Jinja2 urllib3 chardet requests --upgrade
           echo "CONAN_USER_HOME=/tmp" >> $GITHUB_ENV
 
