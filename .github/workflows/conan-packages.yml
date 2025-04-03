@@ -149,7 +149,7 @@ jobs:
           # https://github.com/actions/runner-images/issues/11926
 
           sudo apt-get update
-          sudo apt-get install cmake=3.28.3-1build7
+          sudo apt-get install cmake=3.22.1-1ubuntu1.22.04.2
           sudo ln -sf /usr/bin/cmake /usr/local/bin/cmake
 
           pip3 install conan==${{ env.conan-version }} invoke Jinja2 urllib3 chardet requests --upgrade
