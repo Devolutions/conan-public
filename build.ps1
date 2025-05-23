@@ -145,6 +145,7 @@ function Invoke-TlkBuild {
                 'munit',
                 'libvpx',
                 'libfido2',
+                'openh264',
                 'wxsqlite3'
             )
         }
