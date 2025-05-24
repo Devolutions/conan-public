@@ -30,7 +30,9 @@ class FreerdpConan(ConanFile):
         self.build_requires('mbedtls/3.5.1@devolutions/stable')
         self.build_requires('zlib/1.3.1@devolutions/stable')
         self.build_requires('cjson/1.7.15@devolutions/stable')
-        self.build_requires('openh264/2.6.0@devolutions/stable')
+
+        if self.settings.os == 'Windows' or self.settings.os == "Linux" or self.settings.os == "Macos":
+            self.build_requires('openh264/2.6.0@devolutions/stable')
 
     def source(self):
         if self.settings.arch == 'universal':
