@@ -418,6 +418,42 @@ class UtilsBase(object):
         if not self.rustup_is_installed(target, 'target'):
             self.rustup_install(target, 'target')
 
+    def openh264_filename(self, version):
+        os_ = str(self.settings.os)
+        arch = str(self.settings.arch)
+        version = str(version)
+
+        base_name = "libopenh264"
+        ext = None
+        platform = None
+
+        if os_ == "Windows":
+            base_name = "openh264"
+            ext = "dll"
+            if arch == "x86_64":
+                platform = "win64"
+            elif arch == "armv8":
+                platform = "win-arm64"
+
+        elif os_ == "Linux":
+            ext = "so"
+            if arch == "x86_64":
+                platform = "linux64.8"
+            elif arch == "armv8":
+                platform = "linux-arm64.8"
+
+        elif os_ == "Macos":
+            ext = "dylib"
+            if arch == "x86_64":
+                platform = "mac-x64"
+            elif arch == "armv8":
+                platform = "mac-arm64"
+
+        if not platform or not ext:
+            raise ConanInvalidConfiguration(f"Unsupported platform/arch: {os_} {arch}")
+
+        return f"{base_name}-{version}-{platform}.{ext}"
+
 class SharedUtils(ConanFile):
     name = "shared"
     exports = 'VERSION'
