@@ -132,6 +132,10 @@ function Invoke-TlkBuild {
             $TargetPackages += @('embedded-terminal')
         }
 
+        if (@('windows','macos','linux') -Contains $Platform) {
+            $TargetPackages += @('openh264')
+        }
+
         $TargetPackages += $BasePackages
 
         if (@('linux','android') -Contains $Platform) {
@@ -145,13 +149,9 @@ function Invoke-TlkBuild {
                 'munit',
                 'libvpx',
                 'libfido2',
-                'openh264',
+                'openssh',
                 'wxsqlite3'
             )
-        }
-    
-        if (@('windows','macos','linux') -Contains $Platform) {
-            $TargetPackages += @('openssh')
         }
     
         if ((($Platform -eq 'windows') -Or ($Platform -eq 'android') -Or ($Platform -eq "macos")) -And ($BuildType -eq 'RelWithDebInfo')) {
@@ -162,9 +162,14 @@ function Invoke-TlkBuild {
               'libjpeg',
               'mbedtls', 
               'libressl',
-              'winpr',
-              'freerdp'
+              'winpr'
             )
+
+            if (@('windows','macos') -Contains $Platform) {
+                $TargetPackages += @('openh264')
+            }
+
+            $TargetPackages += @('freerdp')
         }
     }
     
