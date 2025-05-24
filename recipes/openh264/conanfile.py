@@ -15,6 +15,15 @@ class OpenH264Conan(ConanFile):
     python_requires_extend = "shared.UtilsBase"
     no_copy_source = True
 
+    options = {
+        'fPIC': [True, False],
+        'shared': [True, False]
+    }
+    default_options = {
+        'fPIC': True,
+        'shared': False
+    }
+
     def _openh264_filename(self):
         os_ = str(self.settings.os)
         arch = str(self.settings.arch)
