@@ -24,42 +24,6 @@ class OpenH264Conan(ConanFile):
         'shared': False
     }
 
-    def _openh264_filename(self):
-        os_ = str(self.settings.os)
-        arch = str(self.settings.arch)
-        version = str(self.version)
-
-        base_name = "libopenh264"
-        ext = None
-        platform = None
-
-        if os_ == "Windows":
-            base_name = "openh264"
-            ext = "dll"
-            if arch == "x86_64":
-                platform = "win64"
-            elif arch == "armv8":
-                platform = "win-arm64"
-
-        elif os_ == "Linux":
-            ext = "so"
-            if arch == "x86_64":
-                platform = "linux64.8"
-            elif arch == "armv8":
-                platform = "linux-arm64.8"
-
-        elif os_ == "Macos":
-            ext = "dylib"
-            if arch == "x86_64":
-                platform = "mac-x64"
-            elif arch == "armv8":
-                platform = "mac-arm64"
-
-        if not platform or not ext:
-            raise ConanInvalidConfiguration(f"Unsupported platform/arch: {os_} {arch}")
-
-        return f"{base_name}-{version}-{platform}.{ext}"
-
     def source(self):
         if self.settings.arch == 'universal':
             return
@@ -88,7 +52,7 @@ class OpenH264Conan(ConanFile):
                 os.remove(fullpath)
                 self.output.info(f"Removed: {filename}")
 
-        filename = self._openh264_filename()
+        filename = self.openh264_filename(self.version)
         extracted_path = os.path.join(self.source_folder, filename) 
         filename = '%s.bz2' % filename
         bz2_path = os.path.join(self.source_folder, filename)
@@ -106,8 +70,9 @@ class OpenH264Conan(ConanFile):
         self.copy('*.so', dst='lib', keep_path=False)
         self.copy('*.dylib', dst='lib', keep_path=False)
 
-        headers = os.path.join(self.source_folder, self.name, "codec", "api", "wels")
-        self.copy('*.h', src=headers, dst='include', keep_path=False)
+        headers = os.path.join(self.source_folder, self.name, "codec", "api")
+        self.copy('*.h', src=headers, dst='include', keep_path=True)
 
     def package_info(self):
         self.cpp_info.libs = ["openh264"]
+        self.user_info.version = str(self.version)

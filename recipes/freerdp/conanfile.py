@@ -31,6 +31,9 @@ class FreerdpConan(ConanFile):
         self.build_requires('zlib/1.3.1@devolutions/stable')
         self.build_requires('cjson/1.7.15@devolutions/stable')
 
+        if self.settings.os == 'Windows' or self.settings.os == "Linux" or self.settings.os == "Macos":
+            self.build_requires('openh264/2.6.0@devolutions/stable')
+
     def source(self):
         if self.settings.arch == 'universal':
             return
@@ -146,6 +149,13 @@ class FreerdpConan(ConanFile):
         cmake.definitions['OPENSSL_ROOT_DIR'] = openssl_path
         cmake.definitions['CMAKE_PREFIX_PATH'] = '%s;%s;%s;%s;%s' % (openssl_path, winpr_path, zlib_path, mbedtls_path, cjson_path)
         cmake.definitions['CMAKE_VERBOSE_MAKEFILE'] = 'ON'
+
+        if self.settings.os == 'Windows' or self.settings.os == "Linux" or self.settings.os == "Macos":
+            openh264_path = self.deps_cpp_info['openh264'].rootpath
+            cmake.definitions["OPENH264_LIBRARY"] = os.path.join(openh264_path, self.deps_cpp_info['openh264'].libdirs[0], self.openh264_filename(self.deps_user_info["openh264"].version))
+            cmake.definitions["OPENH264_INCLUDE_DIR"] = os.path.join(openh264_path, self.deps_cpp_info['openh264'].includedirs[0])
+            cmake.definitions['WITH_OPENH264'] = 'ON'
+            cmake.definitions['WITH_OPENH264_LOADING'] = 'ON'
 
         cmake.configure(source_folder=self.name)
 
