@@ -1,6 +1,6 @@
 from conans import ConanFile, CMake, tools, python_requires
-import os, shutil
-import bz2
+import os, shutil, bz2, ssl
+import urllib.request
 
 class OpenH264Conan(ConanFile):
     name = 'openh264'
@@ -56,10 +56,17 @@ class OpenH264Conan(ConanFile):
         extracted_path = os.path.join(self.source_folder, filename) 
         filename = '%s.bz2' % filename
         bz2_path = os.path.join(self.source_folder, filename)
-        url = f"http://ciscobinary.openh264.org/{filename}"
+        url = f"https://ciscobinary.openh264.org/{filename}"
         if os.path.exists(extracted_path):
             os.remove(extracted_path)
-        tools.download(url, bz2_path)
+
+        # https://github.com/cisco/openh264/issues/909
+        context = ssl.create_default_context()
+        context.check_hostname = False
+        context.verify_mode = ssl.CERT_REQUIRED
+
+        with urllib.request.urlopen(url, context=context) as response, open(bz2_path, 'wb') as out_file:
+            shutil.copyfileobj(response, out_file)
 
         with bz2.BZ2File(bz2_path, "rb") as f_in:
             data = f_in.read()
