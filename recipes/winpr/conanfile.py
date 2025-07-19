@@ -26,7 +26,7 @@ class WinprConan(ConanFile):
         super().build_requirements()
         self.build_requires('mbedtls/3.5.1@devolutions/stable')
         self.build_requires('zlib/1.3.1@devolutions/stable')
-        self.build_requires('libjpeg/3.1.0@devolutions/stable')
+        #self.build_requires('libjpeg/3.1.0@devolutions/stable')
 
     def source(self):
         if self.settings.arch == 'universal':
@@ -58,11 +58,12 @@ class WinprConan(ConanFile):
         cmake.definitions['WITH_MBEDTLS'] = 'ON'
         cmake.definitions['WITH_OPENSSL'] = 'OFF'
 
-        cmake.definitions['WINPR_UTILS_IMAGE_JPEG'] = 'ON'
-
         cmake.definitions['WITH_INTERNAL_RC4'] = 'ON'
         cmake.definitions['WITH_INTERNAL_MD4'] = 'ON'
         cmake.definitions['WITH_INTERNAL_MD5'] = 'ON'
+
+        #if self.settings.os == "Macos" or self.settings.os == 'Linux':
+        #    cmake.definitions['WINPR_UTILS_IMAGE_JPEG'] = 'ON'
 
         if self.settings.os == "Macos":
             cmake.definitions['WITH_PKCS11'] = 'OFF'
@@ -79,8 +80,8 @@ class WinprConan(ConanFile):
 
         mbedtls_path = self.deps_cpp_info['mbedtls'].rootpath
         zlib_path = self.deps_cpp_info['zlib'].rootpath
-        jpeg_path = self.deps_cpp_info['libjpeg'].rootpath
-        cmake.definitions['CMAKE_PREFIX_PATH'] = '%s;%s;%s' % (mbedtls_path, zlib_path, jpeg_path)
+        #jpeg_path = self.deps_cpp_info['libjpeg'].rootpath
+        cmake.definitions['CMAKE_PREFIX_PATH'] = '%s;%s' % (mbedtls_path, zlib_path)#, jpeg_path)
         
         if self.settings.os == 'Android': # Android toolchain overwrites CMAKE_PREFIX_PATH
             cmake.definitions['CMAKE_FIND_ROOT_PATH'] = '%s;%s' % (mbedtls_path, zlib_path)
