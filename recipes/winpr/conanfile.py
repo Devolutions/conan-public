@@ -26,6 +26,7 @@ class WinprConan(ConanFile):
         super().build_requirements()
         self.build_requires('mbedtls/3.5.1@devolutions/stable')
         self.build_requires('zlib/1.3.1@devolutions/stable')
+        self.build_requires('libjpeg/2.1.0@devolutions/stable')
 
     def source(self):
         if self.settings.arch == 'universal':
@@ -56,6 +57,8 @@ class WinprConan(ConanFile):
         cmake.definitions['WITH_WINPR_TOOLS'] = 'OFF'
         cmake.definitions['WITH_MBEDTLS'] = 'ON'
         cmake.definitions['WITH_OPENSSL'] = 'OFF'
+
+        cmake.definitions['WINPR_UTILS_IMAGE_JPEG'] = 'ON'
 
         cmake.definitions['WITH_INTERNAL_RC4'] = 'ON'
         cmake.definitions['WITH_INTERNAL_MD4'] = 'ON'
