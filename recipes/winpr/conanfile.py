@@ -79,7 +79,8 @@ class WinprConan(ConanFile):
 
         mbedtls_path = self.deps_cpp_info['mbedtls'].rootpath
         zlib_path = self.deps_cpp_info['zlib'].rootpath
-        cmake.definitions['CMAKE_PREFIX_PATH'] = '%s;%s' % (mbedtls_path, zlib_path)
+        jpeg_path = self.deps_cpp_info['libjpeg'].rootpath
+        cmake.definitions['CMAKE_PREFIX_PATH'] = '%s;%s;%s' % (mbedtls_path, zlib_path, jpeg_path)
         
         if self.settings.os == 'Android': # Android toolchain overwrites CMAKE_PREFIX_PATH
             cmake.definitions['CMAKE_FIND_ROOT_PATH'] = '%s;%s' % (mbedtls_path, zlib_path)
