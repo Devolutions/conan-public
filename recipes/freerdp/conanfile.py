@@ -31,8 +31,12 @@ class FreerdpConan(ConanFile):
         self.build_requires('zlib/1.3.1@devolutions/stable')
         self.build_requires('cjson/1.7.15@devolutions/stable')
 
-        if self.settings.os == 'Windows' or self.settings.os == "Linux" or self.settings.os == "Macos":
+        if self.settings.os in ["Windows", "Linux", "Macos"]:
             self.build_requires('openh264/2.6.0@devolutions/stable')
+
+            if self.settings.os == "Linux":
+                self.build_requires('libpng/1.6.39@devolutions/stable')
+                self.build_requires('libjpeg/3.1.0@devolutions/stable')
 
     def source(self):
         if self.settings.arch == 'universal':
@@ -150,7 +154,13 @@ class FreerdpConan(ConanFile):
         cmake.definitions['CMAKE_PREFIX_PATH'] = '%s;%s;%s;%s;%s' % (openssl_path, winpr_path, zlib_path, mbedtls_path, cjson_path)
         cmake.definitions['CMAKE_VERBOSE_MAKEFILE'] = 'ON'
 
-        if self.settings.os == 'Windows' or self.settings.os == "Linux" or self.settings.os == "Macos":
+        if self.settings.os  == "Linux":
+            jpeg_path = self.deps_cpp_info['libjpeg'].rootpath
+            cmake.definitions["JPEG_LIBRARY"] = os.path.join(jpeg_path, self.deps_cpp_info['libjpeg'].libdirs[0], 'libturbojpeg.a')
+            png_path = self.deps_cpp_info['libpng'].rootpath
+            cmake.definitions["PNG_LIBRARY"] = os.path.join(png_path, self.deps_cpp_info['libpng'].libdirs[0], 'libpng.a')
+
+        if self.settings.os in ["Windows", "Linux", "Macos"]:
             openh264_path = self.deps_cpp_info['openh264'].rootpath
             cmake.definitions["OPENH264_LIBRARY"] = os.path.join(openh264_path, self.deps_cpp_info['openh264'].libdirs[0], self.openh264_filename(self.deps_user_info["openh264"].version))
             cmake.definitions["OPENH264_INCLUDE_DIR"] = os.path.join(openh264_path, self.deps_cpp_info['openh264'].includedirs[0])
