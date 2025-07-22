@@ -26,7 +26,8 @@ class WinprConan(ConanFile):
         super().build_requirements()
         self.build_requires('mbedtls/3.5.1@devolutions/stable')
         self.build_requires('zlib/1.3.1@devolutions/stable')
-        #self.build_requires('libjpeg/3.1.0@devolutions/stable')
+        self.build_requires('libjpeg/3.1.0@devolutions/stable')
+        self.build_requires('libpng/1.6.39@devolutions/stable')
 
     def source(self):
         if self.settings.arch == 'universal':
@@ -62,8 +63,18 @@ class WinprConan(ConanFile):
         cmake.definitions['WITH_INTERNAL_MD4'] = 'ON'
         cmake.definitions['WITH_INTERNAL_MD5'] = 'ON'
 
-        #if self.settings.os == "Macos" or self.settings.os == 'Linux':
-        #    cmake.definitions['WINPR_UTILS_IMAGE_JPEG'] = 'ON'
+        if self.settings.os in ["Linux", "Macos"]:
+            cmake.definitions['WINPR_UTILS_IMAGE_PNG'] = 'ON'
+            cmake.definitions['WINPR_UTILS_IMAGE_JPEG'] = 'ON'
+
+            if self.settings.os == 'Linux':
+                jpeg_path = self.deps_cpp_info['libjpeg'].rootpath
+                cmake.definitions["JPEG_LIBRARY"] = os.path.join(jpeg_path, self.deps_cpp_info['libjpeg'].libdirs[0], 'libturbojpeg.a')
+                cmake.definitions["JPEG_INCLUDE_DIR"] = os.path.join(jpeg_path, self.deps_cpp_info['libjpeg'].includedirs[0])
+
+                png_path = self.deps_cpp_info['libpng'].rootpath
+                cmake.definitions["PNG_LIBRARY"] = os.path.join(png_path, self.deps_cpp_info['libpng'].libdirs[0], 'libpng.a')
+                cmake.definitions["PNG_INCLUDE_DIR"] = os.path.join(png_path, self.deps_cpp_info['libpng'].includedirs[0])
 
         if self.settings.os == "Macos":
             cmake.definitions['WITH_PKCS11'] = 'OFF'
@@ -80,8 +91,7 @@ class WinprConan(ConanFile):
 
         mbedtls_path = self.deps_cpp_info['mbedtls'].rootpath
         zlib_path = self.deps_cpp_info['zlib'].rootpath
-        #jpeg_path = self.deps_cpp_info['libjpeg'].rootpath
-        cmake.definitions['CMAKE_PREFIX_PATH'] = '%s;%s' % (mbedtls_path, zlib_path)#, jpeg_path)
+        cmake.definitions['CMAKE_PREFIX_PATH'] = '%s;%s' % (mbedtls_path, zlib_path)
         
         if self.settings.os == 'Android': # Android toolchain overwrites CMAKE_PREFIX_PATH
             cmake.definitions['CMAKE_FIND_ROOT_PATH'] = '%s;%s' % (mbedtls_path, zlib_path)
