@@ -154,7 +154,7 @@ class FreerdpConan(ConanFile):
         cmake.definitions['CMAKE_PREFIX_PATH'] = '%s;%s;%s;%s;%s' % (openssl_path, winpr_path, zlib_path, mbedtls_path, cjson_path)
         cmake.definitions['CMAKE_VERBOSE_MAKEFILE'] = 'ON'
 
-        if self.settings.os  == "Linux":
+        if self.settings.os == "Linux":
             jpeg_path = self.deps_cpp_info['libjpeg'].rootpath
             cmake.definitions["JPEG_LIBRARY"] = os.path.join(jpeg_path, self.deps_cpp_info['libjpeg'].libdirs[0], 'libturbojpeg.a')
             png_path = self.deps_cpp_info['libpng'].rootpath
@@ -166,6 +166,9 @@ class FreerdpConan(ConanFile):
             cmake.definitions["OPENH264_INCLUDE_DIR"] = os.path.join(openh264_path, self.deps_cpp_info['openh264'].includedirs[0])
             cmake.definitions['WITH_OPENH264'] = 'ON'
             cmake.definitions['WITH_OPENH264_LOADING'] = 'ON'
+
+        if self.settings.os == "Android":
+            cmake.definitions['WITH_MEDIACODEC'] = 'ON'
 
         cmake.configure(source_folder=self.name)
 
