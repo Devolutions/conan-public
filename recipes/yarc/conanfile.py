@@ -17,13 +17,23 @@ class YarcConan(ConanFile):
         tc = CMakeToolchain(self)
         # Apply cmake_wrapper definitions if they exist
         if hasattr(self, '_cmake_definitions'):
+            self.output.info(f"Applying {len(self._cmake_definitions)} CMake definitions")
             for key, value in self._cmake_definitions.items():
                 tc.variables[key] = value
+                
         # Set generator from cmake_wrapper for Windows MSVC builds
+        generator_set = False
         if hasattr(self, '_cmake_generator'):
             tc.generator = self._cmake_generator
+            generator_set = True
+            self.output.info(f"Set CMake generator to: {self._cmake_generator}")
         if hasattr(self, '_cmake_generator_platform'):
             tc.generator_platform = self._cmake_generator_platform
+            self.output.info(f"Set CMake generator platform to: {self._cmake_generator_platform}")
+            
+        if not generator_set:
+            self.output.warn("No CMake generator was set by cmake_wrapper!")
+            
         tc.generate()
         # Only generate CMakeDeps if we have required settings
         try:
@@ -88,7 +98,14 @@ class YarcConan(ConanFile):
         if self.settings.os_build == 'Windows':
             exe += '.exe'
 
-        if self.settings.os_build == 'Windows':
+        # Look for executable in app subdirectory first, then fallback to build root
+        app_path = os.path.join(self.build_folder, 'app', exe)
+        root_path = os.path.join(self.build_folder, exe)
+        
+        if os.path.exists(app_path):
             copy(self, exe, src=os.path.join(self.build_folder, 'app'), dst=os.path.join(self.package_folder, 'bin'))
+        elif os.path.exists(root_path):
+            copy(self, exe, src=self.build_folder, dst=os.path.join(self.package_folder, 'bin'))
         else:
-            copy(self, exe, src=os.path.join(self.build_folder, 'app'), dst=os.path.join(self.package_folder, 'bin'))
+            self.output.error(f"Executable {exe} not found in {app_path} or {root_path}")
+            raise ConanException(f"Could not find {exe} executable")
