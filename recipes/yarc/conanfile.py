@@ -52,7 +52,7 @@ class YarcConan(ConanFile):
         git.clone(self.url, self.branch)
 
     def build(self):
-        cmake = CMake(self, build_type='Release')
+        cmake = CMake(self)
         self.cmake_wrapper(cmake, self.settings, self.options)
         cmake.configure()
         cmake.build()
