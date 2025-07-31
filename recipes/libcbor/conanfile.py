@@ -1,4 +1,5 @@
 from conan import ConanFile
+from conans import tools  # Keep for compatibility
 from conan.tools.files import replace_in_file, copy, load, save
 from conan.tools.scm import Git
 from conan.tools.cmake import CMake, cmake_layout

@@ -1,5 +1,7 @@
 from conan import ConanFile
+from conans import tools  # Keep for compatibility
 from conan.tools.scm import Git
+from conan.tools.files import copy
 import os
 
 class CBake(ConanFile):
@@ -24,7 +26,7 @@ class CBake(ConanFile):
         git.checkout(self.branch)
 
     def package(self):
-        copy(self, '*', src=os.path.join(self.source_folder, 'cbake'), dst=os.path.join(self.package_folder, '', keep_path=True))
+        copy(self, '*', src=os.path.join(self.source_folder, 'cbake'), dst=self.package_folder, keep_path=True)
 
     def package_info(self):
         self.env_info.CBAKE_HOME = self.package_folder

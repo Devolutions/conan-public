@@ -1,4 +1,5 @@
 from conan import ConanFile
+from conans import tools  # Keep for compatibility
 from conan.tools.env import Environment
 from conan.tools.files import copy, mkdir, load, save
 from conan.tools.scm import Git

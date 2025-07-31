@@ -1,5 +1,7 @@
 from conan import ConanFile
+from conans import tools  # Keep for compatibility
 from conan.tools.cmake import CMake, cmake_layout
+from conan.tools.files import copy
 import os
 
 class WebViewConan(ConanFile):
