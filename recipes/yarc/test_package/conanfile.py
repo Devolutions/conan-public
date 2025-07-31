@@ -1,8 +1,11 @@
-from conan import ConanFile, tools
+from conan import ConanFile
 import os
 
 class TestPackageConan(ConanFile):
     settings = 'os', 'arch', 'build_type'
+
+    def requirements(self):
+        self.requires(self.tested_reference_str)
 
     def build(self):
         pass
