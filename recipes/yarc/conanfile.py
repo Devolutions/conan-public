@@ -1,6 +1,7 @@
 from conan import ConanFile
 from conan.tools.scm import Git
 from conan.tools.cmake import CMake, cmake_layout
+from conan.errors import ConanException
 import os
 
 class YarcConan(ConanFile):
@@ -30,8 +31,13 @@ class YarcConan(ConanFile):
     }
 
     def layout(self):
-        if hasattr(self.settings, 'build_type') and self.settings.build_type:
-            cmake_layout(self)
+        # Only call cmake_layout() if we're in a host context (not build-only context)
+        try:
+            if self.settings.build_type:
+                cmake_layout(self)
+        except ConanException:
+            # In build-only context, build_type may not be available
+            pass
 
     def build_requirements(self):
         if self.settings.os_build == 'Linux':
