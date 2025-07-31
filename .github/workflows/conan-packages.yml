@@ -83,7 +83,7 @@ jobs:
       group: conan-${{ github.ref }}-${{matrix.name}}
       cancel-in-progress: true
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         include: ${{ fromJson(needs.generate-matrix.outputs.matrix-json) }}
 
