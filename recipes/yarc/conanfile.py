@@ -19,6 +19,11 @@ class YarcConan(ConanFile):
         if hasattr(self, '_cmake_definitions'):
             for key, value in self._cmake_definitions.items():
                 tc.variables[key] = value
+        # Set generator from cmake_wrapper for Windows MSVC builds
+        if hasattr(self, '_cmake_generator'):
+            tc.generator = self._cmake_generator
+        if hasattr(self, '_cmake_generator_platform'):
+            tc.generator_platform = self._cmake_generator_platform
         tc.generate()
         # Only generate CMakeDeps if we have required settings
         try:
