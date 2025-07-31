@@ -12,10 +12,14 @@ class YarcConan(ConanFile):
     def generate(self):
         tc = CMakeToolchain(self)
         tc.generate()
-        # Only generate CMakeDeps if we have dependencies
-        if self.dependencies:
-            deps = CMakeDeps(self)
-            deps.generate()
+        # Only generate CMakeDeps if we have required settings
+        try:
+            if hasattr(self.settings, 'build_type') and self.dependencies:
+                deps = CMakeDeps(self)
+                deps.generate()
+        except Exception:
+            # Skip CMakeDeps generation if build_type is not available
+            pass
     
 
     def set_version(self):
