@@ -30,7 +30,8 @@ class YarcConan(ConanFile):
     }
 
     def layout(self):
-        cmake_layout(self)
+        if self.settings.build_type:
+            cmake_layout(self)
 
     def build_requirements(self):
         if self.settings.os_build == 'Linux':
