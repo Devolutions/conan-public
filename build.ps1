@@ -41,7 +41,7 @@ function Invoke-ConanRecipe
         $CreateParams += @("-s", "distro=$Distribution")
     }
 
-    & 'conan2' 'create' $CreateParams
+    & 'conan' 'create' $CreateParams
     
     if ($LASTEXITCODE -ne 0) {
         throw "$PackageName creation failure"
