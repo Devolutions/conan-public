@@ -52,7 +52,7 @@ class WinprConan(ConanFile):
         else:
             self.output.info('Cloning repo: %s dest: %s branch: %s' % (self.url, folder, self.branch))
             git = Git(self, folder=folder)
-            git.clone(self.url)
+            git.clone(url=self.url, target=".")
             git.checkout(self.branch)
             self.output.info("Current commit: %s" % (git.get_commit()))
 

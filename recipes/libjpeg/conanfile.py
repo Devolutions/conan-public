@@ -44,7 +44,7 @@ class JpegConan(ConanFile):
             tag = 'aa829dc' # we pinned this commit a while back even if it's not 2.1.0
         self.output.info('Cloning repo: %s dest: %s tag: %s' % (self.url, folder, tag))
         git = Git(self, folder=folder)
-        git.clone(self.url)
+        git.clone(url=self.url, target=".")
         git.checkout(tag)
 
         git = Git(self, folder=folder)

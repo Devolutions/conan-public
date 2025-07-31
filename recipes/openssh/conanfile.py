@@ -46,7 +46,7 @@ class OpenSSHConan(ConanFile):
         self.branch = f"V_{version_parts[0]}_{version_parts[1]}_P1"
         self.output.info('Cloning repo: %s dest: %s branch: %s' % (self.url, folder, self.branch))
         git = Git(self, folder=folder)
-        git.clone(self.url)
+        git.clone(url=self.url, target=".")
         git.checkout(self.branch)
 
         git_distro = Git(self, folder="openssh-distro")

@@ -41,7 +41,7 @@ class LibcborConan(ConanFile):
         folder = self.name
         self.output.info('Cloning repo: %s dest: %s branch: %s' % (self.url, folder, self.branch))
         git = Git(self, folder=folder)
-        git.clone(self.url)
+        git.clone(url=self.url, target=".")
         git.checkout(self.branch)
 
         replace_in_file(self, os.path.join(folder, 'CMakeLists.txt'), "cmake_minimum_required(VERSION 3.0)",

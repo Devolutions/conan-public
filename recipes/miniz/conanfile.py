@@ -39,7 +39,7 @@ class MinizConan(ConanFile):
         folder = self.name
         self.output.info('Cloning repo: %s dest: %s tag: %s' % (self.url, folder, self.version))
         git = Git(self, folder=folder)
-        git.clone(self.url)
+        git.clone(url=self.url, target=".")
         git.checkout(self.version)
 
     def build(self):

@@ -38,7 +38,7 @@ class MunitConan(ConanFile):
         folder = self.name
         self.output.info('Cloning repo: %s dest: %s tag: %s' % (self.url, folder, self.tag))
         git = Git(self, folder=folder)
-        git.clone(self.url)
+        git.clone(url=self.url, target=".")
         git.checkout(self.tag)
 
         patches_dir = os.path.join(self.recipe_folder, "patches")

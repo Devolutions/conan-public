@@ -50,7 +50,7 @@ class OpenH264Conan(ConanFile):
         else:
             self.output.info('Cloning repo: %s dest: %s tag: %s' % (self.url, folder, self.tag))
             git = Git(self, folder=folder)
-            git.clone(self.url)
+            git.clone(url=self.url, target=".")
             git.checkout(self.tag)
             self.output.info("Current commit: %s" % (git.get_commit()))
 

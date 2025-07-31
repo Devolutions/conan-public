@@ -42,7 +42,7 @@ class LibUdevZeroConan(ConanFile):
         tag = self.version
         self.output.info('Cloning repo: %s dest: %s tag: %s' % (self.url, folder, tag))
         git = Git(self, folder=folder)
-        git.clone(self.url)
+        git.clone(url=self.url, target=".")
         git.checkout(tag)
 
         patches_dir = os.path.join(self.recipe_folder, "patches")
