@@ -21,7 +21,8 @@ class CBake(ConanFile):
         folder = self.name
         self.output.info('Cloning repo: %s dest: %s branch: %s' % (self.url, folder, self.branch))
         git = Git(self, folder=folder)
-        git.clone(url=self.url, branch=self.branch)
+        git.clone(url=self.url, target=".")
+        git.checkout(commit=self.branch)
 
     def package(self):
         copy(self, '*', src=os.path.join(self.source_folder, 'cbake'), dst=self.package_folder, keep_path=True)
