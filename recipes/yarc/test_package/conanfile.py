@@ -2,7 +2,7 @@ from conan import ConanFile
 import os
 
 class TestPackageConan(ConanFile):
-    settings = 'os', 'arch', 'build_type'
+    settings = 'os_build', 'arch_build'
 
     def requirements(self):
         self.requires(self.tested_reference_str)
@@ -11,7 +11,7 @@ class TestPackageConan(ConanFile):
         pass
 
     def test(self):
-        if self.settings.os == 'Windows':
+        if self.settings.os_build == 'Windows':
             binaries = ['yarc.exe']
         else:
             binaries = ['yarc']
