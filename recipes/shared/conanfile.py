@@ -113,7 +113,12 @@ class UtilsBase(object):
         return None
 
     def cmake_wrapper(self, cmake, settings, options):
-        cbake_home = self.dependencies["cbake"].package_folder
+        # Access build requirements in Conan 2.x compatible way
+        try:
+            cbake_home = self.dependencies.build_requires["cbake"].package_folder
+        except (KeyError, AttributeError):
+            # Fallback - cbake might not be required for all packages
+            cbake_home = None
         cmake.definitions['BUILD_SHARED_LIBS'] = options.shared
         cmake.definitions['CMAKE_POSITION_INDEPENDENT_CODE'] = options.fPIC
 
