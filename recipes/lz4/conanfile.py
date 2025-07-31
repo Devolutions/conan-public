@@ -1,16 +1,24 @@
-from conans import ConanFile, CMake, tools, python_requires
+from conan import ConanFile
+from conan.tools.files import replace_in_file, copy, load, save
+from conan.tools.scm import Git
+from conan.tools.cmake import CMake, cmake_layout
 import os
 
 class Lz4Conan(ConanFile):
     name = 'lz4'
-    exports = 'VERSION'
-    version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
+    exports_sources = "VERSION"
+    
+
+    def set_version(self):
+                version_path = os.path.join(os.path.dirname(__file__), "VERSION")
+                with open(version_path, 'r') as f:
+                    self.version = f.read().strip()
     license = 'BSD'
     url = 'https://github.com/lz4/lz4.git'
     description = 'Description'
     settings = 'os', 'arch', 'distro', 'build_type'
     tag = 'v%s' % version
-    python_requires = "shared/1.0.0@devolutions/stable"
+    python_requires = "shared/[1.0.0]@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
 
     options = {
@@ -22,13 +30,16 @@ class Lz4Conan(ConanFile):
         'shared': False
     }
 
+    def layout(self):
+        cmake_layout(self)
+
     def source(self):
         if self.settings.arch == 'universal':
             return
 
         folder = self.name
         self.output.info('Cloning repo: %s dest: %s tag: %s' % (self.url, folder, self.tag))
-        git = tools.Git(folder=folder)
+        git = Git(self, folder=folder)
         git.clone(self.url)
         git.checkout(self.tag)
 
@@ -39,24 +50,24 @@ class Lz4Conan(ConanFile):
         
         cmake = CMake(self)
         self.cmake_wrapper(cmake, self.settings, self.options)
-        cmake.configure(source_folder=os.path.join(self.name, 'contrib', 'cmake_unofficial'))
+        cmake.configure())
 
         if self.settings.os == "Windows":
             tools.replace_in_file("CMakeCache.txt", '/MD', '/MT', strict = False)
-            cmake.configure(source_folder=os.path.join(self.name, 'contrib', 'cmake_unofficial'))
+            cmake.configure())
 
         cmake.build(args=['--target', 'lz4_static'])
 
     def package(self):
         if self.settings.os == 'Windows':
-            self.copy('*.lib', dst='lib', keep_path=False)
+            copy(self, '*.lib', dst=os.path.join(self.package_folder, 'lib'), src=self.build_folder)
         elif self.settings.arch == 'universal':
-            self.copy('*.a', dst='lib', keep_path=False)
+            copy(self, '*.a', dst=os.path.join(self.package_folder, 'lib'), src=self.build_folder)
         else:
-            self.copy('*.a', dst='lib')
+            copy(self, '*.a', dst=os.path.join(self.package_folder, 'lib'), src=self.build_folder)
 
         for header in ['lz4.h', 'lz4frame.h', 'lz4hc.h']:
-            self.copy(header, src='lz4/lib', dst='include')
+            copy(self, header, src=os.path.join(self.source_folder, 'lz4/lib'), dst=os.path.join(self.package_folder, 'include'))
 
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)

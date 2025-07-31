@@ -1,15 +1,22 @@
-from conans import ConanFile, tools, python_requires, CMake
+from conan import ConanFile
+from conan.tools.scm import Git
+from conan.tools.cmake import CMake, cmake_layout
 import os, shutil
 
 class MunitConan(ConanFile):
     name = 'munit'
-    version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
+    
+
+    def set_version(self):
+                version_path = os.path.join(os.path.dirname(__file__), "VERSION")
+                with open(version_path, 'r') as f:
+                    self.version = f.read().strip()
     license = 'Devolutions'
     url = 'https://github.com/nemequ/munit'
     description = 'µnit is a small testing framework for C'
     settings = 'os', 'arch', 'distro', 'build_type'
     tag = 'fbbdf14'
-    python_requires = "shared/1.0.0@devolutions/stable"
+    python_requires = "shared/[1.0.0]@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
     exports = ['VERSION',
         'patches/CMakeLists.txt']
@@ -23,10 +30,13 @@ class MunitConan(ConanFile):
         'shared': False
     }
 
+    def layout(self):
+        cmake_layout(self)
+
     def source(self):
         folder = self.name
         self.output.info('Cloning repo: %s dest: %s tag: %s' % (self.url, folder, self.tag))
-        git = tools.Git(folder=folder)
+        git = Git(self, folder=folder)
         git.clone(self.url)
         git.checkout(self.tag)
 
@@ -45,16 +55,16 @@ class MunitConan(ConanFile):
         cmake.definitions['ENABLE_TESTING'] = 'OFF'
         cmake.definitions['ENABLE_PROGRAMS'] = 'OFF'
 
-        cmake.configure(source_folder=self.name)
+        cmake.configure()
 
         cmake.build()
 
     def package(self):
         if self.settings.os == 'Windows':
-            self.copy('*.lib', dst='lib', keep_path=False)
+            copy(self, '*.lib', dst=os.path.join(self.package_folder, 'lib'), src=self.build_folder)
         else:
-            self.copy('*.a', dst='lib', keep_path=False)
-        self.copy('*.h', src='munit', dst='include')
+            copy(self, '*.a', dst=os.path.join(self.package_folder, 'lib'), src=self.build_folder)
+        copy(self, '*.h', src=os.path.join(self.source_folder, 'munit'), dst=os.path.join(self.package_folder, 'include'))
 
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)

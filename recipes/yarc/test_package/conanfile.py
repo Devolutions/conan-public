@@ -1,4 +1,4 @@
-from conans import ConanFile, tools
+from conan import ConanFile, tools
 import os
 
 class TestPackageConan(ConanFile):
@@ -15,7 +15,7 @@ class TestPackageConan(ConanFile):
 
         self.output.info('Testing binaries exists:')
         for bin in binaries:
-            file_path = os.path.join(self.deps_cpp_info['yarc'].rootpath, 'bin', bin)
+            file_path = os.path.join(self.dependencies['yarc'].package_folder, 'bin', bin)
 
             self.output.info('- %s' % file_path)
             assert os.path.isfile(file_path), 'Missing file: %s' % file_path

@@ -1,17 +1,24 @@
-from conans import ConanFile, CMake, tools, python_requires
+from conan import ConanFile
+from conan.tools.scm import Git
+from conan.tools.cmake import CMake, cmake_layout
 import os, shutil
 
 class FreerdpConan(ConanFile):
     name = 'freerdp'
     exports = ['VERSION', 'FindWinPR.cmake']
-    version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
+    
+
+    def set_version(self):
+                version_path = os.path.join(os.path.dirname(__file__), "VERSION")
+                with open(version_path, 'r') as f:
+                    self.version = f.read().strip()
     license = 'Apache 2.0'
     no_copy_source = True
     url = 'https://github.com/Devolutions/FreeRDP.git'
     description = 'FreeRDP is a free remote desktop protocol client'
     settings = 'os', 'arch', 'distro', 'build_type'
     branch = 'devolutions-rdp-rebase-20250616'
-    python_requires = "shared/1.0.0@devolutions/stable"
+    python_requires = "shared/[1.0.0]@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
 
     options = {
@@ -23,20 +30,23 @@ class FreerdpConan(ConanFile):
         'shared': False
     }
 
+    def layout(self):
+        cmake_layout(self)
+
     def build_requirements(self):
         super().build_requirements()
-        self.build_requires('libressl/3.8.2@devolutions/stable')
-        self.build_requires('winpr/3.0.0@devolutions/stable')
-        self.build_requires('mbedtls/3.5.1@devolutions/stable')
-        self.build_requires('zlib/1.3.1@devolutions/stable')
-        self.build_requires('cjson/1.7.15@devolutions/stable')
+        self.tool_requires('libressl/[3.8.2]@devolutions/stable')
+        self.tool_requires('winpr/[3.0.0]@devolutions/stable')
+        self.tool_requires('mbedtls/[3.5.1]@devolutions/stable')
+        self.tool_requires('zlib/[1.3.1]@devolutions/stable')
+        self.tool_requires('cjson/[1.7.15]@devolutions/stable')
 
         if self.settings.os in ["Windows", "Linux", "Macos"]:
-            self.build_requires('openh264/2.6.0@devolutions/stable')
+            self.tool_requires('openh264/[2.6.0]@devolutions/stable')
 
             if self.settings.os == "Linux":
-                self.build_requires('libpng/1.6.39@devolutions/stable')
-                self.build_requires('libjpeg/3.1.0@devolutions/stable')
+                self.tool_requires('libpng/[1.6.39]@devolutions/stable')
+                self.tool_requires('libjpeg/[3.1.0]@devolutions/stable')
 
     def source(self):
         if self.settings.arch == 'universal':
@@ -50,7 +60,7 @@ class FreerdpConan(ConanFile):
             shutil.copytree(sources_path, self.name)
         else:
             self.output.info('Cloning repo: %s dest: %s branch: %s' % (self.url, folder, self.branch))
-            git = tools.Git(folder=folder)
+            git = Git(self, folder=folder)
             git.clone(self.url)
             git.checkout(self.branch)
             self.output.info("Current commit: %s" % (git.get_commit()))
@@ -68,7 +78,7 @@ class FreerdpConan(ConanFile):
 
         # Deploy FindWinPR.cmake to build directory and adjust CMAKE_MODULE_PATH so it can be found
         shutil.copy(os.path.join(self.recipe_folder, "FindWinPR.cmake"), dst=self.build_folder)
-        cmake.definitions['CMAKE_MODULE_PATH'] = self.build_folder.replace('\\', '/')
+        cmake.definitions['CMAKE_MODULE_PATH'] = self.build_folder.replace('\', '/')
 
         cmake.definitions['FREERDP_UNIFIED_BUILD'] = 'OFF'
         cmake.definitions['WITH_FREERDP_DEPRECATED'] = 'OFF'
@@ -145,50 +155,50 @@ class FreerdpConan(ConanFile):
             cmake.definitions['WITH_DEBUG_TRANSPORT'] = 'ON'
             cmake.definitions['WITH_DEBUG_TIMEZONE'] = 'ON'
 
-        openssl_path = self.deps_cpp_info['libressl'].rootpath
-        winpr_path = self.deps_cpp_info['winpr'].rootpath
-        zlib_path = self.deps_cpp_info['zlib'].rootpath
-        mbedtls_path = self.deps_cpp_info['mbedtls'].rootpath
-        cjson_path = self.deps_cpp_info['cjson'].rootpath
+        openssl_path = self.dependencies['libressl'].package_folder
+        winpr_path = self.dependencies['winpr'].package_folder
+        zlib_path = self.dependencies['zlib'].package_folder
+        mbedtls_path = self.dependencies['mbedtls'].package_folder
+        cjson_path = self.dependencies['cjson'].package_folder
         cmake.definitions['OPENSSL_ROOT_DIR'] = openssl_path
         cmake.definitions['CMAKE_PREFIX_PATH'] = '%s;%s;%s;%s;%s' % (openssl_path, winpr_path, zlib_path, mbedtls_path, cjson_path)
         cmake.definitions['CMAKE_VERBOSE_MAKEFILE'] = 'ON'
 
         if self.settings.os == "Linux":
-            jpeg_path = self.deps_cpp_info['libjpeg'].rootpath
-            cmake.definitions["JPEG_LIBRARY"] = os.path.join(jpeg_path, self.deps_cpp_info['libjpeg'].libdirs[0], 'libturbojpeg.a')
-            png_path = self.deps_cpp_info['libpng'].rootpath
-            cmake.definitions["PNG_LIBRARY"] = os.path.join(png_path, self.deps_cpp_info['libpng'].libdirs[0], 'libpng.a')
+            jpeg_path = self.dependencies['libjpeg'].package_folder
+            cmake.definitions["JPEG_LIBRARY"] = os.path.join(jpeg_path, "lib", 'libturbojpeg.a')
+            png_path = self.dependencies['libpng'].package_folder
+            cmake.definitions["PNG_LIBRARY"] = os.path.join(png_path, "lib", 'libpng.a')
 
         if self.settings.os in ["Windows", "Linux", "Macos"]:
-            openh264_path = self.deps_cpp_info['openh264'].rootpath
-            cmake.definitions["OPENH264_LIBRARY"] = os.path.join(openh264_path, self.deps_cpp_info['openh264'].libdirs[0], self.openh264_filename(self.deps_user_info["openh264"].version))
-            cmake.definitions["OPENH264_INCLUDE_DIR"] = os.path.join(openh264_path, self.deps_cpp_info['openh264'].includedirs[0])
+            openh264_path = self.dependencies['openh264'].package_folder
+            cmake.definitions["OPENH264_LIBRARY"] = os.path.join(openh264_path, "lib", self.openh264_filename(self.deps_user_info["openh264"].version))
+            cmake.definitions["OPENH264_INCLUDE_DIR"] = os.path.join(openh264_path, "include")
             cmake.definitions['WITH_OPENH264'] = 'ON'
             cmake.definitions['WITH_OPENH264_LOADING'] = 'ON'
 
         if self.settings.os == "Android":
             cmake.definitions['WITH_MEDIACODEC'] = 'ON'
 
-        cmake.configure(source_folder=self.name)
+        cmake.configure()
 
         cmake.build()
 
     def package(self):
         if self.settings.os == 'Windows':
-            self.copy('*.lib', dst='lib', keep_path=False)
-            self.copy('*.dll', dst='lib', keep_path=False)
-            self.copy('*.pdb', dst='lib', keep_path=False)
+            copy(self, '*.lib', dst=os.path.join(self.package_folder, 'lib'), src=self.build_folder)
+            copy(self, '*.dll', dst=os.path.join(self.package_folder, 'lib'), src=self.build_folder)
+            copy(self, '*.pdb', dst=os.path.join(self.package_folder, 'lib'), src=self.build_folder)
         else:
-            self.copy('*.a', dst='lib', keep_path=False)
-            self.copy('*.so', dst='lib', keep_path=False)
-            self.copy('*.dylib', dst='lib', keep_path=False)
+            copy(self, '*.a', dst=os.path.join(self.package_folder, 'lib'), src=self.build_folder)
+            copy(self, '*.so', dst=os.path.join(self.package_folder, 'lib'), src=self.build_folder)
+            copy(self, '*.dylib', dst=os.path.join(self.package_folder, 'lib'), src=self.build_folder)
 
         if self.settings.os == 'iOS' and self.settings.arch == 'universal':
-            self.copy('*.h')
+            copy(self, '*.h')
         else:
-            self.copy('*.h', src='freerdp/include/freerdp', dst='include/freerdp') # CMAKE_SOURCE_DIR
-            self.copy('*.h', src='include/freerdp', dst='include/freerdp') # CMAKE_BINARY_DIR
+            copy(self, '*.h', src=os.path.join(self.source_folder, 'freerdp/include/freerdp', dst=self.package_folder, src=self.build_folder), dst=os.path.join(self.package_folder, 'include/freerdp')) # CMAKE_SOURCE_DIR
+            copy(self, '*.h', src=os.path.join(self.source_folder, 'include/freerdp'), dst=os.path.join(self.package_folder, 'include/freerdp')) # CMAKE_BINARY_DIR
 
     def package_info(self):
         all_libs = tools.collect_libs(self)

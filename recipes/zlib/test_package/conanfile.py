@@ -1,4 +1,4 @@
-from conans import ConanFile, tools
+from conan import ConanFile, tools
 import os
 
 class TestPackageConan(ConanFile):
@@ -16,14 +16,14 @@ class TestPackageConan(ConanFile):
 
         self.output.info('Testing libraries exists:')
         for lib in libs:
-            file_path = os.path.join(self.deps_cpp_info['zlib'].rootpath, 'lib', lib)
+            file_path = os.path.join(self.dependencies['zlib'].package_folder, 'lib', lib)
 
             self.output.info('- %s' % file_path)
             assert os.path.isfile(file_path), 'Missing file: %s' % file_path
 
         self.output.info('Testing headers exists:')
         for header in headers:
-            file_path = os.path.join(self.deps_cpp_info['zlib'].rootpath, 'include', header)
+            file_path = os.path.join(self.dependencies['zlib'].package_folder, 'include', header)
 
             self.output.info('- %s' % file_path)
             assert os.path.isfile(os.path.join(file_path)), 'Missing file: %s' % file_path

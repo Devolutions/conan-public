@@ -1,11 +1,17 @@
 
-from conans import ConanFile, CMake, tools, python_requires
+from conan import ConanFile
+from conan.tools.cmake import CMake, cmake_layout
 import os
 
 class Sqlite3SecureConan(ConanFile):
     name = 'wxsqlite3'
-    exports = 'VERSION'
-    version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
+    exports_sources = "VERSION"
+    
+
+    def set_version(self):
+                version_path = os.path.join(os.path.dirname(__file__), "VERSION")
+                with open(version_path, 'r') as f:
+                    self.version = f.read().strip()
     url = 'https://github.com/utelle/wxsqlite3'
     description = 'SQLite3 database wrapper for wxWidgets (including SQLite3 encryption extension)'
     homepage = 'https://wiki.wxwidgets.org/Main_Page'
@@ -13,7 +19,7 @@ class Sqlite3SecureConan(ConanFile):
     exports_sources = ['CMakeLists.txt']
     generators = 'cmake'
     settings = 'os', 'arch', 'build_type'
-    python_requires = "shared/1.0.0@devolutions/stable"
+    python_requires = "shared/[1.0.0]@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
 
     options = {
@@ -24,6 +30,9 @@ class Sqlite3SecureConan(ConanFile):
         'fPIC': True,
         'shared': False
     }
+
+    def layout(self):
+        cmake_layout(self)
 
     _source_subfolder = 'source_subfolder'
     _build_subfolder = 'build_subfolder'
@@ -52,12 +61,12 @@ class Sqlite3SecureConan(ConanFile):
             return
 
         if self.settings.os == 'Windows':
-            self.copy('*.lib', dst='lib', keep_path=False)
-            self.copy('*.dll', dst='lib', keep_path=False)
+            copy(self, '*.lib', dst=os.path.join(self.package_folder, 'lib'), src=self.build_folder)
+            copy(self, '*.dll', dst=os.path.join(self.package_folder, 'lib'), src=self.build_folder)
         else:
-            self.copy('*.a', dst='lib', keep_path=False)
-            self.copy('*.so', dst='lib', keep_path=False)
-            self.copy('*.dylib', dst='lib', keep_path=False)
+            copy(self, '*.a', dst=os.path.join(self.package_folder, 'lib'), src=self.build_folder)
+            copy(self, '*.so', dst=os.path.join(self.package_folder, 'lib'), src=self.build_folder)
+            copy(self, '*.dylib', dst=os.path.join(self.package_folder, 'lib'), src=self.build_folder)
 
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)

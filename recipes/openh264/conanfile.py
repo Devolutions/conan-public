@@ -1,17 +1,24 @@
-from conans import ConanFile, CMake, tools, python_requires
+from conan import ConanFile
+from conan.tools.scm import Git
+from conan.tools.cmake import CMake, cmake_layout
 import os, shutil, bz2, ssl
 import urllib.request
 
 class OpenH264Conan(ConanFile):
     name = 'openh264'
-    exports = 'VERSION'
-    version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
+    exports_sources = "VERSION"
+    
+
+    def set_version(self):
+                version_path = os.path.join(os.path.dirname(__file__), "VERSION")
+                with open(version_path, 'r') as f:
+                    self.version = f.read().strip()
     description = 'Pre-built OpenH264 binaries'
     license = "BSD-2-Clause"
     url = 'https://github.com/cisco/openh264.git'
     tag = 'v%s' % version
     settings = 'os', 'arch', 'distro', 'build_type'
-    python_requires = "shared/1.0.0@devolutions/stable"
+    python_requires = "shared/[1.0.0]@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
     no_copy_source = True
 
@@ -19,11 +26,17 @@ class OpenH264Conan(ConanFile):
         'fPIC': [True, False],
         'shared': [True, False]
     }
+
+    def layout(self):
+        cmake_layout(self)
     default_options = {
         'fPIC': True,
         'shared': False
     }
 
+
+    def layout(self):
+        cmake_layout(self)
     def source(self):
         if self.settings.arch == 'universal':
             return
@@ -36,7 +49,7 @@ class OpenH264Conan(ConanFile):
             shutil.copytree(sources_path, self.name)
         else:
             self.output.info('Cloning repo: %s dest: %s tag: %s' % (self.url, folder, self.tag))
-            git = tools.Git(folder=folder)
+            git = Git(self, folder=folder)
             git.clone(self.url)
             git.checkout(self.tag)
             self.output.info("Current commit: %s" % (git.get_commit()))
@@ -73,12 +86,12 @@ class OpenH264Conan(ConanFile):
             tools.save(extracted_path, data)
 
     def package(self):
-        self.copy('*.dll', dst='lib', keep_path=False)
-        self.copy('*.so', dst='lib', keep_path=False)
-        self.copy('*.dylib', dst='lib', keep_path=False)
+        copy(self, '*.dll', dst=os.path.join(self.package_folder, 'lib'), src=self.build_folder)
+        copy(self, '*.so', dst=os.path.join(self.package_folder, 'lib'), src=self.build_folder)
+        copy(self, '*.dylib', dst=os.path.join(self.package_folder, 'lib'), src=self.build_folder)
 
         headers = os.path.join(self.source_folder, self.name, "codec", "api")
-        self.copy('*.h', src=headers, dst='include', keep_path=True)
+        copy(self, '*.h', src=os.path.join(self.source_folder, headers), dst=os.path.join(self.package_folder, 'include', keep_path=True))
 
     def package_info(self):
         self.cpp_info.libs = ["openh264"]

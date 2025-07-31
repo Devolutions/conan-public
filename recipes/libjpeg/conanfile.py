@@ -1,17 +1,24 @@
-from conans import ConanFile, tools, python_requires, CMake
+from conan import ConanFile
+from conan.tools.scm import Git
+from conan.tools.cmake import CMake, cmake_layout
 import os
 import sys
 import fileinput
 
 class JpegConan(ConanFile):
     name = 'libjpeg'
-    exports = 'VERSION'
-    version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
+    exports_sources = "VERSION"
+    
+
+    def set_version(self):
+                version_path = os.path.join(os.path.dirname(__file__), "VERSION")
+                with open(version_path, 'r') as f:
+                    self.version = f.read().strip()
     license = 'Independent JPEG Group'
     url = 'https://github.com/libjpeg-turbo/libjpeg-turbo.git'
     description = 'libjpeg-turbo is a JPEG image codec that uses SIMD instructions to accelerate baseline JPEG compression and decompression'
     settings = 'os', 'arch', 'distro', 'build_type'
-    python_requires = "shared/1.0.0@devolutions/stable"
+    python_requires = "shared/[1.0.0]@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
     exports = ['VERSION',
         'patches/2.1.0/0001-cmake-build-fixes.patch',
@@ -27,17 +34,20 @@ class JpegConan(ConanFile):
         'shared': False
     }
 
+    def layout(self):
+        cmake_layout(self)
+
     def source(self):
         folder = self.name
         tag = self.version
         if tag == "2.1.0":
             tag = 'aa829dc' # we pinned this commit a while back even if it's not 2.1.0
         self.output.info('Cloning repo: %s dest: %s tag: %s' % (self.url, folder, tag))
-        git = tools.Git(folder=folder)
+        git = Git(self, folder=folder)
         git.clone(self.url)
         git.checkout(tag)
 
-        git = tools.Git(folder=folder)
+        git = Git(self, folder=folder)
         patches_dir = os.path.join(self.recipe_folder, "patches", self.version)
         if os.path.isdir(patches_dir):
             for patch_file in os.listdir(patches_dir):
@@ -70,7 +80,7 @@ class JpegConan(ConanFile):
             cmake.definitions['CMAKE_SYSTEM_PROCESSOR'] = 'aarch64'
             cmake.definitions['WITH_SIMD'] = 'OFF'
 
-        cmake.configure(source_folder=self.name)
+        cmake.configure()
 
         cmake.build()
         cmake.install()

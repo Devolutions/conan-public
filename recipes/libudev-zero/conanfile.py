@@ -1,15 +1,22 @@
-from conans import ConanFile, tools, CMake, python_requires
+from conan import ConanFile
+from conan.tools.scm import Git
+from conan.tools.cmake import CMake, cmake_layout
 import os, shutil
 
 class LibUdevZeroConan(ConanFile):
     name = 'libudev-zero'
-    version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
+    
+
+    def set_version(self):
+                version_path = os.path.join(os.path.dirname(__file__), "VERSION")
+                with open(version_path, 'r') as f:
+                    self.version = f.read().strip()
     license = 'ISC'
     url = 'https://github.com/illiliti/libudev-zero'
     description = 'libudev-zero'
     settings = 'os', 'arch', 'distro', 'build_type'
     no_copy_source = True
-    python_requires = "shared/1.0.0@devolutions/stable"
+    python_requires = "shared/[1.0.0]@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
     exports = ['VERSION',
         'patches/CMakeLists.txt',
@@ -24,6 +31,9 @@ class LibUdevZeroConan(ConanFile):
         'shared': False
     }
 
+    def layout(self):
+        cmake_layout(self)
+
     def build_requirements(self):
         super().build_requirements()
 
@@ -31,7 +41,7 @@ class LibUdevZeroConan(ConanFile):
         folder = self.name
         tag = self.version
         self.output.info('Cloning repo: %s dest: %s tag: %s' % (self.url, folder, tag))
-        git = tools.Git(folder=folder)
+        git = Git(self, folder=folder)
         git.clone(self.url)
         git.checkout(tag)
 
@@ -47,7 +57,7 @@ class LibUdevZeroConan(ConanFile):
     def build(self):
         cmake = CMake(self)
         self.cmake_wrapper(cmake, self.settings, self.options)
-        cmake.configure(source_folder=self.name)
+        cmake.configure()
         cmake.build()
         cmake.install()
 

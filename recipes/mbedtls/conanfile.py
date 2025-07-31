@@ -1,14 +1,22 @@
-from conans import ConanFile, CMake, tools, python_requires
+from conan import ConanFile
+from conan.tools.files import replace_in_file, copy, load, save
+from conan.tools.scm import Git
+from conan.tools.cmake import CMake, cmake_layout
 import os
 
 class MbedtlsConan(ConanFile):
     name = 'mbedtls'
-    version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
+    
+
+    def set_version(self):
+                version_path = os.path.join(os.path.dirname(__file__), "VERSION")
+                with open(version_path, 'r') as f:
+                    self.version = f.read().strip()
     license = 'Apache 2.0'
     url = 'https://github.com/Mbed-TLS/mbedtls'
     description = 'An open source, portable, easy to use, readable and flexible SSL library'
     settings = 'os', 'arch', 'distro', 'build_type'
-    python_requires = "shared/1.0.0@devolutions/stable"
+    python_requires = "shared/[1.0.0]@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
     exports = ['VERSION',
         'patches/0001-add-windows-mutex-implementation-for-threading.patch',
@@ -26,6 +34,9 @@ class MbedtlsConan(ConanFile):
         'shared': False
     }
 
+    def layout(self):
+        cmake_layout(self)
+
     def source(self):
         if self.settings.arch == 'universal':
             return
@@ -33,7 +44,7 @@ class MbedtlsConan(ConanFile):
         folder = self.name
         tag = 'v%s' % (self.version)
         self.output.info('Cloning repo: %s dest: %s tag: %s' % (self.url, folder, tag))
-        git = tools.Git(folder=folder)
+        git = Git(self, folder=folder)
         git.clone(self.url)
         git.checkout(tag)
 
@@ -70,19 +81,19 @@ class MbedtlsConan(ConanFile):
 
         for config in mbedtls_configs:
             config_string = '#define %s' % config
-            tools.replace_in_file(config_h, '//%s' % config_string, config_string)
+            replace_in_file(self, config_h, '//%s' % config_string, config_string)
 
-        cmake.configure(source_folder=self.name)
+        cmake.configure()
 
         cmake.build()
         cmake.install()
 
     def package(self):
         if self.settings.os == 'Windows':
-            self.copy('*.lib', dst='lib', keep_path=False)
+            copy(self, '*.lib', dst=os.path.join(self.package_folder, 'lib'), src=self.build_folder)
         else:
-            self.copy('*.a', dst='lib', keep_path=False)
-        self.copy('*.h', src='include', dst='include')
+            copy(self, '*.a', dst=os.path.join(self.package_folder, 'lib'), src=self.build_folder)
+        copy(self, '*.h', src=os.path.join(self.source_folder, 'include'), dst=os.path.join(self.package_folder, 'include'))
 
     def package_info(self):
         self.cpp_info.libs = ['mbedtls', 'mbedx509', 'mbedcrypto', 'everest', 'p256m']

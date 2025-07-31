@@ -27,26 +27,27 @@ function Invoke-ConanRecipe
 
     $CreateParams = @(
         "$Recipes/$PackageName",
-        $UserChannel,
-        "-pr", $ProfileName,
-        "-s", "build_type=$BuildType"
+        "--user", "devolutions",
+        "--channel", "stable", 
+        "--profile", $ProfileName,
+        "--build=missing"
     )
+
+    if (-Not [string]::IsNullOrEmpty($BuildType)) {
+        $CreateParams += @("-s", "build_type=$BuildType")
+    }
 
     if (-Not [string]::IsNullOrEmpty($Distribution)) {
         $CreateParams += @("-s", "distro=$Distribution")
     }
 
-    & 'conan' 'create' $CreateParams
+    & 'conan2' 'create' $CreateParams
     
     if ($LASTEXITCODE -ne 0) {
         throw "$PackageName creation failure"
     }
 
-    & 'conan' 'export' "$Recipes/$PackageName" $PackageReference
-
-    foreach ($Alias in $Aliases) {
-        & 'conan' 'alias' "$PackageName/$Alias@$UserChannel" $PackageReference
-    }
+    # Note: In Conan 2.x, export and alias work differently and may not be needed here
 }
 
 function Get-TlkPlatform {

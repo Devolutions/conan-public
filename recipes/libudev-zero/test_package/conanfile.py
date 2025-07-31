@@ -1,4 +1,4 @@
-from conans import ConanFile, tools
+from conan import ConanFile, tools
 import os, glob
 
 class TestPackageConan(ConanFile):
@@ -23,13 +23,13 @@ class TestPackageConan(ConanFile):
 
         self.output.info('Testing libraries exists:')
         for lib in libs:
-            file_path = os.path.join(self.deps_cpp_info['libudev-zero'].rootpath, 'lib', lib)
+            file_path = os.path.join(self.dependencies['libudev-zero'].package_folder, 'lib', lib)
             self.output.info('- %s' % file_path)
             assert os.path.isfile(file_path), 'Missing file: %s' % file_path
 
         hdrs = ['libudev.h']
         self.output.info('Testing headers exists:')
         for hdr in hdrs:
-            file_path = os.path.join(self.deps_cpp_info['libudev-zero'].rootpath, 'include', hdr)
+            file_path = os.path.join(self.dependencies['libudev-zero'].package_folder, 'include', hdr)
             self.output.info('- %s' % file_path)
             assert os.path.isfile(file_path), 'Missing file: %s' % file_path

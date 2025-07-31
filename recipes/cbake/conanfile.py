@@ -1,10 +1,16 @@
-from conans import ConanFile, tools
+from conan import ConanFile
+from conan.tools.scm import Git
 import os
 
 class CBake(ConanFile):
     name = 'cbake'
-    exports = 'VERSION'
-    version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
+    exports_sources = "VERSION"
+    
+
+    def set_version(self):
+        version_path = os.path.join(os.path.dirname(__file__), "VERSION")
+        with open(version_path, 'r') as f:
+            self.version = f.read().strip()
     url = 'https://github.com/Devolutions/CBake.git'
     license = 'MIT'
     description = 'CBake'
@@ -13,12 +19,12 @@ class CBake(ConanFile):
     def source(self):
         folder = self.name
         self.output.info('Cloning repo: %s dest: %s branch: %s' % (self.url, folder, self.branch))
-        git = tools.Git(folder=folder)
+        git = Git(self, folder=folder)
         git.clone(self.url)
         git.checkout(self.branch)
 
     def package(self):
-        self.copy('*', src='cbake', dst='', keep_path=True)
+        copy(self, '*', src=os.path.join(self.source_folder, 'cbake'), dst=os.path.join(self.package_folder, '', keep_path=True))
 
     def package_info(self):
         self.env_info.CBAKE_HOME = self.package_folder

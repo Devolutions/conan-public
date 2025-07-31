@@ -5,7 +5,7 @@ on:
     - cron: '25 6 * * 4' # 6:25am UTC every Thursday
 
 env:
-   conan-version: 1.66.0
+   conan-version: 2.19.1
   
 jobs:
   generate-matrix:
@@ -117,7 +117,7 @@ jobs:
           echo "${Env:ProgramFiles}\NASM" | Out-File -FilePath $Env:GITHUB_PATH -Encoding UTF8 -Append
           Invoke-WebRequest -Uri 'https://www.tortall.net/projects/yasm/releases/yasm-1.2.0-win64.exe' -OutFile 'yasm.exe'
           Move-Item .\yasm.exe "${Env:ProgramFiles}\NASM\yasm.exe"
-          pip install conan==${{ env.conan-version }} invoke Jinja2 urllib3 chardet requests --upgrade
+          pip install conan==${{ env.conan-version }} --upgrade
           echo $PSVersionTable
           echo "CONAN_USER_HOME=C:/tmp" >> $Env:GITHUB_ENV
 
@@ -142,7 +142,7 @@ jobs:
           brew extract --version=3.31.6 cmake $USER/local-cmake
           brew install cmake@3.31.6
 
-          pip3 install conan==${{ env.conan-version }} invoke Jinja2 urllib3 chardet requests --upgrade
+          pip3 install conan==${{ env.conan-version }} --upgrade
           sudo rm -rf /Library/Developer/CommandLineTools
           echo "CONAN_USER_HOME=/tmp" >> $GITHUB_ENV
 
@@ -158,7 +158,7 @@ jobs:
           sudo apt-get install cmake=3.22.1-1ubuntu1.22.04.2
           sudo ln -sf /usr/bin/cmake /usr/local/bin/cmake
 
-          pip3 install conan==${{ env.conan-version }} invoke Jinja2 urllib3 chardet requests --upgrade
+          pip3 install conan==${{ env.conan-version }} --upgrade
           echo "CONAN_USER_HOME=/tmp" >> $GITHUB_ENV
 
       - name: Setup LLVM
@@ -181,9 +181,8 @@ jobs:
       - name: Configure conan environment
         shell: pwsh
         run: |
-          conan config init
+          conan profile detect --force
           conan config install ./settings
-          conan remote disable conancenter
           $ConanManifestTime = $(git log -1 --pretty=format:%ct)
           echo "CONAN_MANIFEST_TIME=$ConanManifestTime" >> $Env:GITHUB_ENV
 

@@ -1,5 +1,10 @@
-from conans import ConanFile, python_requires, tools
+from conan import ConanFile
+from conan.tools.env import Environment
+from conan.tools.files import copy, mkdir, load, save
+from conan.tools.scm import Git
+from conan.tools.system import package_manager
 import os, platform, subprocess, shutil, stat, json, re
+import shutil
 
 def runner_logger(msg):
     if isinstance(msg, list):
@@ -61,12 +66,12 @@ class UtilsBase(object):
     def build_requirements(self):
         self.output.info("injecting build requirements!")
 
-        self.build_requires('cbake/latest@devolutions/stable')
+        self.tool_requires('cbake/[*]@devolutions/stable')
 
         target_os = self.get_target_os()
 
         if target_os == 'Linux':
-            self.build_requires('sysroot/latest@devolutions/stable')
+            self.tool_requires('sysroot/[*]@devolutions/stable')
 
     def get_target_os(self):
         try:
@@ -108,7 +113,7 @@ class UtilsBase(object):
         return None
 
     def cmake_wrapper(self, cmake, settings, options):
-        cbake_home = self.deps_env_info["cbake"].CBAKE_HOME
+        cbake_home = self.dependencies["cbake"].package_folder
         cmake.definitions['BUILD_SHARED_LIBS'] = options.shared
         cmake.definitions['CMAKE_POSITION_INDEPENDENT_CODE'] = options.fPIC
 
@@ -144,7 +149,7 @@ class UtilsBase(object):
         elif target_os == 'Linux':
             cmake.generator = 'Ninja'
             try:
-                cmake.definitions['CMAKE_SYSROOT'] = self.deps_env_info["sysroot"].CMAKE_SYSROOT
+                cmake.definitions['CMAKE_SYSROOT'] = self.dependencies["sysroot"].package_folder
                 cmake.definitions['CMAKE_TOOLCHAIN_FILE'] = os.path.join(cbake_home, 'cmake', 'linux.toolchain.cmake')
             except:
                 pass
@@ -191,7 +196,7 @@ class UtilsBase(object):
 
             dir = os.path.dirname(dest_file)
             if not os.path.isdir(dir):
-                tools.mkdir(dir)
+                mkdir(self, dir)
 
             self.output.info('%s => %s' % (src_file, dest_file))
             shutil.copy(src_file, dest_file)
@@ -203,7 +208,7 @@ class UtilsBase(object):
 
             dir = os.path.dirname(output_file)
             if not os.path.isdir(dir):
-                tools.mkdir(dir)
+                mkdir(self, dir)
 
             cmd = 'lipo -create -output %s ' % output_file
 
@@ -303,9 +308,9 @@ class UtilsBase(object):
             raise RuntimeError(err)
 
     def strip_binary(self, filename):
-        strip_tool = tools.which("llvm-strip")
+        strip_tool = shutil.which("llvm-strip")
         if strip_tool is None:
-            strip_tool = tools.which("strip")
+            strip_tool = shutil.which("strip")
         if self.settings.os == 'Linux' or self.settings.os == 'Android':
             execute_command('%s -s %s' % (strip_tool, filename))
         elif self.settings.os == 'Macos':
@@ -314,7 +319,7 @@ class UtilsBase(object):
     # cargo/rustup helper
 
     def get_cargo_cbake_env(self):
-        cbake_home = self.deps_env_info["cbake"].CBAKE_HOME
+        cbake_home = self.dependencies["cbake"].package_folder
         target_os = self.get_target_os()
         target_arch = self.get_target_arch()
         target_distro = self.get_target_distro()
@@ -322,7 +327,7 @@ class UtilsBase(object):
         if target_os == 'Linux':
             cmake_generator = 'Ninja'
             try:
-                cmake_sysroot = self.deps_env_info["sysroot"].CMAKE_SYSROOT
+                cmake_sysroot = self.dependencies["sysroot"].package_folder
                 cmake_toolchain_file = os.path.join(cbake_home, 'cmake', 'linux.toolchain.cmake')
                 cargo_cbake_name = "%s-%s" % (target_distro, target_arch)
                 cmake_source_dir = os.path.join(cbake_home, 'cargo')
@@ -456,5 +461,9 @@ class UtilsBase(object):
 
 class SharedUtils(ConanFile):
     name = "shared"
-    exports = 'VERSION'
-    version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
+    exports_sources = "VERSION"
+    
+    def set_version(self):
+        version_path = os.path.join(os.path.dirname(__file__), "VERSION")
+        with open(version_path, 'r') as f:
+            self.version = f.read().strip()

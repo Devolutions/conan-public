@@ -1,21 +1,26 @@
-from conans import ConanFile, tools
+from conan import ConanFile, tools
 import os
 import subprocess
 
 class Sysroot(ConanFile):
     name = 'sysroot'
-    exports = 'VERSION'
-    version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
+    exports_sources = "VERSION"
+    
+
+    def set_version(self):
+                version_path = os.path.join(os.path.dirname(__file__), "VERSION")
+                with open(version_path, 'r') as f:
+                    self.version = f.read().strip()
     url = 'https://github.com/Devolutions/CBake.git'
     license = 'MIT'
     description = 'Linux sysroot'
     settings = 'os', 'arch', 'distro'
 
     def build_requirements(self):
-        self.build_requires('cbake/latest@devolutions/stable')
+        self.tool_requires('cbake/[*]@devolutions/stable')
 
     def build(self):
-        cbake_home = self.deps_env_info["cbake"].CBAKE_HOME
+        cbake_home = self.dependencies["cbake"].package_folder
         build_script = os.path.join(cbake_home, 'build.ps1')
         self.distro = str(self.settings.distro)
         self.sysroot_arch = { 'x86_64':'amd64', 'armv8':'arm64' }[str(self.settings.arch)]
@@ -33,7 +38,7 @@ class Sysroot(ConanFile):
             "-SkipPackaging"])
 
     def package(self):
-        self.copy('*', src=self.sysroot_name, dst=self.sysroot_name, keep_path=True)
+        copy(self, '*', src=os.path.join(self.source_folder, self.sysroot_name), dst=os.path.join(self.package_folder, self.sysroot_name, keep_path=True))
 
     def package_info(self):
         self.distro = self.settings.distro

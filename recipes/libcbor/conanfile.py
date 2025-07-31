@@ -1,17 +1,25 @@
-from conans import ConanFile, tools, CMake, python_requires
+from conan import ConanFile
+from conan.tools.files import replace_in_file, copy, load, save
+from conan.tools.scm import Git
+from conan.tools.cmake import CMake, cmake_layout
 import os
 
 class LibcborConan(ConanFile):
     name = 'libcbor'
-    exports = 'VERSION'
-    version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
+    exports_sources = "VERSION"
+    
+
+    def set_version(self):
+                version_path = os.path.join(os.path.dirname(__file__), "VERSION")
+                with open(version_path, 'r') as f:
+                    self.version = f.read().strip()
     license = 'MIT'
     url = 'https://github.com/pjk/libcbor'
     description = 'libcbor'
     settings = 'os', 'arch', 'distro', 'build_type'
     no_copy_source = True
     branch = 'v' + version
-    python_requires = "shared/1.0.0@devolutions/stable"
+    python_requires = "shared/[1.0.0]@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
 
     options = {
@@ -23,26 +31,26 @@ class LibcborConan(ConanFile):
         'shared': False
     }
 
+    def layout(self):
+        cmake_layout(self)
+
     def build_requirements(self):
         super().build_requirements()
 
     def source(self):
         folder = self.name
         self.output.info('Cloning repo: %s dest: %s branch: %s' % (self.url, folder, self.branch))
-        git = tools.Git(folder=folder)
+        git = Git(self, folder=folder)
         git.clone(self.url)
         git.checkout(self.branch)
 
-        tools.replace_in_file(os.path.join(folder, 'CMakeLists.txt'),
-            "cmake_minimum_required(VERSION 3.0)",
+        replace_in_file(self, os.path.join(folder, 'CMakeLists.txt'), "cmake_minimum_required(VERSION 3.0)",
             "cmake_minimum_required(VERSION 3.9)")
 
-        tools.replace_in_file(os.path.join(folder, 'CMakeLists.txt'),
-            "set(use_lto FALSE)",
+        replace_in_file(self, os.path.join(folder, 'CMakeLists.txt'), "set(use_lto FALSE)",
             "set(use_lto TRUE)")
 
-        tools.replace_in_file(os.path.join(folder, 'CMakeLists.txt'),
-            "    check_ipo_supported(RESULT use_lto)",
+        replace_in_file(self, os.path.join(folder, 'CMakeLists.txt'), "    check_ipo_supported(RESULT use_lto)",
             "    #check_ipo_supported(RESULT use_lto)")
 
     def build(self):
@@ -53,7 +61,7 @@ class LibcborConan(ConanFile):
         cmake.definitions['WITH_TESTS'] = 'OFF'
         cmake.definitions['WITH_EXAMPLES'] = 'OFF'
 
-        cmake.configure(source_folder=self.name)
+        cmake.configure()
         cmake.build()
         cmake.install()
 

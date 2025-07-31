@@ -1,15 +1,23 @@
-from conans import ConanFile, tools, CMake, python_requires
+from conan import ConanFile
+from conan.tools.files import replace_in_file, copy, load, save
+from conan.tools.scm import Git
+from conan.tools.cmake import CMake, cmake_layout
 import os
 
 class LibreSSLConan(ConanFile):
     name = 'libressl'
     license = 'BSD'
     url = 'https://github.com/PowerShell/LibreSSL.git'
-    version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
+    
+
+    def set_version(self):
+                version_path = os.path.join(os.path.dirname(__file__), "VERSION")
+                with open(version_path, 'r') as f:
+                    self.version = f.read().strip()
     description = 'LibreSSL'
     settings = 'os', 'arch', 'distro', 'build_type'
     no_copy_source = False
-    python_requires = "shared/1.0.0@devolutions/stable"
+    python_requires = "shared/[1.0.0]@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
     exports = ['VERSION',
         'patches/3.4.2/0001-normalize-library-output-names.patch',
@@ -26,6 +34,9 @@ class LibreSSLConan(ConanFile):
         'shared': False
     }
 
+    def layout(self):
+        cmake_layout(self)
+
     def build_requirements(self):
         super().build_requirements()
 
@@ -36,7 +47,7 @@ class LibreSSLConan(ConanFile):
         folder = self.name
         tag = 'V%s.0' % (self.version)
         self.output.info('Cloning repo: %s dest: %s tag: %s' % (self.url, folder, tag))
-        git = tools.Git(folder=folder)
+        git = Git(self, folder=folder)
         git.clone(self.url)
         git.checkout(tag)
 
@@ -48,20 +59,15 @@ class LibreSSLConan(ConanFile):
                 tools.patch(base_path=folder, patch_file=patch_path)
 
         if self.settings.os == 'iOS':
-            tools.replace_in_file(os.path.join(folder, 'CMakeLists.txt'),
-                "check_function_exists(syslog_r HAVE_SYSLOG_R)",
+            replace_in_file(self, os.path.join(folder, 'CMakeLists.txt'), "check_function_exists(syslog_r HAVE_SYSLOG_R)",
                 "#check_function_exists(syslog_r HAVE_SYSLOG_R)")
-            tools.replace_in_file(os.path.join(folder, 'CMakeLists.txt'),
-                "check_function_exists(syslog HAVE_SYSLOG)",
+            replace_in_file(self, os.path.join(folder, 'CMakeLists.txt'), "check_function_exists(syslog HAVE_SYSLOG)",
                 "#check_function_exists(syslog HAVE_SYSLOG)")
-            tools.replace_in_file(os.path.join(folder, 'CMakeLists.txt'),
-                "check_function_exists(explicit_bzero HAVE_EXPLICIT_BZERO)",
+            replace_in_file(self, os.path.join(folder, 'CMakeLists.txt'), "check_function_exists(explicit_bzero HAVE_EXPLICIT_BZERO)",
                 "#check_function_exists(explicit_bzero HAVE_EXPLICIT_BZERO)")
-            tools.replace_in_file(os.path.join(folder, 'CMakeLists.txt'),
-                "check_function_exists(reallocarray HAVE_REALLOCARRAY)",
+            replace_in_file(self, os.path.join(folder, 'CMakeLists.txt'), "check_function_exists(reallocarray HAVE_REALLOCARRAY)",
                 "#check_function_exists(reallocarray HAVE_REALLOCARRAY)")
-            tools.replace_in_file(os.path.join(folder, 'CMakeLists.txt'),
-                "check_function_exists(timingsafe_memcmp HAVE_TIMINGSAFE_MEMCMP)",
+            replace_in_file(self, os.path.join(folder, 'CMakeLists.txt'), "check_function_exists(timingsafe_memcmp HAVE_TIMINGSAFE_MEMCMP)",
                 "#check_function_exists(timingsafe_memcmp HAVE_TIMINGSAFE_MEMCMP)")
             tools.replace_in_file(os.path.join(folder, 'include', 'compat', 'endian.h'),
                 "#if defined(__APPLE__) && !defined(HAVE_ENDIAN_H)",
@@ -90,7 +96,7 @@ class LibreSSLConan(ConanFile):
             
         cmake.definitions['LIBRESSL_TESTS'] = 'OFF'
 
-        cmake.configure(source_folder=self.name)
+        cmake.configure()
         
         cmake.build()
         cmake.install()

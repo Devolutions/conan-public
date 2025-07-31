@@ -1,4 +1,4 @@
-from conans import ConanFile, tools
+from conan import ConanFile, tools
 import os
 
 class TestPackageConan(ConanFile):
@@ -13,7 +13,7 @@ class TestPackageConan(ConanFile):
             binary += '.exe'
 
         self.output.info('Testing binary exists:')
-        file_path = os.path.join(self.deps_cpp_info['openssh'].rootpath, 'bin', binary)
+        file_path = os.path.join(self.dependencies['openssh'].package_folder, 'bin', binary)
 
         self.output.info('- %s' % file_path)
         assert os.path.isfile(file_path), 'Missing file: %s' % file_path

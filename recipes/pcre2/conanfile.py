@@ -1,11 +1,17 @@
 
-from conans import ConanFile, CMake, tools, python_requires
+from conan import ConanFile
+from conan.tools.cmake import CMake, cmake_layout
 import os
 
 class PCREConan(ConanFile):
     name = 'pcre2'
-    exports = 'VERSION'
-    version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
+    exports_sources = "VERSION"
+    
+
+    def set_version(self):
+                version_path = os.path.join(os.path.dirname(__file__), "VERSION")
+                with open(version_path, 'r') as f:
+                    self.version = f.read().strip()
     url = 'https://github.com/bincrafters/conan-pcre2'
     description = 'Perl Compatible Regular Expressions'
     homepage = 'https://www.pcre.org/'
@@ -13,7 +19,7 @@ class PCREConan(ConanFile):
     exports_sources = ['CMakeLists.txt', 'ios-clear_cache.patch', 'jit_aarch64.patch']
     generators = 'cmake'
     settings = 'os', 'arch', 'distro', 'build_type'
-    python_requires = "shared/1.0.0@devolutions/stable"
+    python_requires = "shared/[1.0.0]@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
 
     options = {
@@ -33,10 +39,13 @@ class PCREConan(ConanFile):
         'support_jit': True
     }
 
+    def layout(self):
+        cmake_layout(self)
+
     _source_subfolder = 'source_subfolder'
     _build_subfolder = 'build_subfolder'
 
-    requires = 'zlib/1.3.1@devolutions/stable'
+    requires = 'zlib/[1.3.1]@devolutions/stable'
 
     def source(self):
         if self.settings.arch == 'universal':
@@ -73,17 +82,17 @@ class PCREConan(ConanFile):
 
     def package(self):
         if self.settings.arch == 'universal':
-            self.copy('*.a', dst='lib', keep_path=False)
-            self.copy('*.h', src='include', dst='include')
+            copy(self, '*.a', dst=os.path.join(self.package_folder, 'lib'), src=self.build_folder)
+            copy(self, '*.h', src=os.path.join(self.source_folder, 'include'), dst=os.path.join(self.package_folder, 'include'))
             return
 
         if self.settings.os == 'Windows':
-            self.copy('*.lib', dst='lib', keep_path=False)
+            copy(self, '*.lib', dst=os.path.join(self.package_folder, 'lib'), src=self.build_folder)
         else:
-            self.copy('*.a', dst='lib', keep_path=False)
+            copy(self, '*.a', dst=os.path.join(self.package_folder, 'lib'), src=self.build_folder)
 
-        self.copy('*pcre2posix.h', src=self._source_subfolder, dst='include', keep_path=False)
-        self.copy('*pcre2.h', src=self._build_subfolder, dst='include', keep_path=False)
+        copy(self, '*pcre2posix.h', src=os.path.join(self.source_folder, self._source_subfolder), dst=os.path.join(self.package_folder, 'include', keep_path=False))
+        copy(self, '*pcre2.h', src=os.path.join(self.source_folder, self._build_subfolder), dst=os.path.join(self.package_folder, 'include', keep_path=False))
 
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)

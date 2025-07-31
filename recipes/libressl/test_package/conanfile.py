@@ -1,4 +1,4 @@
-from conans import ConanFile, tools
+from conan import ConanFile, tools
 import os, glob
 
 class TestPackageConan(ConanFile):
@@ -23,13 +23,13 @@ class TestPackageConan(ConanFile):
 
         self.output.info('Testing libraries exists:')
         for lib in libs:
-            file_path = os.path.join(self.deps_cpp_info['libressl'].rootpath, 'lib', lib)
+            file_path = os.path.join(self.dependencies['libressl'].package_folder, 'lib', lib)
 
             self.output.info('- %s' % file_path)
             assert os.path.isfile(file_path), 'Missing file: %s' % file_path
 
         self.output.info('Testing headers exists:')
-        include_dir = os.path.join(self.deps_cpp_info['libressl'].rootpath, 'include', 'openssl')
+        include_dir = os.path.join(self.dependencies['libressl'].package_folder, 'include', 'openssl')
         self.output.info('- should have at least 70 headers under %s' % include_dir)
         headers = glob.glob('%s/*.h' % include_dir)
         assert len(headers) >= 70, 'Number of headers: %s' % len(headers)

@@ -1,15 +1,22 @@
-from conans import ConanFile, tools, CMake, python_requires
+from conan import ConanFile
+from conan.tools.scm import Git
+from conan.tools.cmake import CMake, cmake_layout
 import os, shutil
 
 class LibvpxConan(ConanFile):
     name = 'libvpx'
-    version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
+    
+
+    def set_version(self):
+                version_path = os.path.join(os.path.dirname(__file__), "VERSION")
+                with open(version_path, 'r') as f:
+                    self.version = f.read().strip()
     license = 'WebM'
     url = 'https://github.com/webmproject/libvpx.git'
     description = 'WebM VP8/VP9 Codec SDK'
     settings = 'os', 'arch', 'distro', 'build_type'
     no_copy_source = True
-    python_requires = "shared/1.0.0@devolutions/stable"
+    python_requires = "shared/[1.0.0]@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
     exports = ['VERSION',
         'patches/CMakeLists.txt',
@@ -26,6 +33,9 @@ class LibvpxConan(ConanFile):
         'shared': False
     }
 
+    def layout(self):
+        cmake_layout(self)
+
     def build_requirements(self):
         super().build_requirements()
 
@@ -36,7 +46,7 @@ class LibvpxConan(ConanFile):
         folder = self.name
         tag = 'v%s' % (self.version)
         self.output.info('Cloning repo: %s dest: %s tag: %s' % (self.url, folder, tag))
-        git = tools.Git(folder=folder)
+        git = Git(self, folder=folder)
         git.clone(self.url)
         git.checkout(tag)
 
@@ -71,15 +81,15 @@ class LibvpxConan(ConanFile):
         if self.settings.os == 'Windows' and self.settings.arch == 'armv8':
             cmake.definitions['CONFIG_RUNTIME_CPU_DETECT'] = 'OFF'
 
-        cmake.configure(source_folder=self.name)
+        cmake.configure()
         
         cmake.build()
         cmake.install()
 
     def package(self):
         if self.settings.arch == 'universal':
-            self.copy('*.a', dst='lib', keep_path=False)
-            self.copy('*.h', src='include', dst='include')
+            copy(self, '*.a', dst=os.path.join(self.package_folder, 'lib'), src=self.build_folder)
+            copy(self, '*.h', src=os.path.join(self.source_folder, 'include'), dst=os.path.join(self.package_folder, 'include'))
             return
 
     def package_info(self):
