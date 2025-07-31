@@ -10,7 +10,15 @@ class YarcConan(ConanFile):
     exports_sources = "VERSION"
     
     def generate(self):
+        # Call cmake_wrapper to set up definitions before generating toolchain
+        cmake_dummy = None  # We don't need the CMake object for definitions anymore
+        self.cmake_wrapper(cmake_dummy, self.settings, self.options)
+        
         tc = CMakeToolchain(self)
+        # Apply cmake_wrapper definitions if they exist
+        if hasattr(self, '_cmake_definitions'):
+            for key, value in self._cmake_definitions.items():
+                tc.variables[key] = value
         tc.generate()
         # Only generate CMakeDeps if we have required settings
         try:
@@ -67,7 +75,6 @@ class YarcConan(ConanFile):
 
     def build(self):
         cmake = CMake(self)
-        self.cmake_wrapper(cmake, self.settings, self.options)
         cmake.configure()
         cmake.build()
 

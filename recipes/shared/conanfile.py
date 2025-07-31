@@ -119,8 +119,13 @@ class UtilsBase(object):
         except (KeyError, AttributeError):
             # Fallback - cbake might not be required for all packages
             cbake_home = None
-        cmake.definitions['BUILD_SHARED_LIBS'] = options.shared
-        cmake.definitions['CMAKE_POSITION_INDEPENDENT_CODE'] = options.fPIC
+        
+        # In Conan 2.x, CMake definitions should be set via CMakeToolchain, not cmake.definitions
+        # For now, we'll store these values and let the recipe handle them in generate()
+        # This is a compatibility layer for Conan 2.x migration
+        self._cmake_definitions = getattr(self, '_cmake_definitions', {})
+        self._cmake_definitions['BUILD_SHARED_LIBS'] = options.shared
+        self._cmake_definitions['CMAKE_POSITION_INDEPENDENT_CODE'] = options.fPIC
 
         target_os = self.get_target_os()
         target_arch = self.get_target_arch()
@@ -138,8 +143,10 @@ class UtilsBase(object):
                 os_version = "9.3"
 
         if target_os == 'Windows':
-            cmake.generator = 'Visual Studio 17 2022'
-            cmake.generator_platform = {
+            # In Conan 2.x, generator should be set via CMakeToolchain, not directly on CMake object
+            # For now, store these for potential use in generate() method
+            self._cmake_generator = 'Visual Studio 17 2022'
+            self._cmake_generator_platform = {
                 'x86': 'Win32',
                 'x86_64': 'x64',
                 'armv7': 'ARM',
@@ -148,30 +155,36 @@ class UtilsBase(object):
             }[target_arch]
         elif target_os == 'Macos':
             osx_arch = { 'x86_64': 'x86_64', 'armv8': 'arm64', 'arm64': 'arm64', 'universal': 'universal' }[target_arch]
-            cmake.definitions['CMAKE_OSX_DEPLOYMENT_TARGET'] = os_version
-            cmake.definitions['CMAKE_OSX_ARCHITECTURES'] = osx_arch
-            cmake.generator = 'Ninja'
+            self._cmake_definitions['CMAKE_OSX_DEPLOYMENT_TARGET'] = os_version
+            self._cmake_definitions['CMAKE_OSX_ARCHITECTURES'] = osx_arch
+            self._cmake_generator = 'Ninja'
         elif target_os == 'Linux':
-            cmake.generator = 'Ninja'
+            self._cmake_generator = 'Ninja'
             try:
-                cmake.definitions['CMAKE_SYSROOT'] = self.dependencies["sysroot"].package_folder
-                cmake.definitions['CMAKE_TOOLCHAIN_FILE'] = os.path.join(cbake_home, 'cmake', 'linux.toolchain.cmake')
+                if hasattr(self, 'dependencies') and hasattr(self.dependencies, 'host'):
+                    sysroot_dep = self.dependencies.host.get("sysroot", None)
+                    if sysroot_dep:
+                        self._cmake_definitions['CMAKE_SYSROOT'] = sysroot_dep.package_folder
+                if cbake_home:
+                    self._cmake_definitions['CMAKE_TOOLCHAIN_FILE'] = os.path.join(cbake_home, 'cmake', 'linux.toolchain.cmake')
             except:
                 pass
         elif target_os == 'iOS':
             ios_arch = { 'x86': 'i386', 'x86_64': 'x86_64', 'armv8': 'arm64', 'arm64' : 'arm64', 'armv7': 'armv7', 'universal': 'universal' }[target_arch]
-            cmake.definitions['CMAKE_TOOLCHAIN_FILE'] = os.path.join(cbake_home, 'cmake', 'ios-%s.toolchain.cmake' % ios_arch)
-            cmake.definitions['IOS_DEPLOYMENT_TARGET'] = os_version
-            cmake.definitions['CMAKE_OSX_ARCHITECTURES'] = ios_arch
-            cmake.generator = 'Ninja'
+            if cbake_home:
+                self._cmake_definitions['CMAKE_TOOLCHAIN_FILE'] = os.path.join(cbake_home, 'cmake', 'ios-%s.toolchain.cmake' % ios_arch)
+            self._cmake_definitions['IOS_DEPLOYMENT_TARGET'] = os_version
+            self._cmake_definitions['CMAKE_OSX_ARCHITECTURES'] = ios_arch
+            self._cmake_generator = 'Ninja'
         elif target_os == 'Android':
             abi = {'armv7': 'armeabi-v7a with NEON', 'armv8': 'arm64-v8a', 'x86': 'x86', 'x86_64': 'x86_64'}[target_arch]
             conan_to_cbake_map = { 'x86': 'x86', 'x86_64': 'x86_64', 'armv7': 'arm', 'armv8': 'arm64'}[target_arch]
 
-            cmake.definitions['CMAKE_TOOLCHAIN_FILE'] = os.path.join(cbake_home, 'cmake', 'android-%s.toolchain.cmake' % conan_to_cbake_map)
-            cmake.definitions['ANDROID_PLATFORM'] = 'android-%s' % settings.os.api_level
-            cmake.definitions['ANDROID_TOOLCHAIN'] = 'clang'
-            cmake.definitions['ANDROID_ABI'] = abi
+            if cbake_home:
+                self._cmake_definitions['CMAKE_TOOLCHAIN_FILE'] = os.path.join(cbake_home, 'cmake', 'android-%s.toolchain.cmake' % conan_to_cbake_map)
+            self._cmake_definitions['ANDROID_PLATFORM'] = 'android-%s' % settings.os.api_level
+            self._cmake_definitions['ANDROID_TOOLCHAIN'] = 'clang'
+            self._cmake_definitions['ANDROID_ABI'] = abi
 
             if not 'ANDROID_NDK' in os.environ:
                 if 'ANDROID_HOME' in os.environ:
@@ -181,8 +194,8 @@ class UtilsBase(object):
                 raise Exception('ANDROID_NDK environment variable is not set!')
 
             android_ndk = os.environ['ANDROID_NDK']
-            cmake.definitions['ANDROID_NDK'] = android_ndk
-            cmake.generator = 'Ninja'
+            self._cmake_definitions['ANDROID_NDK'] = android_ndk
+            self._cmake_generator = 'Ninja'
 
     # lipo helper
 
