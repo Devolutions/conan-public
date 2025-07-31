@@ -1,12 +1,19 @@
 from conan import ConanFile
 from conan.tools.scm import Git
-from conan.tools.cmake import CMake, cmake_layout
+from conan.tools.cmake import CMake, cmake_layout, CMakeToolchain, CMakeDeps
+from conan.tools.files import copy
 from conan.errors import ConanException
 import os
 
 class YarcConan(ConanFile):
     name = 'yarc'
     exports_sources = "VERSION"
+    
+    def generate(self):
+        tc = CMakeToolchain(self)
+        tc.generate()
+        deps = CMakeDeps(self)
+        deps.generate()
     
 
     def set_version(self):
