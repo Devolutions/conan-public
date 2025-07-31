@@ -30,7 +30,7 @@ class YarcConan(ConanFile):
     }
 
     def layout(self):
-        if self.settings.build_type:
+        if hasattr(self.settings, 'build_type') and self.settings.build_type:
             cmake_layout(self)
 
     def build_requirements(self):
