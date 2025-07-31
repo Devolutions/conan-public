@@ -84,6 +84,6 @@ class YarcConan(ConanFile):
             exe += '.exe'
 
         if self.settings.os_build == 'Windows':
-            copy(self, exe, src=os.path.join(self.source_folder, 'app/Release'), dst=os.path.join(self.package_folder, 'bin'))
+            copy(self, exe, src=os.path.join(self.build_folder, 'app'), dst=os.path.join(self.package_folder, 'bin'))
         else:
-            copy(self, exe, src=os.path.join(self.source_folder, 'app'), dst=os.path.join(self.package_folder, 'bin'))
+            copy(self, exe, src=os.path.join(self.build_folder, 'app'), dst=os.path.join(self.package_folder, 'bin'))
