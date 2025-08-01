@@ -94,53 +94,33 @@ class YarcConan(ConanFile):
                 raise
 
     def package(self):
-        base_name = self.name
+        import shutil
         
-        # Check for executable with and without .exe extension on Windows
-        exe_names = [base_name]
-        if self.settings.os_build == 'Windows':
-            exe_names.append(base_name + '.exe')
+        exe_name = self.name
+        target_name = exe_name + '.exe' if self.settings.os_build == 'Windows' else exe_name
+        
+        # Find the built executable
+        possible_locations = [
+            os.path.join(self.build_folder, 'app', 'Release', exe_name),  # Windows MSVC
+            os.path.join(self.build_folder, 'app', exe_name),            # General app folder
+            os.path.join(self.build_folder, exe_name)                     # Root build folder
+        ]
+        
+        found_exe = None
+        for path in possible_locations:
+            if os.path.exists(path):
+                found_exe = path
+                break
+                
+        if not found_exe:
+            raise ConanException(f"Could not find executable '{exe_name}' in expected locations: {possible_locations}")
+        
+        # Create bin directory and copy executable with correct name
+        bin_dir = os.path.join(self.package_folder, 'bin')
+        os.makedirs(bin_dir, exist_ok=True)
+        
+        target_path = os.path.join(bin_dir, target_name)
+        shutil.copy2(found_exe, target_path)
+        
+        self.output.info(f"Packaged executable: {found_exe} -> {target_path}")
 
-        # Look for executable in multiple possible locations
-        for exe in exe_names:
-            app_path = os.path.join(self.build_folder, 'app', exe)
-            app_release_path = os.path.join(self.build_folder, 'app', 'Release', exe)
-            root_path = os.path.join(self.build_folder, exe)
-            
-            if os.path.exists(app_path):
-                self._copy_executable(exe, os.path.join(self.build_folder, 'app'), base_name)
-                return
-            elif os.path.exists(app_release_path):
-                self._copy_executable(exe, os.path.join(self.build_folder, 'app', 'Release'), base_name)
-                return
-            elif os.path.exists(root_path):
-                self._copy_executable(exe, self.build_folder, base_name)
-                return
-        
-        # If we get here, no executable was found
-        raise ConanException(f"Could not find executable '{base_name}' in any expected location")
-
-    def _copy_executable(self, src_name, src_folder, target_base_name):
-        """Copy executable and ensure it has .exe extension on Windows"""
-        if self.settings.os_build == 'Windows':
-            target_name = target_base_name + '.exe'
-        else:
-            target_name = target_base_name
-            
-        self.output.info(f"Copying executable: {src_name} from {src_folder}")
-        copy(self, src_name, src=src_folder, dst=os.path.join(self.package_folder, 'bin'), keep_path=False)
-        
-        # If the copied file doesn't have the expected extension, rename it
-        src_path = os.path.join(self.package_folder, 'bin', src_name)
-        target_path = os.path.join(self.package_folder, 'bin', target_name)
-        
-        self.output.info(f"Checking paths: src={src_path}, target={target_path}")
-        
-        if src_path != target_path and os.path.exists(src_path):
-            import shutil
-            self.output.info(f"Renaming {src_path} to {target_path}")
-            shutil.move(src_path, target_path)
-        elif os.path.exists(target_path):
-            self.output.info(f"Target file already exists: {target_path}")
-        else:
-            self.output.info(f"No renaming needed or source file not found")

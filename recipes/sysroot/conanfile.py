@@ -20,7 +20,7 @@ class Sysroot(ConanFile):
         self.tool_requires('cbake/[*]@devolutions/stable')
 
     def build(self):
-        cbake_home = self.dependencies.build_requires["cbake"].package_folder
+        cbake_home = self.dependencies["cbake"].package_folder
         build_script = os.path.join(cbake_home, 'build.ps1')
         self.distro = str(self.settings.distro)
         self.sysroot_arch = { 'x86_64':'amd64', 'armv8':'arm64' }[str(self.settings.arch)]
