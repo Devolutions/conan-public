@@ -83,7 +83,15 @@ class YarcConan(ConanFile):
     def build(self):
         cmake = CMake(self)
         cmake.configure(build_script_folder=os.path.join(self.source_folder, self.name))
-        cmake.build()
+        # For build tools, use Release build type as default
+        try:
+            cmake.build()
+        except Exception as e:
+            if "build_type setting should be defined" in str(e):
+                # Build tools don't have build_type setting, use CMake directly
+                self.run("cmake --build . --config Release")
+            else:
+                raise
 
     def package(self):
         exe = self.name
