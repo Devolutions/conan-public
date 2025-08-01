@@ -94,21 +94,29 @@ class YarcConan(ConanFile):
                 raise
 
     def package(self):
-        exe = self.name
+        base_name = self.name
+        
+        # Check for executable with and without .exe extension on Windows
+        exe_names = [base_name]
         if self.settings.os_build == 'Windows':
-            exe += '.exe'
+            exe_names.append(base_name + '.exe')
 
         # Look for executable in multiple possible locations
-        app_path = os.path.join(self.build_folder, 'app', exe)
-        app_release_path = os.path.join(self.build_folder, 'app', 'Release', exe)
-        root_path = os.path.join(self.build_folder, exe)
+        for exe in exe_names:
+            app_path = os.path.join(self.build_folder, 'app', exe)
+            app_release_path = os.path.join(self.build_folder, 'app', 'Release', exe)
+            root_path = os.path.join(self.build_folder, exe)
+            
+            if os.path.exists(app_path):
+                copy(self, exe, src=os.path.join(self.build_folder, 'app'), dst=os.path.join(self.package_folder, 'bin'))
+                return
+            elif os.path.exists(app_release_path):
+                copy(self, exe, src=os.path.join(self.build_folder, 'app', 'Release'), dst=os.path.join(self.package_folder, 'bin'))
+                return
+            elif os.path.exists(root_path):
+                copy(self, exe, src=self.build_folder, dst=os.path.join(self.package_folder, 'bin'))
+                return
         
-        if os.path.exists(app_path):
-            copy(self, exe, src=os.path.join(self.build_folder, 'app'), dst=os.path.join(self.package_folder, 'bin'))
-        elif os.path.exists(app_release_path):
-            copy(self, exe, src=os.path.join(self.build_folder, 'app', 'Release'), dst=os.path.join(self.package_folder, 'bin'))
-        elif os.path.exists(root_path):
-            copy(self, exe, src=self.build_folder, dst=os.path.join(self.package_folder, 'bin'))
-        else:
-            self.output.error(f"Executable {exe} not found in {app_path}, {app_release_path}, or {root_path}")
-            raise ConanException(f"Could not find {exe} executable")
+        # If we get here, no executable was found
+        self.output.error(f"Executable {base_name} not found in any expected location")
+        raise ConanException(f"Could not find {base_name} executable")
