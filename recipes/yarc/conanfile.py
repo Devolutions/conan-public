@@ -8,7 +8,7 @@ import os
 class YarcConan(ConanFile):
     name = 'yarc'
     exports_sources = "VERSION"
-    generators = "CMakeToolchain", "CMakeDeps"  # Modern Conan 2 approach per gist notes
+    generators = "CMakeToolchain"  # Only CMakeToolchain for build tools, CMakeDeps requires host settings
     
     def generate(self):
         # Call cmake_wrapper to set up definitions before generating toolchain
