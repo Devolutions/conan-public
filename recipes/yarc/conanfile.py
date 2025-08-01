@@ -8,6 +8,7 @@ import os
 class YarcConan(ConanFile):
     name = 'yarc'
     exports_sources = "VERSION"
+    generators = "CMakeToolchain", "CMakeDeps"  # Modern Conan 2 approach per gist notes
     
     def configure(self):
         # Set the proper CMake generator for Windows MSVC builds
@@ -20,6 +21,7 @@ class YarcConan(ConanFile):
         cmake_dummy = None  # We don't need the CMake object for definitions anymore
         self.cmake_wrapper(cmake_dummy, self.settings, self.options)
         
+        # CMakeToolchain and CMakeDeps are automatically generated via generators field
         tc = CMakeToolchain(self)
         # Apply cmake_wrapper definitions if they exist
         if hasattr(self, '_cmake_definitions'):
@@ -29,7 +31,7 @@ class YarcConan(ConanFile):
                 
         tc.generate()
         
-        # Only generate CMakeDeps if we have required settings
+        # CMakeDeps is handled automatically by generators field, but manual fallback
         try:
             if hasattr(self.settings, 'build_type') and self.dependencies:
                 deps = CMakeDeps(self)
@@ -71,7 +73,7 @@ class YarcConan(ConanFile):
 
     def build_requirements(self):
         if self.settings.os_build == 'Linux':
-            self.tool_requires('cbake/[*]@devolutions/stable')
+            self.tool_requires('cbake/[*]@devolutions/stable')  # Use tool_requires per gist notes
         else:
             super().build_requirements()
 
