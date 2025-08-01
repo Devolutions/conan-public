@@ -25,13 +25,15 @@ class YarcConan(ConanFile):
         
         # Only generate CMakeDeps if we have host settings (not just build settings)
         # Build tools (with only os_build, arch_build) don't need CMakeDeps
-        if hasattr(self.settings, 'build_type') and self.dependencies:
-            try:
+        try:
+            # Check if we have host settings by trying to access build_type
+            build_type = self.settings.build_type
+            # If we reach here, we have host settings, so generate CMakeDeps if we have dependencies
+            if self.dependencies:
                 deps = CMakeDeps(self)
                 deps.generate()
-            except Exception as e:
-                self.output.warn(f"CMakeDeps generation skipped: {e}")
-        else:
+        except Exception as e:
+            # This is a build tool context (only build settings), skip CMakeDeps
             self.output.info("CMakeDeps skipped - build tool context (no host settings)")
     
 
