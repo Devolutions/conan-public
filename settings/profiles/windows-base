@@ -6,3 +6,6 @@ distro=None
 compiler=msvc
 compiler.version=194
 compiler.runtime=dynamic
+
+[conf]
+tools.cmake.cmaketoolchain:generator=Visual Studio 17 2022

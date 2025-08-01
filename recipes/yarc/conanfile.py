@@ -10,12 +10,6 @@ class YarcConan(ConanFile):
     exports_sources = "VERSION"
     generators = "CMakeToolchain", "CMakeDeps"  # Modern Conan 2 approach per gist notes
     
-    def configure(self):
-        # Set the proper CMake generator for Windows MSVC builds
-        if self.settings.os_build == 'Windows':
-            # Use Conan 2.x configuration to force Visual Studio generator
-            self.conf["tools.cmake.cmaketoolchain:generator"] = "Visual Studio 17 2022"
-    
     def generate(self):
         # Call cmake_wrapper to set up definitions before generating toolchain
         cmake_dummy = None  # We don't need the CMake object for definitions anymore
