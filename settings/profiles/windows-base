@@ -3,6 +3,6 @@ include(host.jinja)
 [settings]
 os=Windows
 distro=None
-compiler=clang
-compiler.version=12
-compiler.runtime=MT
+compiler=msvc
+compiler.version=194
+compiler.runtime=dynamic
