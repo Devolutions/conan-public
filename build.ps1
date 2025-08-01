@@ -13,6 +13,7 @@ function Invoke-ConanRecipe
         [string] $UserChannel,
         [Parameter(Mandatory=$true)]
         [string] $ProfileName,
+        [string] $BuildProfileName,
         [Parameter(Mandatory=$true)]
         [string] $BuildType,
         [string] $Distribution,
@@ -32,6 +33,10 @@ function Invoke-ConanRecipe
         "--profile", $ProfileName,
         "--build=missing"
     )
+
+    if (-Not [string]::IsNullOrEmpty($BuildProfileName)) {
+        $CreateParams += @("--profile:build", $BuildProfileName)
+    }
 
     if (-Not [string]::IsNullOrEmpty($BuildType)) {
         $CreateParams += @("-s", "build_type=$BuildType")
@@ -182,6 +187,7 @@ function Invoke-TlkBuild {
             PackageName = $Package;
             UserChannel = $UserChannel;
             ProfileName = $HostProfile;
+            BuildProfileName = $HostProfile;
             BuildType = 'Release';
             Aliases = $Aliases;
         }
@@ -193,6 +199,7 @@ function Invoke-TlkBuild {
             PackageName = $Package;
             UserChannel = $UserChannel;
             ProfileName = $TargetProfile;
+            BuildProfileName = $HostProfile;
             BuildType = $BuildType;
             Aliases = $Aliases;
         }
