@@ -127,14 +127,20 @@ class YarcConan(ConanFile):
         else:
             target_name = target_base_name
             
+        self.output.info(f"Copying executable: {src_name} from {src_folder}")
         copy(self, src_name, src=src_folder, dst=os.path.join(self.package_folder, 'bin'), keep_path=False)
         
         # If the copied file doesn't have the expected extension, rename it
         src_path = os.path.join(self.package_folder, 'bin', src_name)
         target_path = os.path.join(self.package_folder, 'bin', target_name)
         
+        self.output.info(f"Checking paths: src={src_path}, target={target_path}")
+        
         if src_path != target_path and os.path.exists(src_path):
             import shutil
+            self.output.info(f"Renaming {src_path} to {target_path}")
             shutil.move(src_path, target_path)
-        self.output.error(f"Executable {base_name} not found in any expected location")
-        raise ConanException(f"Could not find {base_name} executable")
+        elif os.path.exists(target_path):
+            self.output.info(f"Target file already exists: {target_path}")
+        else:
+            self.output.info(f"No renaming needed or source file not found")
