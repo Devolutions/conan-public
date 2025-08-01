@@ -98,14 +98,17 @@ class YarcConan(ConanFile):
         if self.settings.os_build == 'Windows':
             exe += '.exe'
 
-        # Look for executable in app subdirectory first, then fallback to build root
+        # Look for executable in multiple possible locations
         app_path = os.path.join(self.build_folder, 'app', exe)
+        app_release_path = os.path.join(self.build_folder, 'app', 'Release', exe)
         root_path = os.path.join(self.build_folder, exe)
         
         if os.path.exists(app_path):
             copy(self, exe, src=os.path.join(self.build_folder, 'app'), dst=os.path.join(self.package_folder, 'bin'))
+        elif os.path.exists(app_release_path):
+            copy(self, exe, src=os.path.join(self.build_folder, 'app', 'Release'), dst=os.path.join(self.package_folder, 'bin'))
         elif os.path.exists(root_path):
             copy(self, exe, src=self.build_folder, dst=os.path.join(self.package_folder, 'bin'))
         else:
-            self.output.error(f"Executable {exe} not found in {app_path} or {root_path}")
+            self.output.error(f"Executable {exe} not found in {app_path}, {app_release_path}, or {root_path}")
             raise ConanException(f"Could not find {exe} executable")
