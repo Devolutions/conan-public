@@ -22,8 +22,6 @@ class YarcConan(ConanFile):
             self.output.info(f"Applying {len(self._cmake_definitions)} CMake definitions")
             for key, value in self._cmake_definitions.items():
                 tc.variables[key] = value
-                
-        tc.generate()
         
         # Only generate CMakeDeps if we have host settings (not just build settings)
         # Build tools (with only os_build, arch_build) don't need CMakeDeps
