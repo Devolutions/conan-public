@@ -181,7 +181,6 @@ jobs:
       - name: Configure conan environment
         shell: pwsh
         run: |
-          conan profile detect --force
           conan config install ./settings
           $ConanManifestTime = $(git log -1 --pretty=format:%ct)
           echo "CONAN_MANIFEST_TIME=$ConanManifestTime" >> $Env:GITHUB_ENV
