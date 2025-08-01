@@ -25,14 +25,16 @@ class YarcConan(ConanFile):
                 
         tc.generate()
         
-        # CMakeDeps is handled automatically by generators field, but manual fallback
-        try:
-            if hasattr(self.settings, 'build_type') and self.dependencies:
+        # Only generate CMakeDeps if we have host settings (not just build settings)
+        # Build tools (with only os_build, arch_build) don't need CMakeDeps
+        if hasattr(self.settings, 'build_type') and self.dependencies:
+            try:
                 deps = CMakeDeps(self)
                 deps.generate()
-        except Exception:
-            # Skip CMakeDeps generation if build_type is not available
-            pass
+            except Exception as e:
+                self.output.warn(f"CMakeDeps generation skipped: {e}")
+        else:
+            self.output.info("CMakeDeps skipped - build tool context (no host settings)")
     
 
     def set_version(self):
@@ -64,13 +66,6 @@ class YarcConan(ConanFile):
         except ConanException:
             # In build-only context, build_type may not be available
             pass
-
-    def generate(self):
-        tc = CMakeToolchain(self)
-        tc.generate()
-        
-        deps = CMakeDeps(self)
-        deps.generate()
 
     def build_requirements(self):
         if self.settings.os_build == 'Linux':
