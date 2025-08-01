@@ -65,6 +65,13 @@ class YarcConan(ConanFile):
             # In build-only context, build_type may not be available
             pass
 
+    def generate(self):
+        tc = CMakeToolchain(self)
+        tc.generate()
+        
+        deps = CMakeDeps(self)
+        deps.generate()
+
     def build_requirements(self):
         if self.settings.os_build == 'Linux':
             self.tool_requires('cbake/[*]@devolutions/stable')  # Use tool_requires per gist notes
