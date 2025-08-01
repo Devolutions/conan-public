@@ -108,15 +108,33 @@ class YarcConan(ConanFile):
             root_path = os.path.join(self.build_folder, exe)
             
             if os.path.exists(app_path):
-                copy(self, exe, src=os.path.join(self.build_folder, 'app'), dst=os.path.join(self.package_folder, 'bin'))
+                self._copy_executable(exe, os.path.join(self.build_folder, 'app'), base_name)
                 return
             elif os.path.exists(app_release_path):
-                copy(self, exe, src=os.path.join(self.build_folder, 'app', 'Release'), dst=os.path.join(self.package_folder, 'bin'))
+                self._copy_executable(exe, os.path.join(self.build_folder, 'app', 'Release'), base_name)
                 return
             elif os.path.exists(root_path):
-                copy(self, exe, src=self.build_folder, dst=os.path.join(self.package_folder, 'bin'))
+                self._copy_executable(exe, self.build_folder, base_name)
                 return
         
         # If we get here, no executable was found
+        raise ConanException(f"Could not find executable '{base_name}' in any expected location")
+
+    def _copy_executable(self, src_name, src_folder, target_base_name):
+        """Copy executable and ensure it has .exe extension on Windows"""
+        if self.settings.os_build == 'Windows':
+            target_name = target_base_name + '.exe'
+        else:
+            target_name = target_base_name
+            
+        copy(self, src_name, src=src_folder, dst=os.path.join(self.package_folder, 'bin'), keep_path=False)
+        
+        # If the copied file doesn't have the expected extension, rename it
+        src_path = os.path.join(self.package_folder, 'bin', src_name)
+        target_path = os.path.join(self.package_folder, 'bin', target_name)
+        
+        if src_path != target_path and os.path.exists(src_path):
+            import shutil
+            shutil.move(src_path, target_path)
         self.output.error(f"Executable {base_name} not found in any expected location")
         raise ConanException(f"Could not find {base_name} executable")
