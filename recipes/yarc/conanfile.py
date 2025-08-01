@@ -9,6 +9,12 @@ class YarcConan(ConanFile):
     name = 'yarc'
     exports_sources = "VERSION"
     
+    def configure(self):
+        # Set the proper CMake generator for Windows MSVC builds
+        if self.settings.os_build == 'Windows':
+            # Use Conan 2.x configuration to force Visual Studio generator
+            self.conf["tools.cmake.cmaketoolchain:generator"] = "Visual Studio 17 2022"
+    
     def generate(self):
         # Call cmake_wrapper to set up definitions before generating toolchain
         cmake_dummy = None  # We don't need the CMake object for definitions anymore
@@ -21,20 +27,8 @@ class YarcConan(ConanFile):
             for key, value in self._cmake_definitions.items():
                 tc.variables[key] = value
                 
-        # Set generator from cmake_wrapper for Windows MSVC builds
-        generator_set = False
-        if hasattr(self, '_cmake_generator'):
-            tc.generator = self._cmake_generator
-            generator_set = True
-            self.output.info(f"Set CMake generator to: {self._cmake_generator}")
-        if hasattr(self, '_cmake_generator_platform'):
-            tc.generator_platform = self._cmake_generator_platform
-            self.output.info(f"Set CMake generator platform to: {self._cmake_generator_platform}")
-            
-        if not generator_set:
-            self.output.warn("No CMake generator was set by cmake_wrapper!")
-            
         tc.generate()
+        
         # Only generate CMakeDeps if we have required settings
         try:
             if hasattr(self.settings, 'build_type') and self.dependencies:
