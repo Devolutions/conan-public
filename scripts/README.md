@@ -12,6 +12,7 @@ This directory contains helper Python scripts used during the Conan 1.x to 2.x m
   - Fixes CMake, copy, and version loading patterns
   - Processes 46+ conanfile.py recipes automatically
 
+
 ### Dependency & Requirements Scripts
 
 - **`fix_dependencies.py`** - Converts dependency access patterns
