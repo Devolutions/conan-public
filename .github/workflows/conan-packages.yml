@@ -132,15 +132,7 @@ jobs:
         env:
           CMAKE_OSX_DEPLOYMENT_TARGET: "10.12"
         run: |
-          brew install ninja
           brew install nasm yasm
-
-          # https://github.com/actions/runner-images/issues/11926
-
-          brew unlink cmake
-          brew tap-new $USER/local-cmake
-          brew extract --version=3.31.6 cmake $USER/local-cmake
-          brew install cmake@3.31.6
 
           pip3 install conan==${{ env.conan-version }} invoke Jinja2 urllib3 chardet requests --upgrade
           sudo rm -rf /Library/Developer/CommandLineTools
