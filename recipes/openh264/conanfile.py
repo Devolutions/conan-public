@@ -6,8 +6,6 @@ import urllib.request
 
 class OpenH264Conan(ConanFile):
     name = 'openh264'
-    exports_sources = "VERSION"
-    
 
     def set_version(self):
                 version_path = os.path.join(os.path.dirname(__file__), "VERSION")
@@ -21,6 +19,7 @@ class OpenH264Conan(ConanFile):
     python_requires = "shared/[1.0.0]@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
     no_copy_source = True
+    exports = ['VERSION']
 
     options = {
         'fPIC': [True, False],
