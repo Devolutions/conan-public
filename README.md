@@ -5,5 +5,5 @@ This repository contains all the [conan](https://conan.io/) build recipes for De
 ## Installing conan
 
 ```
-pip3 install --user conan==1.40.0 --upgrade
+pip3 install --user conan==2.19.1 --upgrade
 ```

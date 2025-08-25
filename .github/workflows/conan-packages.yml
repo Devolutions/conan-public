@@ -5,7 +5,7 @@ on:
     - cron: '25 6 * * 4' # 6:25am UTC every Thursday
 
 env:
-   conan-version: 1.66.0
+   conan-version: 2.19.1
   
 jobs:
   generate-matrix:
