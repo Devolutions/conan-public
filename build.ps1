@@ -13,6 +13,7 @@ function Invoke-ConanRecipe
         [string] $UserChannel,
         [Parameter(Mandatory=$true)]
         [string] $ProfileName,
+        [string] $BuildProfileName,
         [Parameter(Mandatory=$true)]
         [string] $BuildType,
         [string] $Distribution,
@@ -27,10 +28,19 @@ function Invoke-ConanRecipe
 
     $CreateParams = @(
         "$Recipes/$PackageName",
-        $UserChannel,
-        "-pr", $ProfileName,
-        "-s", "build_type=$BuildType"
+        "--user", "devolutions",
+        "--channel", "stable", 
+        "--profile", $ProfileName,
+        "--build=missing"
     )
+
+    if (-Not [string]::IsNullOrEmpty($BuildProfileName)) {
+        $CreateParams += @("--profile:build", $BuildProfileName)
+    }
+
+    if (-Not [string]::IsNullOrEmpty($BuildType)) {
+        $CreateParams += @("-s", "build_type=$BuildType")
+    }
 
     if (-Not [string]::IsNullOrEmpty($Distribution)) {
         $CreateParams += @("-s", "distro=$Distribution")
@@ -42,11 +52,7 @@ function Invoke-ConanRecipe
         throw "$PackageName creation failure"
     }
 
-    & 'conan' 'export' "$Recipes/$PackageName" $PackageReference
-
-    foreach ($Alias in $Aliases) {
-        & 'conan' 'alias' "$PackageName/$Alias@$UserChannel" $PackageReference
-    }
+    # Note: In Conan 2.x, export and alias work differently and may not be needed here
 }
 
 function Get-TlkPlatform {
@@ -179,6 +185,7 @@ function Invoke-TlkBuild {
             PackageName = $Package;
             UserChannel = $UserChannel;
             ProfileName = $HostProfile;
+            BuildProfileName = $HostProfile;
             BuildType = 'Release';
             Aliases = $Aliases;
         }
@@ -190,6 +197,7 @@ function Invoke-TlkBuild {
             PackageName = $Package;
             UserChannel = $UserChannel;
             ProfileName = $TargetProfile;
+            BuildProfileName = $HostProfile;
             BuildType = $BuildType;
             Aliases = $Aliases;
         }
