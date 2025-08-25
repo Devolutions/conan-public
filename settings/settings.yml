@@ -8,7 +8,7 @@ arch_build: [x86, x86_64, ppc32be, ppc32, ppc64le, ppc64, armv5el, armv5hf, armv
 os_target: [Windows, Linux, Macos, Android, iOS, watchOS, tvOS, FreeBSD, SunOS, AIX, Arduino, Neutrino]
 arch_target: [x86, x86_64, ppc32be, ppc32, ppc64le, ppc64, armv5el, armv5hf, armv6, armv7, armv7hf, armv7s, armv7k, armv8, armv8_32, armv8.3, universal, sparc, sparcv9, mips, mips64, avr, s390, s390x, asm.js, wasm, sh4le, e2k-v2, e2k-v3, e2k-v4, e2k-v5, e2k-v6, e2k-v7]
 
-distro: ANY
+distro: [None, "ubuntu-18.04", "ubuntu-20.04", "ubuntu-22.04", "centos-7", "centos-8", "debian-9", "debian-10", "debian-11", "fedora-32", "fedora-33", "fedora-34"]
 
 # Rest of the settings are "host" settings:
 # - For native building/cross building: Where the library/program will run.
@@ -58,7 +58,7 @@ compiler:
                   "7", "7.1", "7.2", "7.3", "7.4", "7.5",
                   "8", "8.1", "8.2", "8.3", "8.4",
                   "9", "9.1", "9.2", "9.3",
-                  "10", "10.1"]
+                  "10", "10.1", "11", "12", "13"]
         libcxx: [libstdc++, libstdc++11]
         threads: [None, posix, win32] #  Windows MinGW
         exception: [None, dwarf2, sjlj, seh] # Windows MinGW
@@ -75,7 +75,9 @@ compiler:
     msvc:
         version: ["19.0",
                   "19.1", "19.10", "19.11", "19.12", "19.13", "19.14", "19.15", "19.16",
-                  "19.2", "19.20", "19.21", "19.22", "19.23", "19.24", "19.25", "19.26", "19.27", "19.28"]
+                  "19.2", "19.20", "19.21", "19.22", "19.23", "19.24", "19.25", "19.26", "19.27", "19.28",
+                  "19.3", "19.30", "19.31", "19.32", "19.33", "19.34", "19.35", "19.36", "19.37", "19.38", "19.39",
+                  "19.4", "19.40", "19.41", "19.42", "19.43"]
         runtime: [static, dynamic]
         runtime_type: [Debug, Release]
         cppstd: [14, 17, 20]
@@ -86,6 +88,7 @@ compiler:
         libcxx: [None, libstdc++, libstdc++11, libc++, c++_shared, c++_static]
         cppstd: [None, 98, gnu98, 11, gnu11, 14, gnu14, 17, gnu17, 20, gnu20, 23, gnu23]
         runtime: [None, MD, MT, MTd, MDd]
+        runtime_type: [Debug, Release]
     apple-clang: &apple_clang
         version: ["5.0", "5.1", "6.0", "6.1", "7.0", "7.3", "8.0", "8.1", "9.0", "9.1", "10.0", "11.0", "12.0"]
         libcxx: [libstdc++, libc++]
