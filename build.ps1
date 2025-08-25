@@ -6,7 +6,7 @@
 function Invoke-ConanRecipe
 {
     [CmdletBinding()]
-	param(
+    param(
         [Parameter(Mandatory=$true,Position=0)]
         [string] $PackageName,
         [Parameter(Mandatory=$true)]
@@ -101,8 +101,6 @@ function Invoke-TlkBuild {
         'cbake',
         'shared'
     )
-
-    $HostPackages += @('yarc')
 
     $BasePackages = @(
         'zlib',
