@@ -108,8 +108,6 @@ function Invoke-TlkBuild {
         'shared'
     )
 
-    $HostPackages += @('yarc')
-
     $BasePackages = @(
         'zlib',
         'lz4',
