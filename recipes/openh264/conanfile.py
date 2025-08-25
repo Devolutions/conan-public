@@ -7,10 +7,7 @@ import urllib.request
 class OpenH264Conan(ConanFile):
     name = 'openh264'
 
-    def set_version(self):
-                version_path = os.path.join(os.path.dirname(__file__), "VERSION")
-                with open(version_path, 'r') as f:
-                    self.version = f.read().strip()
+    version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
     description = 'Pre-built OpenH264 binaries'
     license = "BSD-2-Clause"
     url = 'https://github.com/cisco/openh264.git'

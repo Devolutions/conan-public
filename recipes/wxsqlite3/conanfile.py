@@ -7,11 +7,7 @@ class Sqlite3SecureConan(ConanFile):
     name = 'wxsqlite3'
     exports_sources = "VERSION"
     
-
-    def set_version(self):
-                version_path = os.path.join(os.path.dirname(__file__), "VERSION")
-                with open(version_path, 'r') as f:
-                    self.version = f.read().strip()
+    version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
     url = 'https://github.com/utelle/wxsqlite3'
     description = 'SQLite3 database wrapper for wxWidgets (including SQLite3 encryption extension)'
     homepage = 'https://wiki.wxwidgets.org/Main_Page'

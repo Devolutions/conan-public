@@ -8,11 +8,7 @@ class Lz4Conan(ConanFile):
     name = 'lz4'
     exports_sources = "VERSION"
     
-
-    def set_version(self):
-                version_path = os.path.join(os.path.dirname(__file__), "VERSION")
-                with open(version_path, 'r') as f:
-                    self.version = f.read().strip()
+    version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
     license = 'BSD'
     url = 'https://github.com/lz4/lz4.git'
     description = 'Description'

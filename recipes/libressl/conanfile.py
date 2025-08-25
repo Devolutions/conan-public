@@ -10,10 +10,7 @@ class LibreSSLConan(ConanFile):
     url = 'https://github.com/PowerShell/LibreSSL.git'
     
 
-    def set_version(self):
-                version_path = os.path.join(os.path.dirname(__file__), "VERSION")
-                with open(version_path, 'r') as f:
-                    self.version = f.read().strip()
+    version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
     description = 'LibreSSL'
     settings = 'os', 'arch', 'distro', 'build_type'
     no_copy_source = False

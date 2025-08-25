@@ -10,11 +10,7 @@ class TemplateConan(ConanFile):
     name = 'libpng'
     exports_sources = "VERSION"
     
-
-    def set_version(self):
-                version_path = os.path.join(os.path.dirname(__file__), "VERSION")
-                with open(version_path, 'r') as f:
-                    self.version = f.read().strip()
+    version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
     license = 'PNG Reference Library License version 2'
     url = 'https://github.com/glennrp/libpng.git'
     description = 'Portable Network Graphics'

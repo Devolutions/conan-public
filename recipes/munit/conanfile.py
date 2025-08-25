@@ -7,11 +7,7 @@ import os, shutil
 class MunitConan(ConanFile):
     name = 'munit'
     
-
-    def set_version(self):
-                version_path = os.path.join(os.path.dirname(__file__), "VERSION")
-                with open(version_path, 'r') as f:
-                    self.version = f.read().strip()
+    version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
     license = 'Devolutions'
     url = 'https://github.com/nemequ/munit'
     description = 'µnit is a small testing framework for C'

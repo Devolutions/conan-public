@@ -9,11 +9,7 @@ class JpegConan(ConanFile):
     name = 'libjpeg'
     exports_sources = "VERSION"
     
-
-    def set_version(self):
-                version_path = os.path.join(os.path.dirname(__file__), "VERSION")
-                with open(version_path, 'r') as f:
-                    self.version = f.read().strip()
+    version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
     license = 'Independent JPEG Group'
     url = 'https://github.com/libjpeg-turbo/libjpeg-turbo.git'
     description = 'libjpeg-turbo is a JPEG image codec that uses SIMD instructions to accelerate baseline JPEG compression and decompression'

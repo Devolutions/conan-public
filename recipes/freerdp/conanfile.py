@@ -7,11 +7,7 @@ class FreerdpConan(ConanFile):
     name = 'freerdp'
     exports = ['VERSION', 'FindWinPR.cmake']
     
-
-    def set_version(self):
-                version_path = os.path.join(os.path.dirname(__file__), "VERSION")
-                with open(version_path, 'r') as f:
-                    self.version = f.read().strip()
+    version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
     license = 'Apache 2.0'
     no_copy_source = True
     url = 'https://github.com/Devolutions/FreeRDP.git'
