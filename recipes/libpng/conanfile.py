@@ -38,10 +38,10 @@ class TemplateConan(ConanFile):
         git.clone(self.url)
         git.checkout(self.tag)
 
-        if self.settings.os == 'Linux' and self.settings.arch == 'armv8':
-            tools.replace_in_file(os.path.join(folder, 'CMakeLists.txt'),
-            "arm/filter_neon.S",
-            "#arm/filter_neon.S")
+        # if self.settings.os == 'Linux' and self.settings.arch == 'armv8':
+        #     tools.replace_in_file(os.path.join(folder, 'CMakeLists.txt'),
+        #     "arm/filter_neon.S",
+        #     "#arm/filter_neon.S")
 
         # Modern Android NDK requires modern CMake policies
         for line in fileinput.input([os.path.join(folder, "CMakeLists.txt")], inplace=True):
@@ -61,7 +61,9 @@ class TemplateConan(ConanFile):
 
         cmake.definitions['ENABLE_TESTING'] = 'OFF'
         cmake.definitions['ENABLE_PROGRAMS'] = 'OFF'
+        cmake.definitions['PNG_STATIC'] = 'ON'
         cmake.definitions['PNG_SHARED'] = 'OFF'
+        cmake.definitions['PNG_FRAMEWORK'] = 'OFF'
         cmake.definitions['PNG_TESTS'] = 'OFF'
 
         zlib_path = self.deps_cpp_info['zlib'].rootpath
