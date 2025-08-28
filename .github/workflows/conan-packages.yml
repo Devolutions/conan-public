@@ -132,6 +132,9 @@ jobs:
         env:
           CMAKE_OSX_DEPLOYMENT_TARGET: "10.12"
         run: |
+          # Pin Xcode to reduce headaches when the default switches across runner images
+          sudo xcode-select --switch /Applications/Xcode_16.4.app
+
           brew install nasm yasm
 
           pip3 install conan==${{ env.conan-version }} invoke Jinja2 urllib3 chardet requests --upgrade
