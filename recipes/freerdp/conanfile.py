@@ -35,7 +35,7 @@ class FreerdpConan(ConanFile):
             self.build_requires('openh264/2.6.0@devolutions/stable')
 
             if self.settings.os == "Linux":
-                self.build_requires('libpng/1.6.39@devolutions/stable')
+                self.build_requires('libpng/1.6.47@devolutions/stable')
                 self.build_requires('libjpeg/3.1.0@devolutions/stable')
 
     def source(self):
