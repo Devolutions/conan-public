@@ -63,7 +63,7 @@ class WinprConan(ConanFile):
         cmake.definitions['WITH_INTERNAL_MD4'] = 'ON'
         cmake.definitions['WITH_INTERNAL_MD5'] = 'ON'
 
-        if self.settings.os in ["Linux", "Macos"]:
+        if self.settings.os in ["Linux"]:
             cmake.definitions['WINPR_UTILS_IMAGE_PNG'] = 'ON'
             cmake.definitions['WINPR_UTILS_IMAGE_JPEG'] = 'ON'
 
