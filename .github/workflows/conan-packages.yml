@@ -50,7 +50,7 @@ jobs:
                         }
                     }
                     if ($Platform -Eq "macos" -And $Architecture -Eq "x86_64") {
-                      $Job.runner = "macos-13"
+                      $Job.runner = "macos-15-intel"
                     }
                     $Jobs += $Job
                     
