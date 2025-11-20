@@ -9,7 +9,7 @@ class WinprConan(ConanFile):
     url = 'https://github.com/Devolutions/FreeRDP.git'
     description = 'FreeRDP is a free remote desktop protocol client'
     settings = 'os', 'arch', 'distro', 'build_type'
-    branch = 'devolutions-rdp-rebase-20250616'
+    branch = 'devolutions-rdp-rebase-20251119'
     python_requires = "shared/1.0.0@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
 
@@ -77,7 +77,7 @@ class WinprConan(ConanFile):
                 cmake.definitions["PNG_INCLUDE_DIR"] = os.path.join(png_path, self.deps_cpp_info['libpng'].includedirs[0])
 
         if self.settings.os == "Macos":
-            cmake.definitions['WITH_PKCS11'] = 'OFF'
+            cmake.definitions['WITH_PKCS11'] = 'ON'
 
         if self.settings.os == 'Linux':
             cmake.definitions['WITH_LIBSYSTEMD'] = 'OFF'
