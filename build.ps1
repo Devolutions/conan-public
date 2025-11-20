@@ -104,8 +104,6 @@ function Invoke-TlkBuild {
 
     $BasePackages = @(
         'zlib',
-        'lz4',
-        'miniz',
         'cjson',
         'libpng',
         'libjpeg',
@@ -144,7 +142,6 @@ function Invoke-TlkBuild {
     
         if (@('windows','macos','linux') -Contains $Platform) {
             $TargetPackages += @(
-                'munit',
                 'libvpx',
                 'libfido2',
                 'openssh',

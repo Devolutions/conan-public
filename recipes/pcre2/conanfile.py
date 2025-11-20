@@ -48,6 +48,9 @@ class PCREConan(ConanFile):
         os.rename(extracted_dir, self._source_subfolder)
 
         tools.patch(patch_file='ios-clear_cache.patch', base_path=os.path.join(self._source_subfolder, 'src'))
+        tools.replace_in_file(os.path.join(self._source_subfolder, 'CMakeLists.txt'),
+            "CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0)",
+            "CMAKE_MINIMUM_REQUIRED(VERSION 3.6)")
 
     def build(self):
         if self.settings.arch == 'universal':
