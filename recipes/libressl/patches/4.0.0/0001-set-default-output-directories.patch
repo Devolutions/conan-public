@@ -12,7 +12,7 @@ index 2f0dfa0..6a0b63e 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -4,8 +4,15 @@ if(MSVC)
- 	cmake_policy(SET CMP0091 NEW)
+         cmake_policy(SET CMP0091 NEW)
  endif()
  
 +set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
