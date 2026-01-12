@@ -49,21 +49,24 @@ class LibreSSLConan(ConanFile):
                 tools.patch(base_path=folder, patch_file=patch_path)
 
         if self.settings.os == 'iOS':
-            tools.replace_in_file(os.path.join(folder, 'CMakeLists.txt'),
-                "check_function_exists(syslog_r HAVE_SYSLOG_R)",
-                "#check_function_exists(syslog_r HAVE_SYSLOG_R)")
+            # Version-specific iOS fixes
+            if tools.Version(self.version) < "4.0.0":
+                tools.replace_in_file(os.path.join(folder, 'CMakeLists.txt'),
+                    "check_function_exists(syslog_r HAVE_SYSLOG_R)",
+                    "#check_function_exists(syslog_r HAVE_SYSLOG_R)")
+                tools.replace_in_file(os.path.join(folder, 'CMakeLists.txt'),
+                    "check_function_exists(explicit_bzero HAVE_EXPLICIT_BZERO)",
+                    "#check_function_exists(explicit_bzero HAVE_EXPLICIT_BZERO)")
+                tools.replace_in_file(os.path.join(folder, 'CMakeLists.txt'),
+                    "check_function_exists(reallocarray HAVE_REALLOCARRAY)",
+                    "#check_function_exists(reallocarray HAVE_REALLOCARRAY)")
+                tools.replace_in_file(os.path.join(folder, 'CMakeLists.txt'),
+                    "check_function_exists(timingsafe_memcmp HAVE_TIMINGSAFE_MEMCMP)",
+                    "#check_function_exists(timingsafe_memcmp HAVE_TIMINGSAFE_MEMCMP)")
+            # Common to all versions
             tools.replace_in_file(os.path.join(folder, 'CMakeLists.txt'),
                 "check_function_exists(syslog HAVE_SYSLOG)",
                 "#check_function_exists(syslog HAVE_SYSLOG)")
-            tools.replace_in_file(os.path.join(folder, 'CMakeLists.txt'),
-                "check_function_exists(explicit_bzero HAVE_EXPLICIT_BZERO)",
-                "#check_function_exists(explicit_bzero HAVE_EXPLICIT_BZERO)")
-            tools.replace_in_file(os.path.join(folder, 'CMakeLists.txt'),
-                "check_function_exists(reallocarray HAVE_REALLOCARRAY)",
-                "#check_function_exists(reallocarray HAVE_REALLOCARRAY)")
-            tools.replace_in_file(os.path.join(folder, 'CMakeLists.txt'),
-                "check_function_exists(timingsafe_memcmp HAVE_TIMINGSAFE_MEMCMP)",
-                "#check_function_exists(timingsafe_memcmp HAVE_TIMINGSAFE_MEMCMP)")
             tools.replace_in_file(os.path.join(folder, 'include', 'compat', 'endian.h'),
                 "#if defined(__APPLE__) && !defined(HAVE_ENDIAN_H)",
                 "#if defined(__APPLE__)")
