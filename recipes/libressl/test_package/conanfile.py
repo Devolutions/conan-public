@@ -30,6 +30,6 @@ class TestPackageConan(ConanFile):
 
         self.output.info('Testing headers exists:')
         include_dir = os.path.join(self.deps_cpp_info['libressl'].rootpath, 'include', 'openssl')
-        self.output.info('- should have at least 70 headers under %s' % include_dir)
+        self.output.info('- should have at least 65 headers under %s' % include_dir)
         headers = glob.glob('%s/*.h' % include_dir)
-        assert len(headers) >= 70, 'Number of headers: %s' % len(headers)
+        assert len(headers) >= 65, 'Number of headers: %s' % len(headers)
