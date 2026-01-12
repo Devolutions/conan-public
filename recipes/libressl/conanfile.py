@@ -16,8 +16,7 @@ class LibreSSLConan(ConanFile):
         'patches/3.4.2/0002-set-default-output-directories.patch',
         'patches/3.8.2/0001-normalize-library-output-names.patch',
         'patches/3.8.2/0002-set-default-output-directories.patch',
-        'patches/4.0.0/0001-normalize-library-output-names.patch',
-        'patches/4.0.0/0002-set-default-output-directories.patch']
+        'patches/4.0.0/0001-set-default-output-directories.patch']
 
     options = {
         'fPIC': [True, False],
