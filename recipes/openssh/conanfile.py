@@ -27,8 +27,8 @@ class OpenSSHConan(ConanFile):
         super().build_requirements()
         self.build_requires('zlib/1.3.1@devolutions/stable')
         self.build_requires('libcbor/0.10.2@devolutions/stable')
-        self.build_requires('libressl/3.8.2@devolutions/stable')
-        self.build_requires('libfido2/1.14.0@devolutions/stable')
+        self.build_requires('libressl/4.0.0@devolutions/stable')
+        self.build_requires('libfido2/1.15.0@devolutions/stable')
 
     def source(self):
         folder = self.name
@@ -41,7 +41,7 @@ class OpenSSHConan(ConanFile):
 
         git_distro = tools.Git(folder="openssh-distro")
         git_distro.clone("https://github.com/Devolutions/openssh-distro")
-        git_distro.checkout('master')
+        git_distro.checkout('update')
         version_dir = 'v%s' % (self.version)
         patches_dir = os.path.join(os.getcwd(), "openssh-distro", "patches", version_dir)
         if os.path.isdir(patches_dir):
