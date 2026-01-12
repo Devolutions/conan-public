@@ -1,18 +1,18 @@
-From 2176acbd4b0ce6449aadf976fc8424f53dc2ec39 Mon Sep 17 00:00:00 2001
+From ad48c9928280b6d37159117e62f4b359ec3cd8cd Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Marc-Andr=C3=A9=20Moreau?= <mamoreau@devolutions.net>
-Date: Fri, 2 Feb 2024 15:26:30 -0500
-Subject: [PATCH 1/1] set default output directories
+Date: Mon, 12 Jan 2026 16:11:57 -0500
+Subject: [PATCH] set default output directories
 
 ---
  CMakeLists.txt | 9 +++++++++
  1 file changed, 9 insertions(+)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 9c3d0d4..b81cd49 100644
+index 9c3d0d4..fad1caa 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -3,6 +3,15 @@ if(MSVC)
- cmake_policy(SET CMP0091 NEW)
+@@ -3,8 +3,17 @@ if(MSVC)
+ 	cmake_policy(SET CMP0091 NEW)
  endif()
  
 +set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
@@ -20,12 +20,15 @@ index 9c3d0d4..b81cd49 100644
 +set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 +
 +
+ project(LibreSSL LANGUAGES C ASM)
+ 
 +set(CMAKE_SHARED_LIBRARY_PREFIX "lib")
 +set(CMAKE_STATIC_LIBRARY_PREFIX "lib")
 +
 +
- project(LibreSSL LANGUAGES C ASM)
- 
  include(CheckFunctionExists)
+ include(CheckSymbolExists)
+ include(CheckLibraryExists)
 -- 
-2.25.1
+2.34.1
+
