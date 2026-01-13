@@ -56,6 +56,14 @@ class OpenSSHConan(ConanFile):
                 git_cmd = 'apply --whitespace=nowarn %s' % (patch_path)
                 git.run(git_cmd)
 
+        # Fix for OpenSSH 9.8.0: add kex-names.c to CMakeLists.txt
+        # This file was extracted from kex.c in 9.8.0 but the CMake patch doesn't include it
+        cmake_file = os.path.join(folder, 'CMakeLists.txt')
+        if os.path.exists(cmake_file):
+            tools.replace_in_file(cmake_file,
+                '    "${OPENSSH_SRC_DIR}/kex.c"',
+                '    "${OPENSSH_SRC_DIR}/kex.c"\n    "${OPENSSH_SRC_DIR}/kex-names.c"')
+
     def build(self):
         cmake = CMake(self)
         self.cmake_wrapper(cmake, self.settings, self.options)
