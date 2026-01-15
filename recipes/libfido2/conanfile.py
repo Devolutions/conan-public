@@ -20,7 +20,8 @@ class LibFIDO2Conan(ConanFile):
         'patches/1.14.0/0003-use-linux-hid-backend-for-android.patch',
         'patches/1.15.0/0001-fix-cmake-dependency-management.patch',
         'patches/1.15.0/0002-fix-crypto-explicit_bzero-conflict.patch',
-        'patches/1.15.0/0003-use-linux-hid-backend-for-android.patch']
+        'patches/1.15.0/0003-use-linux-hid-backend-for-android.patch',
+        'patches/1.15.0/0004-disable-explicit-bzero-win32.patch']
 
     options = {
         'fPIC': [True, False],

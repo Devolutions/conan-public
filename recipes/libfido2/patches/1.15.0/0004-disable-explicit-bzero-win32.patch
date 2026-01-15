@@ -1,0 +1,44 @@
+From 809c7be39d70f2ba89cbc75e78b8e4f11f6a9e31 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Marc-Andr=C3=A9=20Moreau?= <mamoreau@devolutions.net>
+Date: Wed, 15 Jan 2026 18:00:00 -0500
+Subject: [PATCH] disable explicit_bzero_win32 when already provided
+
+---
+ openbsd-compat/explicit_bzero_win32.c | 4 ++--
+ openbsd-compat/openbsd-compat.h       | 2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/openbsd-compat/explicit_bzero_win32.c b/openbsd-compat/explicit_bzero_win32.c
+index 8017aff..8100fbd 100644
+--- a/openbsd-compat/explicit_bzero_win32.c
++++ b/openbsd-compat/explicit_bzero_win32.c
+@@ -5,7 +5,7 @@
+ 
+ #include "openbsd-compat.h"
+ 
+-#if !defined(HAVE_EXPLICIT_BZERO) && defined(_WIN32)
++#if !defined(HAVE_EXPLICIT_BZERO) && defined(_WIN32) && !defined(LIBFIDO2_DISABLE_EXPLICIT_BZERO)
+ 
+ #include <windows.h>
+ #include <string.h>
+@@ -16,4 +16,4 @@ explicit_bzero(void *buf, size_t len)
+        SecureZeroMemory(buf, len);
+ }
+ 
+-#endif /* !defined(HAVE_EXPLICIT_BZERO) && defined(_WIN32) */
++#endif /* !defined(HAVE_EXPLICIT_BZERO) && defined(_WIN32) && !defined(LIBFIDO2_DISABLE_EXPLICIT_BZERO) */
+diff --git a/openbsd-compat/openbsd-compat.h b/openbsd-compat/openbsd-compat.h
+index 9f1ea3e..17e6665 100644
+--- a/openbsd-compat/openbsd-compat.h
++++ b/openbsd-compat/openbsd-compat.h
+@@ -63,7 +63,7 @@ char *strsep(char **, const char *);
+ void *recallocarray(void *, size_t, size_t, size_t);
+ #endif
+ 
+-#if !defined(HAVE_EXPLICIT_BZERO)
++#if !defined(HAVE_EXPLICIT_BZERO) && !defined(LIBFIDO2_DISABLE_EXPLICIT_BZERO)
+ void explicit_bzero(void *, size_t);
+ #endif
+ 
+-- 
+2.34.1
