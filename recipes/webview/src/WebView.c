@@ -23,11 +23,26 @@ typedef struct web_view{
         callback_download_started_evnt_fn download_started_handler;
         callback_clear_data_manager_finish_evnt_fn clear_data_manager_finish_handler;
         char* result_eval_js;
+        char* result_cookies;
         gboolean enable_logging;
         bool executingJavascript;
         bool clearingDataManager;
         bool destroyObject;
 } webView;
+
+static void webview_cleanup(webView* wv)
+{
+    if (!wv)
+        return;
+
+    // Free allocated strings
+    if (wv->result_cookies)
+        g_free(wv->result_cookies);
+    if (wv->result_eval_js)
+        g_free(wv->result_eval_js);
+
+    free(wv);
+}
 
 LAUNCHER_EXPORT const char* webview_get_decision_uri(void* ptr)
 {
@@ -102,7 +117,6 @@ LAUNCHER_EXPORT const char* webview_get_navigation_action_request_uri(void* ptr)
     return webkit_uri_request_get_uri(request);
 }
 
-
 LAUNCHER_EXPORT const char* webview_get_uri(void* webview)
 {
     return webkit_web_view_get_uri(((webView*)webview)->view);
@@ -175,7 +189,7 @@ LAUNCHER_EXPORT void close_webview(void* webview)
         return;
     }
 
-    free(wv);
+    webview_cleanup(wv);
 }
 
 #pragma clang diagnostic push
@@ -231,7 +245,7 @@ static void evaluate_javascript_cb(GObject* obj, GAsyncResult* result, gpointer 
 
     if(wv->destroyObject)
     {
-        free(wv);
+        webview_cleanup(wv);
         return;
     }
 
@@ -272,7 +286,7 @@ static void clear_data_manager_cb(GObject* obj, GAsyncResult* result, gpointer u
 
     if(wv->destroyObject)
     {
-        free(wv);
+        webview_cleanup(wv);
         return;
     }
 
@@ -465,7 +479,7 @@ LAUNCHER_EXPORT bool set_callback_clear_data_manager_finish(void* view, callback
     return 1;
 }
 
-char* get_evaluate_javascript_string(void* view)
+LAUNCHER_EXPORT char* get_evaluate_javascript_string(void* view)
 {
     webView* wv = (webView*)view;
 
@@ -473,6 +487,16 @@ char* get_evaluate_javascript_string(void* view)
         return "";
 
     return wv->result_eval_js;
+}
+
+LAUNCHER_EXPORT char* get_cookies_string(void* view)
+{
+    webView* wv = (webView*)view;
+
+    if(!wv || !wv->result_cookies)
+        return "";
+
+    return wv->result_cookies;
 }
 
 LAUNCHER_EXPORT void webview_reload_page(void* webview, bool bypassCache)
@@ -700,6 +724,10 @@ LAUNCHER_EXPORT void webview_register_script_message_handler(void* webview, cons
 
 static void cookies_callback(GObject* obj, GAsyncResult* result, gpointer user_data){
     webView* wv = (webView*)user_data;
+
+    if (!wv || !wv->view)
+        return;
+
     WebKitWebContext* context = webkit_web_view_get_context (wv->view);
     WebKitCookieManager* cookiemgr = webkit_web_context_get_cookie_manager (context);
 
@@ -707,22 +735,55 @@ static void cookies_callback(GObject* obj, GAsyncResult* result, gpointer user_d
     GList* gl = webkit_cookie_manager_get_cookies_finish(cookiemgr, result, &error);
 
     if (!gl){
-        if (error && wv->enable_logging)
-            g_warning ("Error retrieving cookies: %s", error->message);
-
-        g_error_free(error);
+        if (error) {
+            if (wv->enable_logging)
+                g_warning ("Error retrieving cookies: %s", error->message);
+            g_error_free(error);
+        }
         return;
     }
 
     if (wv->get_cookie_handler){
-        char* header = soup_cookies_to_cookie_header((GSList*)gl);
-        wv->get_cookie_handler(header);
+        // Convert GList to GSList for soup_cookies_to_cookie_header
+        GSList* cookies_list = NULL;
+        for (GList* l = gl; l != NULL; l = l->next) {
+            cookies_list = g_slist_append(cookies_list, l->data);
+        }
+
+        char* header = soup_cookies_to_cookie_header(cookies_list);
+
+        // Only call handler if we got a valid header
+        if (header) {
+            // Free previous cookies result if it exists
+            if (wv->result_cookies) {
+                g_free(wv->result_cookies);
+            }
+
+            // Store the header so it stays alive for C# marshaling
+            wv->result_cookies = header;
+
+            // Call handler with no parameters - C# will call get_cookies_string() to retrieve the result
+            if (wv->get_cookie_handler)
+                wv->get_cookie_handler();
+        }
+
+        g_slist_free(cookies_list);
     }
+
+    // Free the cookie list and its contents
+    g_list_free_full(gl, (GDestroyNotify)soup_cookie_free);
 }
 
 LAUNCHER_EXPORT void webview_get_cookies(void* webview, const gchar* uri)
 {
+    if (!webview)
+        return;
+
     webView* wv = (webView*)webview;
+
+    if (!wv->view)
+        return;
+
     WebKitWebContext* context = webkit_web_view_get_context (wv->view);
     WebKitCookieManager* cookiemgr = webkit_web_context_get_cookie_manager (context);
 
