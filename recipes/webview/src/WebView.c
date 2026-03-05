@@ -30,20 +30,6 @@ typedef struct web_view{
         bool destroyObject;
 } webView;
 
-static void webview_cleanup(webView* wv)
-{
-    if (!wv)
-        return;
-
-    // Free allocated strings
-    if (wv->result_cookies)
-        g_free(wv->result_cookies);
-    if (wv->result_eval_js)
-        g_free(wv->result_eval_js);
-
-    free(wv);
-}
-
 LAUNCHER_EXPORT const char* webview_get_decision_uri(void* ptr)
 {
     WebKitURIRequest* request = NULL;
@@ -189,7 +175,7 @@ LAUNCHER_EXPORT void close_webview(void* webview)
         return;
     }
 
-    webview_cleanup(wv);
+    free(wv);
 }
 
 #pragma clang diagnostic push
@@ -245,7 +231,7 @@ static void evaluate_javascript_cb(GObject* obj, GAsyncResult* result, gpointer 
 
     if(wv->destroyObject)
     {
-        webview_cleanup(wv);
+        free(wv);
         return;
     }
 
@@ -286,7 +272,7 @@ static void clear_data_manager_cb(GObject* obj, GAsyncResult* result, gpointer u
 
     if(wv->destroyObject)
     {
-        webview_cleanup(wv);
+        free(wv);
         return;
     }
 
