@@ -10,7 +10,7 @@ class FreerdpConan(ConanFile):
     url = 'https://github.com/Devolutions/FreeRDP.git'
     description = 'FreeRDP is a free remote desktop protocol client'
     settings = 'os', 'arch', 'distro', 'build_type'
-    branch = 'devolutions-rdp-rebase-20251204'
+    branch = 'devolutions-rdp-3.24.1'
     python_requires = "shared/1.0.0@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
 
@@ -78,8 +78,8 @@ class FreerdpConan(ConanFile):
         cmake.definitions['WITH_WAYLAND'] = 'OFF'
         cmake.definitions['WITH_MANPAGES'] = 'OFF'
         cmake.definitions['WITH_FFMPEG'] = 'OFF'
-        cmake.definitions['WITH_SWSCALE'] = 'OFF'
         cmake.definitions['WITH_VAAPI'] = 'OFF'
+        cmake.definitions['WITH_VAAPI_H264_ENCODING'] = 'OFF'
         cmake.definitions['WITH_GSTREAMER_1_0'] = 'OFF'
         cmake.definitions['WITH_GSTREAMER_0_10'] = 'OFF'
         cmake.definitions['WITH_LIBSYSTEMD'] = 'OFF'
@@ -88,6 +88,9 @@ class FreerdpConan(ConanFile):
         cmake.definitions['WITH_ALSA'] = 'OFF'
         cmake.definitions['WITH_FUSE'] = 'OFF'
         cmake.definitions['CHANNEL_URBDRC'] = 'OFF'
+
+        if self.settings.os != 'Linux':
+            cmake.definitions['WITH_SWSCALE'] = 'OFF'
 
         if self.settings.os == 'Linux':
             cmake.definitions['WITH_CUPS'] = 'ON'
@@ -166,6 +169,11 @@ class FreerdpConan(ConanFile):
             cmake.definitions["OPENH264_INCLUDE_DIR"] = os.path.join(openh264_path, self.deps_cpp_info['openh264'].includedirs[0])
             cmake.definitions['WITH_OPENH264'] = 'ON'
             cmake.definitions['WITH_OPENH264_LOADING'] = 'ON'
+
+        if self.settings.os == "Linux":
+            cmake.definitions['WITH_SWSCALE'] = 'ON'
+            cmake.definitions['WITH_SWSCALE_LOADING'] = 'ON'
+            cmake.definitions['CHANNEL_RDPECAM_CLIENT'] = 'ON'
 
         if self.settings.os == "Android":
             cmake.definitions['WITH_MEDIACODEC'] = 'ON'
