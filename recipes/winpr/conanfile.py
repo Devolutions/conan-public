@@ -93,10 +93,17 @@ class WinprConan(ConanFile):
         mbedtls_path = self.deps_cpp_info['mbedtls'].rootpath
         zlib_path = self.deps_cpp_info['zlib'].rootpath
         cjson_path = self.deps_cpp_info['cjson'].rootpath
-        cmake.definitions['CMAKE_PREFIX_PATH'] = '%s;%s;%s' % (mbedtls_path, zlib_path, cjson_path)
+        # Only expose conan cJSON on macOS where a system cJSON (Homebrew) could otherwise
+        # be picked up as a dynamic library and cause unresolved symbols at link time.
+        # On Windows the JsonDetect.cmake manual detection path crashes with an empty
+        # CMAKE_SHARED_LIBRARY_PREFIX, and other platforms don't have the same problem.
+        if self.settings.os == 'Macos':
+            cmake.definitions['CMAKE_PREFIX_PATH'] = '%s;%s;%s' % (mbedtls_path, zlib_path, cjson_path)
+        else:
+            cmake.definitions['CMAKE_PREFIX_PATH'] = '%s;%s' % (mbedtls_path, zlib_path)
 
         if self.settings.os == 'Android': # Android toolchain overwrites CMAKE_PREFIX_PATH
-            cmake.definitions['CMAKE_FIND_ROOT_PATH'] = '%s;%s;%s' % (mbedtls_path, zlib_path, cjson_path)
+            cmake.definitions['CMAKE_FIND_ROOT_PATH'] = '%s;%s' % (mbedtls_path, zlib_path)
             
         # Disable IPO
         if self.settings.os == 'Linux':
