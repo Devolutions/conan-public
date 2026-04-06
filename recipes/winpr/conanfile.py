@@ -9,7 +9,7 @@ class WinprConan(ConanFile):
     url = 'https://github.com/Devolutions/FreeRDP.git'
     description = 'FreeRDP is a free remote desktop protocol client'
     settings = 'os', 'arch', 'distro', 'build_type'
-    branch = 'devolutions-rdp-3.24.1'
+    branch = 'devolutions-rdp-3.24.2'
     python_requires = "shared/1.0.0@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
 
@@ -28,6 +28,7 @@ class WinprConan(ConanFile):
         self.build_requires('zlib/1.3.1@devolutions/stable')
         self.build_requires('libjpeg/3.1.0@devolutions/stable')
         self.build_requires('libpng/1.6.47@devolutions/stable')
+        self.build_requires('cjson/1.7.15@devolutions/stable')
 
     def source(self):
         if self.settings.arch == 'universal':
@@ -91,10 +92,11 @@ class WinprConan(ConanFile):
 
         mbedtls_path = self.deps_cpp_info['mbedtls'].rootpath
         zlib_path = self.deps_cpp_info['zlib'].rootpath
-        cmake.definitions['CMAKE_PREFIX_PATH'] = '%s;%s' % (mbedtls_path, zlib_path)
-        
+        cjson_path = self.deps_cpp_info['cjson'].rootpath
+        cmake.definitions['CMAKE_PREFIX_PATH'] = '%s;%s;%s' % (mbedtls_path, zlib_path, cjson_path)
+
         if self.settings.os == 'Android': # Android toolchain overwrites CMAKE_PREFIX_PATH
-            cmake.definitions['CMAKE_FIND_ROOT_PATH'] = '%s;%s' % (mbedtls_path, zlib_path)
+            cmake.definitions['CMAKE_FIND_ROOT_PATH'] = '%s;%s;%s' % (mbedtls_path, zlib_path, cjson_path)
             
         # Disable IPO
         if self.settings.os == 'Linux':
