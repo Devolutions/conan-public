@@ -33,6 +33,8 @@ class FreerdpConan(ConanFile):
 
         if self.settings.os in ["Windows", "Linux", "Macos"]:
             self.build_requires('openh264/2.6.0@devolutions/stable')
+            self.build_requires('libfido2/1.14.0@devolutions/stable')
+            self.build_requires('libcbor/0.10.2@devolutions/stable')
 
             if self.settings.os == "Linux":
                 self.build_requires('libpng/1.6.47@devolutions/stable')
@@ -170,6 +172,16 @@ class FreerdpConan(ConanFile):
             cmake.definitions['WITH_OPENH264'] = 'ON'
             cmake.definitions['WITH_OPENH264_LOADING'] = 'ON'
 
+            libfido2_path = self.deps_cpp_info['libfido2'].rootpath
+            libcbor_path = self.deps_cpp_info['libcbor'].rootpath
+            fido2_lib = 'fido2.lib' if self.settings.os == 'Windows' else 'libfido2.a'
+            cbor_lib = 'cbor.lib' if self.settings.os == 'Windows' else 'libcbor.a'
+            cmake.definitions['LIBFIDO2_INCLUDE_DIR'] = os.path.join(libfido2_path, self.deps_cpp_info['libfido2'].includedirs[0])
+            cmake.definitions['LIBFIDO2_LIBRARY'] = os.path.join(libfido2_path, self.deps_cpp_info['libfido2'].libdirs[0], fido2_lib)
+            cmake.definitions['LIBCBOR_INCLUDE_DIR'] = os.path.join(libcbor_path, self.deps_cpp_info['libcbor'].includedirs[0])
+            cmake.definitions['LIBCBOR_LIBRARY'] = os.path.join(libcbor_path, self.deps_cpp_info['libcbor'].libdirs[0], cbor_lib)
+            cmake.definitions['CHANNEL_RDPEWA'] = 'ON'
+
         if self.settings.os == "Linux":
             cmake.definitions['WITH_SWSCALE'] = 'ON'
             cmake.definitions['WITH_SWSCALE_LOADING'] = 'ON'
@@ -222,11 +234,13 @@ class FreerdpConan(ConanFile):
                 self.cpp_info.libs.append(lib)
 
         if self.settings.os == 'Windows':
-            for lib in ['ws2_32', 'dbghelp', 'crypt32']:
+            for lib in ['ws2_32', 'dbghelp', 'crypt32', 'setupapi', 'hid']:
                 self.cpp_info.libs.append(lib)
         elif self.settings.os == 'Linux' or self.settings.os == 'Macos':
             for lib in ['pthread', 'm', 'dl', 'cups']:
                 self.cpp_info.libs.append(lib)
+            if self.settings.os == 'Macos':
+                self.cpp_info.frameworks = ['IOKit', 'CoreFoundation']
         elif self.settings.os == 'Android':
             for lib in ['m', 'dl', 'log', 'OpenSLES']:
                 self.cpp_info.libs.append(lib)

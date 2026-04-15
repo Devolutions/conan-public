@@ -59,6 +59,10 @@ class LibFIDO2Conan(ConanFile):
         cmake.definitions['BUILD_TOOLS'] = 'OFF'
         cmake.definitions['BUILD_EXAMPLES'] = 'OFF'
         cmake.definitions['BUILD_MANPAGES'] = 'OFF'
+
+        if self.settings.os == 'Windows':
+            runtime = 'MultiThreadedDebug' if self.settings.build_type == 'Debug' else 'MultiThreaded'
+            cmake.definitions['CMAKE_MSVC_RUNTIME_LIBRARY'] = runtime
         
         if self.options.shared:
             cmake.definitions['BUILD_SHARED_LIBS'] = 'ON'

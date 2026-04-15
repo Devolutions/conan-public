@@ -102,14 +102,17 @@ function Invoke-TlkBuild {
         'shared'
     )
 
-    $BasePackages = @(
+    $BasePackagesEarly = @(
         'zlib',
         'cjson',
         'libpng',
         'libjpeg',
         'libcbor',
         'mbedtls',
-        'libressl',
+        'libressl'
+    )
+
+    $BasePackagesLate = @(
         'winpr',
         'freerdp',
         'pcre2'
@@ -132,36 +135,43 @@ function Invoke-TlkBuild {
             $TargetPackages += @('openh264')
         }
 
-        $TargetPackages += $BasePackages
+        $TargetPackages += $BasePackagesEarly
+
+        if (@('windows','macos','linux') -Contains $Platform) {
+            $TargetPackages += @('libfido2')
+        }
+
+        $TargetPackages += $BasePackagesLate
 
         if (@('linux','android') -Contains $Platform) {
             $TargetPackages += @(
                 'libudev-zero'
             )
         }
-    
+
         if (@('windows','macos','linux') -Contains $Platform) {
             $TargetPackages += @(
                 'libvpx',
-                'libfido2',
                 'openssh',
                 'wxsqlite3'
             )
         }
-    
+
         if ((($Platform -eq 'windows') -Or ($Platform -eq 'android') -Or ($Platform -eq "macos")) -And ($BuildType -eq 'RelWithDebInfo')) {
             $TargetPackages = @(
-              'zlib', 
+              'zlib',
               'cjson',
               'libpng',
               'libjpeg',
-              'mbedtls', 
+              'mbedtls',
               'libressl',
               'winpr'
             )
 
             if (@('windows','macos') -Contains $Platform) {
                 $TargetPackages += @('openh264')
+                $TargetPackages += @('libcbor')
+                $TargetPackages += @('libfido2')
             }
 
             $TargetPackages += @('freerdp')
