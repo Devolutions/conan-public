@@ -35,7 +35,7 @@ class LibcborConan(ConanFile):
 
         tools.replace_in_file(os.path.join(folder, 'CMakeLists.txt'),
             "cmake_minimum_required(VERSION 3.0)",
-            "cmake_minimum_required(VERSION 3.9)")
+            "cmake_minimum_required(VERSION 3.15)")
 
         tools.replace_in_file(os.path.join(folder, 'CMakeLists.txt'),
             "set(use_lto FALSE)",
@@ -52,6 +52,10 @@ class LibcborConan(ConanFile):
         cmake.definitions['SANITIZE'] = 'OFF'
         cmake.definitions['WITH_TESTS'] = 'OFF'
         cmake.definitions['WITH_EXAMPLES'] = 'OFF'
+
+        if self.settings.os == 'Windows':
+            runtime = 'MultiThreadedDebug' if self.settings.build_type == 'Debug' else 'MultiThreaded'
+            cmake.definitions['CMAKE_MSVC_RUNTIME_LIBRARY'] = runtime
 
         cmake.configure(source_folder=self.name)
         cmake.build()
