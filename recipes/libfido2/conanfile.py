@@ -52,6 +52,10 @@ class LibFIDO2Conan(ConanFile):
                 self.output.info('Applying patch: %s' % patch_path)
                 tools.patch(base_path=folder, patch_file=patch_path)
 
+        tools.replace_in_file(os.path.join(folder, 'CMakeLists.txt'),
+            "cmake_minimum_required(VERSION 3.7)",
+            "cmake_minimum_required(VERSION 3.15)")
+
     def build(self):
         cmake = CMake(self)
         self.cmake_wrapper(cmake, self.settings, self.options)
