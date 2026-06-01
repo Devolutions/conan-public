@@ -108,6 +108,24 @@ LAUNCHER_EXPORT const char* webview_get_uri(void* webview)
     return webkit_web_view_get_uri(((webView*)webview)->view);
 }
 
+// [RDMLI-3093] Share one process-wide context across non-ephemeral views so the SSO/IdP session (including
+// session cookies, which never reach the persistent cookie store) survives between web view instances, like
+// WKWebView's default WKWebsiteDataStore on macOS. A per-view webkit_web_context_new() dropped that session on
+// every reconnect, forcing a full Keeper SSO login each time. The static keeps the initial ref alive for the
+// process; web views only add/drop their own ref. - NParr - 2026-06-01
+static WebKitWebContext* shared_web_context = NULL;
+
+static WebKitWebContext* get_shared_web_context()
+{
+    if (shared_web_context == NULL)
+    {
+        shared_web_context = webkit_web_context_new ();
+        webkit_website_data_manager_set_tls_errors_policy(webkit_web_context_get_website_data_manager(shared_web_context), WEBKIT_TLS_ERRORS_POLICY_IGNORE);
+    }
+
+    return shared_web_context;
+}
+
 LAUNCHER_EXPORT void* webview_new()
 {
     webView* wv = (webView*)calloc(sizeof(webView), 1);
@@ -118,12 +136,10 @@ LAUNCHER_EXPORT void* webview_new()
     wv->js_error_handler = 0;
     wv->clear_data_manager_finish_handler = 0;
     wv->authenticate_handler = 0;
-    WebKitWebContext* context = webkit_web_context_new ();
+    WebKitWebContext* context = get_shared_web_context ();
     wv->view = WEBKIT_WEB_VIEW(webkit_web_view_new_with_context (context));
     wv->contentManager = webkit_web_view_get_user_content_manager(wv->view);
     g_signal_connect(wv->view, "load-failed", G_CALLBACK(web_view_load_failed_cb), wv);
-
-    webkit_website_data_manager_set_tls_errors_policy(webkit_web_context_get_website_data_manager(webkit_web_view_get_context(wv->view)), WEBKIT_TLS_ERRORS_POLICY_IGNORE);
 
     return wv;
 }
