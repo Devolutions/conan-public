@@ -6,21 +6,45 @@ on:
         description: 'run id'
         default: "1283642364"
         required: true
+      conan_major_version:
+        description: 'Conan major version to publish'
+        required: true
+        default: '1'
+        type: choice
+        options:
+          - '1'
+          - '2'
+      dry_run:
+        description: 'Validate publish workflow without uploading packages'
+        required: true
+        default: true
+        type: boolean
   workflow_call:
+    inputs:
+      conan_major_version:
+        required: false
+        default: '1'
+        type: string
+      dry_run:
+        required: false
+        default: true
+        type: boolean
     secrets:
       ARTIFACTORY_CONAN_USERNAME:
-        required: true
+        required: false
       ARTIFACTORY_CONAN_PASSWORD:
-        required: true
+        required: false
 
 env:
-   conan-version: 1.66.0
+   conan1_version: 1.66.0
+   conan2_version: '>=2,<3'
 
 concurrency: conan-publish
 jobs:
   publish:
     runs-on: ubuntu-latest
-    environment: artifactory-publish
+    environment:
+      name: ${{ inputs.dry_run && 'conan-publish-dry-run' || 'artifactory-publish' }}
     strategy:
       matrix:
         os: [ windows, macos, ios, android, ubuntu-18.04, ubuntu-20.04, ubuntu-22.04 ]
@@ -32,14 +56,23 @@ jobs:
       - name: Configure runner
         run: |
           sudo apt update
-          sudo apt install python3 python3-pip python3-wget python3-setuptools
-          pip3 install conan==${{ env.conan-version }} invoke Jinja2 urllib3 chardet requests --upgrade
-          echo "CONAN_USER_HOME=/tmp" >> $GITHUB_ENV
+          sudo apt install python3 python3-pip python3-venv python3-wget python3-setuptools
+          if [ "${{ inputs.conan_major_version }}" = "2" ]; then
+            pwsh ./scripts/setup-conan-venvs.ps1 -Conan2Version "${{ env.conan2_version }}" -SkipConan1 -VenvRoot "$RUNNER_TEMP/conan-venvs" -ShimDir "$RUNNER_TEMP/conan-bin" -NoUserPathUpdate
+            echo "CONAN_HOME=/tmp/.conan2" >> $GITHUB_ENV
+          else
+            pwsh ./scripts/setup-conan-venvs.ps1 -Conan1Version "${{ env.conan1_version }}" -SkipConan2 -VenvRoot "$RUNNER_TEMP/conan-venvs" -ShimDir "$RUNNER_TEMP/conan-bin" -NoUserPathUpdate
+            echo "CONAN_USER_HOME=/tmp" >> $GITHUB_ENV
+          fi
 
       - name: Configure conan environment
         run: |
-          conan config init
-          conan config install ./settings
+          if [ "${{ inputs.conan_major_version }}" = "2" ]; then
+            conan2 profile detect --force
+          else
+            conan1 config init
+            conan1 config install ./settings
+          fi
 
       - name: Download conan data
         uses: actions/download-artifact@v8
@@ -60,13 +93,26 @@ jobs:
         shell: pwsh
         run: Get-ChildItem | Where-Object { !$_.FullName.Contains('${{ matrix.os }}') } | Remove-Item -Recurse
 
-      - name: Publish packages ${{ matrix.os }}
+      - name: Validate packages ${{ matrix.os }}
+        if: ${{ inputs.dry_run }}
         working-directory: download
+        shell: pwsh
         env:
+          CONAN_MAJOR_VERSION: ${{ inputs.conan_major_version }}
+          CONAN_NON_INTERACTIVE: 1
+        run: |
+          & ../publish.ps1 -ConanMajorVersion '${{ inputs.conan_major_version }}' -DryRun
+
+      - name: Publish packages ${{ matrix.os }}
+        if: ${{ !inputs.dry_run }}
+        working-directory: download
+        shell: pwsh
+        env:
+          CONAN_MAJOR_VERSION: ${{ inputs.conan_major_version }}
           CONAN_NON_INTERACTIVE: 1
           CONAN_REMOTE_NAME: "artifactory"
           CONAN_REMOTE_URL: "https://devolutions.jfrog.io/devolutions/api/conan/conan-local"
           CONAN_LOGIN_USERNAME: ${{ secrets.ARTIFACTORY_CONAN_USERNAME }}
           CONAN_PASSWORD: ${{ secrets.ARTIFACTORY_CONAN_PASSWORD }}
         run: |
-          pwsh ../publish.ps1
+          & ../publish.ps1 -ConanMajorVersion '${{ inputs.conan_major_version }}'

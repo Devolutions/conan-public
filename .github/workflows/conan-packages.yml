@@ -1,11 +1,27 @@
 name: conan packages
 on: 
   workflow_dispatch:
+    inputs:
+      conan_major_version:
+        description: 'Conan major version to build'
+        required: true
+        default: '1'
+        type: choice
+        options:
+          - '1'
+          - '2'
+      publish_dry_run:
+        description: 'Validate publish workflow without uploading packages'
+        required: true
+        default: true
+        type: boolean
   schedule:
     - cron: '25 6 * * 4' # 6:25am UTC every Thursday
+    - cron: '25 8 * * 4' # 8:25am UTC every Thursday, Conan 2
 
 env:
-   conan-version: 1.66.0
+  conan1_version: 1.66.0
+  conan2_version: '>=2,<3'
   
 jobs:
   generate-matrix:
@@ -13,12 +29,83 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix-json: ${{ steps.generate-matrix.outputs.matrix }}
+      conan_major_version: ${{ steps.select-conan-version.outputs.conan_major_version }}
     steps:
+      - name: Select Conan version
+        id: select-conan-version
+        shell: pwsh
+        run: |
+          $ConanMajorVersion = '${{ inputs.conan_major_version }}'
+          if ([string]::IsNullOrWhiteSpace($ConanMajorVersion)) {
+            if ('${{ github.event_name }}' -eq 'schedule' -and '${{ github.event.schedule }}' -eq '25 8 * * 4') {
+              $ConanMajorVersion = '2'
+            } else {
+              $ConanMajorVersion = '1'
+            }
+          }
+          echo "conan_major_version=$ConanMajorVersion" >> $Env:GITHUB_OUTPUT
+
       - name: create build matrix
         id: generate-matrix
         shell: pwsh
+        env:
+          CONAN_MAJOR_VERSION: ${{ steps.select-conan-version.outputs.conan_major_version }}
         run: |
           $Jobs = @()
+          if ($Env:CONAN_MAJOR_VERSION -eq '2') {
+            @('windows', 'macos', 'linux', 'ios', 'android') | Foreach-Object {
+              $Platform = $_
+              $Architectures = @('x86_64', 'aarch64')
+
+              if ($Platform -Eq 'android') {
+                $Architectures += 'arm'
+                $Architectures += 'x86'
+              }
+
+              $Architectures | ForEach-Object {
+                $Architecture = $_
+                $BuildTypes = @('Debug', 'Release')
+
+                if ($Platform -Eq 'windows' -Or $Platform -Eq 'macos' -Or $Platform -Eq 'android') {
+                  $BuildTypes += 'RelWithDebInfo'
+                }
+
+                $BuildTypes | ForEach-Object {
+                  $BuildType = $_
+                  $Job = @{
+                    name = "[conan2-$Platform-$Architecture-$BuildType]"
+                    arch = $Architecture
+                    build_type = $BuildType
+                    os = $Platform
+                    runner = switch ($Platform) {
+                      'windows' { 'windows-2022' }
+                      { @('macos', 'ios') -contains $_ } { 'macos-latest' }
+                      { @('linux', 'android') -contains $_ } { 'ubuntu-22.04' }
+                    }
+                  }
+
+                  if ($Platform -Eq 'macos' -And $Architecture -Eq 'x86_64') {
+                    $Job.runner = 'macos-15-intel'
+                  }
+
+                  if ($Platform -Eq 'linux') {
+                    @('ubuntu-20.04', 'ubuntu-18.04', 'ubuntu-22.04') | ForEach-Object {
+                      $LinuxJob = $Job.Clone()
+                      $LinuxJob['distro'] = $_
+                      $LinuxJob['name'] = "[conan2-$($LinuxJob['distro'])-$Architecture-$BuildType]"
+                      $Jobs += $LinuxJob
+                    }
+                  } else {
+                    $Jobs += $Job
+                  }
+                }
+              }
+            }
+
+            echo "matrix=$(ConvertTo-JSON -Compress -InputObject @($Jobs))" >> $Env:GITHUB_OUTPUT
+            return
+          }
+
           @('windows', 'macos', 'linux', 'ios', 'android') | Foreach-Object {
             $Platform = $_
             $Architectures = @('x86_64', 'aarch64')
@@ -73,14 +160,14 @@ jobs:
             }
           }
 
-          echo "matrix=$($Jobs | ConvertTo-JSON -Compress)" >> $Env:GITHUB_OUTPUT
+          echo "matrix=$(ConvertTo-JSON -Compress -InputObject @($Jobs))" >> $Env:GITHUB_OUTPUT
 
   build:
     name: ${{matrix.name}}
     runs-on: ${{matrix.runner}}
     needs: [generate-matrix]
     concurrency: 
-      group: conan-${{ github.ref }}-${{matrix.name}}
+      group: conan-${{ needs.generate-matrix.outputs.conan_major_version }}-${{ github.ref }}-${{matrix.name}}
       cancel-in-progress: true
     strategy:
       fail-fast: false
@@ -117,9 +204,19 @@ jobs:
           echo "${Env:ProgramFiles}\NASM" | Out-File -FilePath $Env:GITHUB_PATH -Encoding UTF8 -Append
           Invoke-WebRequest -Uri 'https://www.tortall.net/projects/yasm/releases/yasm-1.2.0-win64.exe' -OutFile 'yasm.exe'
           Move-Item .\yasm.exe "${Env:ProgramFiles}\NASM\yasm.exe"
-          pip install conan==${{ env.conan-version }} invoke Jinja2 urllib3 chardet requests --upgrade
+          $SetupArgs = @{
+            VenvRoot = "$Env:RUNNER_TEMP\conan-venvs"
+            ShimDir = "$Env:RUNNER_TEMP\conan-bin"
+            NoUserPathUpdate = $true
+          }
+          if ('${{ needs.generate-matrix.outputs.conan_major_version }}' -eq '2') {
+            .\scripts\setup-conan-venvs.ps1 @SetupArgs -Conan2Version "${{ env.conan2_version }}" -SkipConan1
+            echo "CONAN_HOME=C:/tmp/.conan2" >> $Env:GITHUB_ENV
+          } else {
+            .\scripts\setup-conan-venvs.ps1 @SetupArgs -Conan1Version "${{ env.conan1_version }}" -SkipConan2
+            echo "CONAN_USER_HOME=C:/tmp" >> $Env:GITHUB_ENV
+          }
           echo $PSVersionTable
-          echo "CONAN_USER_HOME=C:/tmp" >> $Env:GITHUB_ENV
 
       - name: Configure macOS runner
         if: runner.os == 'macOS'
@@ -140,16 +237,24 @@ jobs:
         env:
           CMAKE_OSX_DEPLOYMENT_TARGET: "10.12"
         run: |
+          if brew help trust >/dev/null 2>&1; then
+            brew trust aws/tap azure/bicep || true
+          fi
           brew install nasm yasm
-          pip3 install conan==${{ env.conan-version }} invoke Jinja2 urllib3 chardet requests --upgrade
+          if [ "${{ needs.generate-matrix.outputs.conan_major_version }}" = "2" ]; then
+            pwsh ./scripts/setup-conan-venvs.ps1 -Conan2Version "${{ env.conan2_version }}" -SkipConan1 -VenvRoot "$RUNNER_TEMP/conan-venvs" -ShimDir "$RUNNER_TEMP/conan-bin" -NoUserPathUpdate
+            echo "CONAN_HOME=/tmp/.conan2" >> $GITHUB_ENV
+          else
+            pwsh ./scripts/setup-conan-venvs.ps1 -Conan1Version "${{ env.conan1_version }}" -SkipConan2 -VenvRoot "$RUNNER_TEMP/conan-venvs" -ShimDir "$RUNNER_TEMP/conan-bin" -NoUserPathUpdate
+            echo "CONAN_USER_HOME=/tmp" >> $GITHUB_ENV
+          fi
           sudo rm -rf /Library/Developer/CommandLineTools
-          echo "CONAN_USER_HOME=/tmp" >> $GITHUB_ENV
 
       - name: Configure Linux runner
         if: runner.os == 'Linux'
         run: |
           sudo apt-get -o Acquire::Retries=3 update
-          sudo apt-get install ninja-build xz-utils nasm yasm python3 python3-pip python3-wget python3-setuptools
+          sudo apt-get install ninja-build xz-utils nasm yasm python3 python3-pip python3-venv python3-wget python3-setuptools
 
           # https://github.com/actions/runner-images/issues/11926
 
@@ -157,8 +262,13 @@ jobs:
           sudo apt-get install cmake=3.22.1-1ubuntu1.22.04.2
           sudo ln -sf /usr/bin/cmake /usr/local/bin/cmake
 
-          pip3 install conan==${{ env.conan-version }} invoke Jinja2 urllib3 chardet requests --upgrade
-          echo "CONAN_USER_HOME=/tmp" >> $GITHUB_ENV
+          if [ "${{ needs.generate-matrix.outputs.conan_major_version }}" = "2" ]; then
+            pwsh ./scripts/setup-conan-venvs.ps1 -Conan2Version "${{ env.conan2_version }}" -SkipConan1 -VenvRoot "$RUNNER_TEMP/conan-venvs" -ShimDir "$RUNNER_TEMP/conan-bin" -NoUserPathUpdate
+            echo "CONAN_HOME=/tmp/.conan2" >> $GITHUB_ENV
+          else
+            pwsh ./scripts/setup-conan-venvs.ps1 -Conan1Version "${{ env.conan1_version }}" -SkipConan2 -VenvRoot "$RUNNER_TEMP/conan-venvs" -ShimDir "$RUNNER_TEMP/conan-bin" -NoUserPathUpdate
+            echo "CONAN_USER_HOME=/tmp" >> $GITHUB_ENV
+          fi
 
       - name: Setup LLVM
         uses: Devolutions/actions-public/setup-llvm@v1
@@ -180,19 +290,31 @@ jobs:
       - name: Configure conan environment
         shell: pwsh
         run: |
-          conan config init
-          conan config install ./settings
-          conan remote disable conancenter
+          if ('${{ needs.generate-matrix.outputs.conan_major_version }}' -eq '2') {
+            conan2 profile detect --force
+          } else {
+            conan1 config init
+            conan1 config install ./settings
+            conan1 remote disable conancenter
+          }
           $ConanManifestTime = $(git log -1 --pretty=format:%ct)
           echo "CONAN_MANIFEST_TIME=$ConanManifestTime" >> $Env:GITHUB_ENV
 
       - name: Build conan packages
         shell: pwsh
         run: |
-          if ("${{ matrix.distro }}") {
-            ./build.ps1 -Platform ${{ matrix.os }} -Architecture ${{ matrix.arch }} -BuildType ${{ matrix.build_type }} -Distribution ${{ matrix.distro }}
+          if ('${{ needs.generate-matrix.outputs.conan_major_version }}' -eq '2') {
+            if ("${{ matrix.distro }}") {
+              ./scripts/build-conan2.ps1 -Platform ${{ matrix.os }} -Architecture ${{ matrix.arch }} -BuildType ${{ matrix.build_type }} -Distribution ${{ matrix.distro }}
+            } else {
+              ./scripts/build-conan2.ps1 -Platform ${{ matrix.os }} -Architecture ${{ matrix.arch }} -BuildType ${{ matrix.build_type }}
+            }
           } else {
-            ./build.ps1 -Platform ${{ matrix.os }} -Architecture ${{ matrix.arch }} -BuildType ${{ matrix.build_type }}
+            if ("${{ matrix.distro }}") {
+              ./build.ps1 -Platform ${{ matrix.os }} -Architecture ${{ matrix.arch }} -BuildType ${{ matrix.build_type }} -Distribution ${{ matrix.distro }}
+            } else {
+              ./build.ps1 -Platform ${{ matrix.os }} -Architecture ${{ matrix.arch }} -BuildType ${{ matrix.build_type }}
+            }
           }
   
       - name: Package conan cache
@@ -200,23 +322,34 @@ jobs:
         shell: pwsh
         run: |
           if ("${{ matrix.distro }}") {
-            $PACKAGE_NAME="conan-${{ matrix.arch }}-${{ matrix.distro }}-${{ matrix.build_type }}"
+            $PACKAGE_NAME="conan${{ needs.generate-matrix.outputs.conan_major_version }}-${{ matrix.arch }}-${{ matrix.distro }}-${{ matrix.build_type }}"
           } else {
-            $PACKAGE_NAME="conan-${{ matrix.arch }}-${{ matrix.os }}-${{ matrix.build_type }}"
+            $PACKAGE_NAME="conan${{ needs.generate-matrix.outputs.conan_major_version }}-${{ matrix.arch }}-${{ matrix.os }}-${{ matrix.build_type }}"
           }
 
-          conan remove --locks
-          $CONAN_DATA = Join-Path $Env:CONAN_USER_HOME ".conan" "data"
-          $RemoveList = Get-ChildItem "${CONAN_DATA}" -Include @("build","source") -Directory -Depth 4 -Recurse -Name
-          $RemoveList | ForEach-Object { Remove-Item -Path "$CONAN_DATA/$_" -Recurse -Force }
-          $ConanManifests = Get-ChildItem $CONAN_DATA -Recurse -Include "conanmanifest.txt"
-          $ConanManifestTime = $Env:CONAN_MANIFEST_TIME
-          foreach ($ManifestFile in $ConanManifests) {
-            $Manifest = Get-Content $ManifestFile
-            $Manifest[0] = $ConanManifestTime
-            $Manifest | Out-File $ManifestFile
+          if ('${{ needs.generate-matrix.outputs.conan_major_version }}' -eq '2') {
+            conan2 cache clean '*' --source --build --download --temp --backup-sources
+            $ConanHome = $Env:CONAN_HOME
+            if ([string]::IsNullOrWhiteSpace($ConanHome)) {
+              $ConanHome = Join-Path $HOME ".conan2"
+            }
+            $ConanHomeParent = Split-Path $ConanHome -Parent
+            $ConanHomeName = Split-Path $ConanHome -Leaf
+            tar -czf "${PACKAGE_NAME}.tar.gz" -C "$ConanHomeParent" "$ConanHomeName"
+          } else {
+            conan1 remove --locks
+            $CONAN_DATA = Join-Path $Env:CONAN_USER_HOME ".conan" "data"
+            $RemoveList = Get-ChildItem "${CONAN_DATA}" -Include @("build","source") -Directory -Depth 4 -Recurse -Name
+            $RemoveList | ForEach-Object { Remove-Item -Path "$CONAN_DATA/$_" -Recurse -Force }
+            $ConanManifests = Get-ChildItem $CONAN_DATA -Recurse -Include "conanmanifest.txt"
+            $ConanManifestTime = $Env:CONAN_MANIFEST_TIME
+            foreach ($ManifestFile in $ConanManifests) {
+              $Manifest = Get-Content $ManifestFile
+              $Manifest[0] = $ConanManifestTime
+              $Manifest | Out-File $ManifestFile
+            }
+            tar -czf "${PACKAGE_NAME}.tar.gz" -C "$Env:CONAN_USER_HOME" ".conan"
           }
-          tar -czf "${PACKAGE_NAME}.tar.gz" -C "$Env:CONAN_USER_HOME" ".conan"
           echo "package_name=$PACKAGE_NAME" >> $Env:GITHUB_OUTPUT
 
       - name: Upload conan cache
@@ -226,9 +359,14 @@ jobs:
           path: ${{ steps.package-conan-cache.outputs.package_name }}.tar.gz
 
   publish:
-    needs: build
+    needs:
+      - generate-matrix
+      - build
     if: github.event_name != 'schedule'
     uses: ./.github/workflows/conan-publish.yml
+    with:
+      conan_major_version: ${{ needs.generate-matrix.outputs.conan_major_version }}
+      dry_run: ${{ inputs.publish_dry_run }}
     secrets: inherit
 
   notify:

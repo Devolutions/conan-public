@@ -1,0 +1,39 @@
+find_package(PkgConfig)
+
+if(PKG_CONFIG_FOUND)
+    #pkg_check_modules(_WEBKIT2GTK webkit2gtk-4.0)
+    pkg_search_module(_WEBKIT2GTK webkit2gtk-4.1 webkit2gtk-4.0)
+endif(PKG_CONFIG_FOUND)
+
+set(WEBKIT2GTK_DEFINITIONS ${_WEBKIT2GTK_CFLAGS_OTHER})
+
+find_path(WEBKIT2GTK_INCLUDE_DIR NAMES webkit2/webkit2.h
+    HINTS ${_WEBKIT2GTK_INCLUDEDIR} ${_WEBKIT2GTK_INCLUDE_DIRS}
+)
+
+find_library(WEBKIT2GTK_LIB
+    NAMES webkit2gtk-4.1 webkit2gtk-4.0
+    HINTS
+    ${_WEBKIT2GTK_LIBDIR}
+    ${_WEBKIT2GTK_LIBRARY_DIRS}
+)
+
+include(FindPackageHandleStandardArgs)
+
+find_package_handle_standard_args(WEBKIT2GTK DEFAULT_MSG  WEBKIT2GTK_LIB WEBKIT2GTK_INCLUDE_DIR)
+
+if(WEBKIT2GTK_LIB)
+    set(WEBKIT2GTK_LIBRARIES ${WEBKIT2GTK_LIB})
+    message(STATUS "WEBKIT2GTK-Libs: ${WEBKIT2GTK_LIBRARIES}")
+endif()
+
+if(WEBKIT2GTK_INCLUDE_DIR)
+    set(WEBKIT2GTK_INCLUDE_DIRS ${WEBKIT2GTK_INCLUDE_DIR})
+    message(STATUS "WEBKIT2GTK-Include-Dirs: ${WEBKIT2GTK_INCLUDE_DIRS}")
+endif()
+
+if(WEBKIT2GTK_INCLUDE_DIRS)
+    set(WEBKIT2GTK_FOUND TRUE)
+endif()
+
+mark_as_advanced(WEBKIT2GTK_INCLUDE_DIR WEBKIT2GTK_LIB)

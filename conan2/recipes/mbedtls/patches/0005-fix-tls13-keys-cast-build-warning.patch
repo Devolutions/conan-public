@@ -1,0 +1,33 @@
+From bd6a1743749752b07e2faf904db9c2957f986071 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Marc-Andr=C3=A9=20Moreau?= <mamoreau@devolutions.net>
+Date: Wed, 6 Mar 2024 14:57:48 -0500
+Subject: [PATCH] fix ssl_tls13_keys.c cast warning
+
+---
+ library/ssl_tls13_keys.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/library/ssl_tls13_keys.c b/library/ssl_tls13_keys.c
+index b64f9b026..ed701d648 100644
+--- a/library/ssl_tls13_keys.c
++++ b/library/ssl_tls13_keys.c
+@@ -1019,14 +1019,14 @@ int mbedtls_ssl_tls13_populate_transform(
+ 
+ #if !defined(MBEDTLS_USE_PSA_CRYPTO)
+     if ((ret = mbedtls_cipher_setkey(&transform->cipher_ctx_enc,
+-                                     key_enc, mbedtls_cipher_info_get_key_bitlen(cipher_info),
++                                     key_enc, (int) mbedtls_cipher_info_get_key_bitlen(cipher_info),
+                                      MBEDTLS_ENCRYPT)) != 0) {
+         MBEDTLS_SSL_DEBUG_RET(1, "mbedtls_cipher_setkey", ret);
+         return ret;
+     }
+ 
+     if ((ret = mbedtls_cipher_setkey(&transform->cipher_ctx_dec,
+-                                     key_dec, mbedtls_cipher_info_get_key_bitlen(cipher_info),
++                                     key_dec, (int) mbedtls_cipher_info_get_key_bitlen(cipher_info),
+                                      MBEDTLS_DECRYPT)) != 0) {
+         MBEDTLS_SSL_DEBUG_RET(1, "mbedtls_cipher_setkey", ret);
+         return ret;
+-- 
+2.25.1
+

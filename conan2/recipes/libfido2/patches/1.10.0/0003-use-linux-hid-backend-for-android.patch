@@ -1,0 +1,25 @@
+From 1346ae08134a5444bc21d9fc11fe8b79e784e3b2 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Marc-Andr=C3=A9=20Moreau?= <mamoreau@devolutions.net>
+Date: Tue, 21 Nov 2023 16:22:54 -0500
+Subject: [PATCH 3/3] Use Linux HID backend for Android
+
+---
+ src/CMakeLists.txt | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index 796ec69..a0295e3 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -63,6 +63,8 @@ elseif(APPLE)
+ 	list(APPEND FIDO_SOURCES hid_osx.c)
+ elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+ 	list(APPEND FIDO_SOURCES hid_linux.c hid_unix.c)
++elseif(CMAKE_SYSTEM_NAME STREQUAL "Android")
++	list(APPEND FIDO_SOURCES hid_linux.c hid_unix.c)
+ elseif(CMAKE_SYSTEM_NAME STREQUAL "NetBSD")
+ 	list(APPEND FIDO_SOURCES hid_netbsd.c hid_unix.c)
+ elseif(CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
+-- 
+2.25.1
+
