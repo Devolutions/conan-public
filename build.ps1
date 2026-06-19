@@ -1,7 +1,7 @@
 #!/usr/bin/env pwsh
 
-# conan remove -f '*'
-# conan config install ./settings
+# conan1 remove -f '*'
+# conan1 config install ./settings
 
 function Invoke-ConanRecipe
 {
@@ -19,7 +19,7 @@ function Invoke-ConanRecipe
         [string[]] $Aliases
     )
 
-    $Recipes = Join-Path $PSScriptRoot "recipes"
+    $Recipes = Join-Path (Join-Path $PSScriptRoot "conan1") "recipes"
     $PackageVersion = $(Get-Content "$Recipes/$PackageName/VERSION").Trim()
     $PackageReference = "$PackageName/$PackageVersion@$UserChannel"
 
@@ -36,16 +36,16 @@ function Invoke-ConanRecipe
         $CreateParams += @("-s", "distro=$Distribution")
     }
 
-    & 'conan' 'create' $CreateParams
+    & 'conan1' 'create' $CreateParams
     
     if ($LASTEXITCODE -ne 0) {
         throw "$PackageName creation failure"
     }
 
-    & 'conan' 'export' "$Recipes/$PackageName" $PackageReference
+    & 'conan1' 'export' "$Recipes/$PackageName" $PackageReference
 
     foreach ($Alias in $Aliases) {
-        & 'conan' 'alias' "$PackageName/$Alias@$UserChannel" $PackageReference
+        & 'conan1' 'alias' "$PackageName/$Alias@$UserChannel" $PackageReference
     }
 }
 

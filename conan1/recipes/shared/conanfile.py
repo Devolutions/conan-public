@@ -257,7 +257,7 @@ class UtilsBase(object):
         query = 'os=iOS AND build_type=%s AND (%s)' % (self.settings.build_type, arches)
 
         cmd = [
-            'conan',
+            'conan1',
             'search',
             '%s' % self.lipo_get_package_name(self),
             '-q',

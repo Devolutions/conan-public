@@ -1,0 +1,97 @@
+#ifndef VPX_CONFIG_H
+#define VPX_CONFIG_H
+
+#define RESTRICT    @RESTRICT_KEYWORD@
+#define INLINE      @INLINE_KEYWORD@
+
+#cmakedefine01 VPX_ARCH_ARM
+#cmakedefine01 VPX_ARCH_MIPS
+#cmakedefine01 VPX_ARCH_X86
+#cmakedefine01 VPX_ARCH_X86_64
+#cmakedefine01 VPX_ARCH_PPC
+
+#cmakedefine01 HAVE_NEON
+#cmakedefine01 HAVE_NEON_ASM
+#cmakedefine01 HAVE_MIPS32
+#cmakedefine01 HAVE_DSPR2
+#cmakedefine01 HAVE_MSA
+#cmakedefine01 HAVE_MIPS64
+#cmakedefine01 HAVE_MMX
+#cmakedefine01 HAVE_SSE
+#cmakedefine01 HAVE_SSE2
+#cmakedefine01 HAVE_SSE3
+#cmakedefine01 HAVE_SSSE3
+#cmakedefine01 HAVE_SSE4_1
+#cmakedefine01 HAVE_AVX
+#cmakedefine01 HAVE_AVX2
+#cmakedefine01 HAVE_AVX512
+#cmakedefine01 HAVE_VSX
+#cmakedefine01 HAVE_MMI
+#cmakedefine01 HAVE_VPX_PORTS
+#cmakedefine01 HAVE_PTHREAD_H
+#cmakedefine01 HAVE_UNISTD_H
+
+#cmakedefine01 CONFIG_DEPENDENCY_TRACKING
+#cmakedefine01 CONFIG_EXTERNAL_BUILD
+#cmakedefine01 CONFIG_INSTALL_DOCS
+#cmakedefine01 CONFIG_INSTALL_BINS
+#cmakedefine01 CONFIG_INSTALL_LIBS
+#cmakedefine01 CONFIG_INSTALL_SRCS
+#cmakedefine01 CONFIG_DEBUG
+#cmakedefine01 CONFIG_GPROF
+#cmakedefine01 CONFIG_GCOV
+#cmakedefine01 CONFIG_RVCT
+#cmakedefine01 CONFIG_GCC
+#cmakedefine01 CONFIG_MSVS
+#cmakedefine01 CONFIG_PIC
+#cmakedefine01 CONFIG_BIG_ENDIAN
+#cmakedefine01 CONFIG_CODEC_SRCS
+#cmakedefine01 CONFIG_DEBUG_LIBS
+#cmakedefine01 CONFIG_DEQUANT_TOKENS
+#cmakedefine01 CONFIG_DC_RECON
+#cmakedefine01 CONFIG_RUNTIME_CPU_DETECT
+#cmakedefine01 CONFIG_POSTPROC
+#cmakedefine01 CONFIG_VP9_POSTPROC
+#cmakedefine01 CONFIG_MULTITHREAD
+#cmakedefine01 CONFIG_INTERNAL_STATS
+#cmakedefine01 CONFIG_VP8_ENCODER
+#cmakedefine01 CONFIG_VP8_DECODER
+#cmakedefine01 CONFIG_VP9_ENCODER
+#cmakedefine01 CONFIG_VP9_DECODER
+#cmakedefine01 CONFIG_VP8
+#cmakedefine01 CONFIG_VP9
+#cmakedefine01 CONFIG_ENCODERS
+#cmakedefine01 CONFIG_DECODERS
+#cmakedefine01 CONFIG_STATIC_MSVCRT
+#cmakedefine01 CONFIG_SPATIAL_RESAMPLING
+#cmakedefine01 CONFIG_REALTIME_ONLY
+#cmakedefine01 CONFIG_ONTHEFLY_BITPACKING
+#cmakedefine01 CONFIG_ERROR_CONCEALMENT
+#cmakedefine01 CONFIG_SHARED
+#cmakedefine01 CONFIG_STATIC
+#cmakedefine01 CONFIG_SMALL
+#cmakedefine01 CONFIG_POSTPROC_VISUALIZER
+#cmakedefine01 CONFIG_OS_SUPPORT
+#cmakedefine01 CONFIG_UNIT_TESTS
+#cmakedefine01 CONFIG_WEBM_IO
+#cmakedefine01 CONFIG_LIBYUV
+#cmakedefine01 CONFIG_DECODE_PERF_TESTS
+#cmakedefine01 CONFIG_ENCODE_PERF_TESTS
+#cmakedefine01 CONFIG_MULTI_RES_ENCODING
+#cmakedefine01 CONFIG_TEMPORAL_DENOISING
+#cmakedefine01 CONFIG_VP9_TEMPORAL_DENOISING
+#cmakedefine01 CONFIG_CONSISTENT_RECODE
+#cmakedefine01 CONFIG_COEFFICIENT_RANGE_CHECKING
+#cmakedefine01 CONFIG_VP9_HIGHBITDEPTH
+#cmakedefine01 CONFIG_BETTER_HW_COMPATIBILITY
+#cmakedefine01 CONFIG_EXPERIMENTAL
+#cmakedefine01 CONFIG_SIZE_LIMIT
+#cmakedefine01 CONFIG_ALWAYS_ADJUST_BPM
+#cmakedefine01 CONFIG_BITSTREAM_DEBUG
+#cmakedefine01 CONFIG_MISMATCH_DEBUG
+#cmakedefine01 CONFIG_FP_MB_STATS
+#cmakedefine01 CONFIG_EMULATE_HARDWARE
+#cmakedefine01 CONFIG_NON_GREEDY_MV
+#cmakedefine01 CONFIG_RATE_CTRL
+
+#endif /* VPX_CONFIG_H */

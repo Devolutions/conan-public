@@ -1,0 +1,187 @@
+From dc429a234d914a5ecf1e4c7b9ea1ca734937966b Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Marc-Andr=C3=A9=20Moreau?= <mamoreau@devolutions.net>
+Date: Tue, 21 Nov 2023 16:21:17 -0500
+Subject: [PATCH 1/3] fix cmake dependency management
+
+---
+ CMakeLists.txt | 127 +++++++++++++++++++++++++++++++++++++++++++------
+ 1 file changed, 113 insertions(+), 14 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 11a51ac..149838c 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -37,6 +37,7 @@ option(BUILD_MANPAGES    "Build man pages"                         ON)
+ option(BUILD_SHARED_LIBS "Build the shared library"                ON)
+ option(BUILD_STATIC_LIBS "Build the static library"                ON)
+ option(BUILD_TOOLS       "Build tool programs"                     ON)
++option(BUILD_TESTS       "Build test programs"                     OFF)
+ option(FUZZ              "Enable fuzzing instrumentation"          OFF)
+ option(LIBFUZZER         "Build libfuzzer harnesses"               OFF)
+ option(USE_HIDAPI        "Use hidapi as the HID backend"           OFF)
+@@ -69,6 +70,9 @@ if(NOT MSVC)
+ 	elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+ 		set(FIDO_CFLAGS "${FIDO_CFLAGS} -D_GNU_SOURCE")
+ 		set(FIDO_CFLAGS "${FIDO_CFLAGS} -D_DEFAULT_SOURCE")
++	elseif(CMAKE_SYSTEM_NAME STREQUAL "Android")
++		set(FIDO_CFLAGS "${FIDO_CFLAGS} -D_GNU_SOURCE")
++		set(FIDO_CFLAGS "${FIDO_CFLAGS} -D_DEFAULT_SOURCE")
+ 	elseif(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD" OR
+ 	    CMAKE_SYSTEM_NAME STREQUAL "MidnightBSD")
+ 		set(FIDO_CFLAGS "${FIDO_CFLAGS} -D__BSD_VISIBLE=1")
+@@ -108,6 +112,11 @@ check_symbol_exists(sysconf unistd.h HAVE_SYSCONF)
+ check_symbol_exists(timespecsub sys/time.h HAVE_TIMESPECSUB)
+ check_symbol_exists(timingsafe_bcmp string.h HAVE_TIMINGSAFE_BCMP)
+ 
++if(CMAKE_SYSTEM_NAME STREQUAL "Android")
++    set(HAVE_EXPLICIT_BZERO OFF)
++    add_definitions(-DCRYPTO_EXPLICIT_BZERO)
++endif()
++
+ set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
+ try_compile(HAVE_POSIX_IOCTL
+     "${CMAKE_CURRENT_BINARY_DIR}/posix_ioctl_check.o"
+@@ -194,21 +203,90 @@ if(MSVC)
+ 	endif()
+ 	set(NFC_LINUX OFF)
+ else()
+-	include(FindPkgConfig)
+-	pkg_search_module(CBOR libcbor)
+-	pkg_search_module(CRYPTO libcrypto)
+-	pkg_search_module(ZLIB zlib)
+ 
+-	if(NOT CBOR_FOUND AND NOT HAVE_CBOR_H)
+-		message(FATAL_ERROR "could not find libcbor")
+-	endif()
+-	if(NOT CRYPTO_FOUND AND NOT HAVE_OPENSSLV_H)
+-		message(FATAL_ERROR "could not find libcrypto")
+-	endif()
+-	if(NOT ZLIB_FOUND)
+-		message(FATAL_ERROR "could not find zlib")
+-	endif()
++    # detect zlib
++
++    if(ZLIB_ROOT_DIR)
++        list(PREPEND CMAKE_FIND_ROOT_PATH ${ZLIB_ROOT_DIR})
++    endif()
++
++    find_path(ZLIB_INCLUDE_DIR
++        NAMES "zlib.h")
++
++    find_library(ZLIB_LIBRARY
++        NAMES zlib z)
++
++    get_filename_component(ZLIB_LIBRARY_DIR ${ZLIB_LIBRARY} DIRECTORY CACHE)
++
++    add_library(zlib STATIC IMPORTED GLOBAL)
++    set_target_properties(zlib PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${ZLIB_INCLUDE_DIR}")
++    set_target_properties(zlib PROPERTIES IMPORTED_LOCATION "${ZLIB_LIBRARY}")
++
++    # detect libcbor
++
++    if(CBOR_ROOT_DIR)
++        list(PREPEND CMAKE_FIND_ROOT_PATH ${CBOR_ROOT_DIR})
++    endif()
++
++    find_path(CBOR_INCLUDE_DIR
++        NAMES "cbor.h")
++
++    find_library(CBOR_LIBRARY
++        NAMES libcbor cbor)
++
++    get_filename_component(CBOR_LIBRARY_DIR ${CBOR_LIBRARY} DIRECTORY CACHE)
++
++    add_library(libcbor STATIC IMPORTED GLOBAL)
++    set_target_properties(libcbor PROPERTIES IMPORTED_LOCATION "${CBOR_LIBRARY}")
+ 
++    # detect libressl
++
++    if(CRYPTO_ROOT_DIR)
++        list(PREPEND CMAKE_FIND_ROOT_PATH ${CRYPTO_ROOT_DIR})
++    endif()
++
++    find_path(CRYPTO_INCLUDE_DIR
++        NAMES "openssl/opensslv.h")
++
++    find_library(CRYPTO_LIBRARY
++        NAMES libcrypto crypto)
++
++    get_filename_component(CRYPTO_LIBRARY_DIR ${CRYPTO_LIBRARY} DIRECTORY CACHE)
++
++    add_library(libcrypto STATIC IMPORTED GLOBAL)
++    set_target_properties(libcrypto PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${CRYPTO_INCLUDE_DIR}")
++    set_target_properties(libcrypto PROPERTIES IMPORTED_LOCATION "${CRYPTO_LIBRARY}")
++
++    include(FindPkgConfig)
++
++    include_directories("${ZLIB_INCLUDE_DIR}")
++    include_directories("${CBOR_INCLUDE_DIR}")
++    include_directories("${CRYPTO_INCLUDE_DIR}")
++
++    message(STATUS "ZLIB_INCLUDE_DIR: ${ZLIB_INCLUDE_DIR}")
++    message(STATUS "ZLIB_LIBRARY: ${ZLIB_LIBRARY}")
++    message(STATUS "CBOR_INCLUDE_DIR: ${CBOR_INCLUDE_DIR}")
++    message(STATUS "CBOR_LIBRARY: ${CBOR_LIBRARY}")
++    message(STATUS "CRYPTO_INCLUDE_DIR: ${CRYPTO_INCLUDE_DIR}")
++    message(STATUS "CRYPTO_LIBRARY: ${CRYPTO_LIBRARY}")
++
++    if (NOT (ZLIB_LIBRARY AND CBOR_LIBRARY AND CRYPTO_LIBRARY))
++        pkg_search_module(CBOR libcbor)
++        pkg_search_module(CRYPTO libcrypto)
++        pkg_search_module(ZLIB zlib)
++
++        if(NOT CBOR_FOUND AND NOT HAVE_CBOR_H)
++            message(FATAL_ERROR "could not find libcbor")
++        endif()
++        if(NOT CRYPTO_FOUND AND NOT HAVE_OPENSSLV_H)
++            message(FATAL_ERROR "could not find libcrypto")
++        endif()
++        if(NOT ZLIB_FOUND)
++            message(FATAL_ERROR "could not find zlib")
++        endif()
++    endif()
++
++	set(ZLIB_LIBRARIES "zlib")
+ 	set(CBOR_LIBRARIES "cbor")
+ 	set(CRYPTO_LIBRARIES "crypto")
+ 
+@@ -226,6 +304,27 @@ else()
+ 				set(BASE_LIBRARIES ${BASE_LIBRARIES} rt)
+ 			endif()
+ 		endif()
++    elseif(CMAKE_SYSTEM_NAME STREQUAL "Android")
++        if(UDEV_ROOT_DIR)
++            list(PREPEND CMAKE_FIND_ROOT_PATH ${UDEV_ROOT_DIR})
++        endif()
++
++        find_path(UDEV_INCLUDE_DIR
++            NAMES "libudev.h")
++
++        find_library(UDEV_LIBRARY
++            NAMES libudev-zero.a libudev)
++
++        add_library(udev STATIC IMPORTED GLOBAL)
++        set_target_properties(udev PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${UDEV_INCLUDE_DIR}")
++        set_target_properties(udev PROPERTIES IMPORTED_LOCATION "${UDEV_LIBRARY}")
++
++        include_directories("${UDEV_INCLUDE_DIR}")
++
++        set(UDEV_LIBRARIES "udev")
++
++        message(STATUS "UDEV_INCLUDE_DIR: ${UDEV_INCLUDE_DIR}")
++        message(STATUS "UDEV_LIBRARY: ${UDEV_LIBRARY}")
+ 	else()
+ 		set(NFC_LINUX OFF)
+ 	endif()
+@@ -414,7 +513,7 @@ if(BUILD_MANPAGES)
+ 	subdirs(man)
+ endif()
+ 
+-if(NOT WIN32)
++if(NOT WIN32 AND BUILD_TESTS)
+ 	if(CMAKE_BUILD_TYPE STREQUAL "Debug" AND NOT FUZZ)
+ 		enable_testing()
+ 		subdirs(regress)
+-- 
+2.25.1
+

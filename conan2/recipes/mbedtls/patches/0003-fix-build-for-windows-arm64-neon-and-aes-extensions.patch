@@ -1,0 +1,50 @@
+From 47eb4cd433a72009842fa61a5118affb5e32b967 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Marc-Andr=C3=A9=20Moreau?= <mamoreau@devolutions.net>
+Date: Tue, 12 Dec 2023 14:50:31 -0500
+Subject: [PATCH] fix build for windows arm64 neon and aes extensions
+
+---
+ library/aesce.c  | 4 ++--
+ library/common.h | 4 ++++
+ 2 files changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/library/aesce.c b/library/aesce.c
+index f2bdce2db..2f5cf892d 100644
+--- a/library/aesce.c
++++ b/library/aesce.c
+@@ -77,7 +77,7 @@
+ #       pragma GCC target ("+crypto")
+ #       define MBEDTLS_POP_TARGET_PRAGMA
+ #   elif defined(_MSC_VER)
+-#       error "Required feature(__ARM_FEATURE_AES) is not enabled."
++//#       error "Required feature(__ARM_FEATURE_AES) is not enabled."
+ #   endif
+ #endif /* !(__ARM_FEATURE_CRYPTO || __ARM_FEATURE_AES) ||
+           MBEDTLS_ENABLE_ARM_CRYPTO_EXTENSIONS_COMPILER_FLAG */
+@@ -287,7 +287,7 @@ static void aesce_setkey_enc(unsigned char *rk,
+      *   - Section 5, Nr = Nk + 6
+      *   - Section 5.2, the length of round keys is Nb*(Nr+1)
+      */
+-    const uint32_t key_len_in_words = key_bit_length / 32;  /* Nk */
++    const uint32_t key_len_in_words = (uint32_t) key_bit_length / 32;  /* Nk */
+     const size_t round_key_len_in_words = 4;                /* Nb */
+     const size_t rounds_needed = key_len_in_words + 6;      /* Nr */
+     const size_t round_keys_len_in_words =
+diff --git a/library/common.h b/library/common.h
+index c6ed14b68..d351cdf97 100644
+--- a/library/common.h
++++ b/library/common.h
+@@ -19,6 +19,10 @@
+ #include <stdint.h>
+ #include <stddef.h>
+ 
++#ifdef _M_ARM64
++#define __ARM_NEON	1
++#endif
++
+ #if defined(__ARM_NEON)
+ #include <arm_neon.h>
+ #endif /* __ARM_NEON */
+-- 
+2.25.1
+
