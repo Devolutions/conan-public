@@ -70,7 +70,7 @@ function Get-TlkPlatform {
 
 function Invoke-TlkBuild {
 	param(
-		[ValidateSet('windows','macos','linux','ios','android')]
+		[ValidateSet('windows','macos','linux','ios','iossimulator','android')]
 		[string] $Platform,
 		[ValidateSet('x86','x86_64','arm','arm64','aarch64')]
 		[string] $Architecture = "x86_64",

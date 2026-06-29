@@ -4,7 +4,7 @@
 param(
     [Parameter(Mandatory=$true, Position=0)]
     [string] $PackageName,
-    [ValidateSet("windows", "linux", "macos", "ios", "android")]
+    [ValidateSet("windows", "linux", "macos", "ios", "iossimulator", "android")]
     [string] $Platform = "windows",
     [ValidateSet("x86", "x86_64", "x64", "arm", "arm64", "aarch64")]
     [string] $Architecture = "x86_64",
@@ -62,6 +62,7 @@ function ConvertTo-ConanOs {
         "linux" { return "Linux" }
         "macos" { return "Macos" }
         "ios" { return "iOS" }
+        "iossimulator" { return "iOS" }
         "android" { return "Android" }
         default { throw "Unsupported platform '$Platform'." }
     }
@@ -87,6 +88,9 @@ function Get-ConanPlatformSettings {
         "ios" {
             $Sdk = if ($Architecture -eq "x86_64") { "iphonesimulator" } else { "iphoneos" }
             return @("os.version=9.3", "os.sdk=$Sdk")
+        }
+        "iossimulator" {
+            return @("os.version=9.3", "os.sdk=iphonesimulator")
         }
         "macos" {
             $Version = if ($Architecture -in @("armv8", "arm64", "aarch64")) { "10.15" } else { "10.9" }

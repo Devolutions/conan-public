@@ -15,7 +15,9 @@ class MbedtlsConan(ConanFile):
         'patches/0002-aes-ni-use-target-attributes-for-32-bit-intrinsics.patch',
         'patches/0003-fix-build-for-windows-arm64-neon-and-aes-extensions.patch',
         'patches/0004-add-support-for-mbedtls-ssl-verify-external-authmode.patch',
-        'patches/0005-fix-tls13-keys-cast-build-warning.patch']
+        'patches/0005-fix-tls13-keys-cast-build-warning.patch',
+        'patches/0006-fix-tls13-label-array-initializers.patch',
+        'patches/0007-fix-tls13-prefix-array-initializer.patch']
 
     options = {
         'fPIC': [True, False],
@@ -39,7 +41,7 @@ class MbedtlsConan(ConanFile):
 
         patches_dir = os.path.join(self.recipe_folder, "patches")
         if os.path.isdir(patches_dir):
-            for patch_file in os.listdir(patches_dir):
+            for patch_file in sorted(os.listdir(patches_dir)):
                 patch_path = os.path.join(patches_dir, patch_file)
                 self.output.info('Applying patch: %s' % patch_path)
                 tools.patch(base_path=folder, patch_file=patch_path)
