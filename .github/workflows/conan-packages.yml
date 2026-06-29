@@ -230,7 +230,11 @@ jobs:
         env:
           CMAKE_OSX_DEPLOYMENT_TARGET: "10.12"
         run: |
-          sudo xcode-select --switch /Applications/Xcode_16.4.app
+          if [ -d /Applications/Xcode_16.4.app ]; then
+            sudo xcode-select --switch /Applications/Xcode_16.4.app
+          else
+            echo "Xcode_16.4.app is not installed; keeping the default Xcode selection."
+          fi
 
       - name: Configure macOS runner
         if: runner.os == 'macOS'
