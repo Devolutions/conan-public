@@ -2,7 +2,7 @@
 
 [CmdletBinding()]
 param(
-    [ValidateSet("windows", "linux", "macos", "ios", "android")]
+    [ValidateSet("windows", "linux", "macos", "ios", "iossimulator", "android")]
     [string] $Platform = "linux",
     [ValidateSet("x86", "x86_64", "x64", "arm", "arm64", "aarch64")]
     [string] $Architecture = "x86_64",

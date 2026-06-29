@@ -5,7 +5,7 @@ param(
     [Parameter(Mandatory=$true, Position=0)]
     [string] $PackageName,
     [string] $ProfileName = "windows-x86_64",
-    [ValidateSet("windows", "linux")]
+    [ValidateSet("windows", "linux", "macos", "ios", "iossimulator", "android")]
     [string] $Platform = "windows",
     [ValidateSet("x86", "x86_64", "x64", "arm64", "aarch64")]
     [string] $Architecture = "x86_64",

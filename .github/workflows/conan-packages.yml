@@ -53,9 +53,9 @@ jobs:
         run: |
           $Jobs = @()
           if ($Env:CONAN_MAJOR_VERSION -eq '2') {
-            @('windows', 'macos', 'linux', 'ios', 'android') | Foreach-Object {
+            @('windows', 'macos', 'linux', 'ios', 'iossimulator', 'android') | Foreach-Object {
               $Platform = $_
-              $Architectures = @('x86_64', 'aarch64')
+              $Architectures = if ($Platform -Eq 'iossimulator') { @('arm64') } else { @('x86_64', 'aarch64') }
 
               if ($Platform -Eq 'android') {
                 $Architectures += 'arm'
@@ -79,7 +79,7 @@ jobs:
                     os = $Platform
                     runner = switch ($Platform) {
                       'windows' { 'windows-2022' }
-                      { @('macos', 'ios') -contains $_ } { 'macos-latest' }
+                      { @('macos', 'ios', 'iossimulator') -contains $_ } { 'macos-latest' }
                       { @('linux', 'android') -contains $_ } { 'ubuntu-22.04' }
                     }
                   }
@@ -106,9 +106,9 @@ jobs:
             return
           }
 
-          @('windows', 'macos', 'linux', 'ios', 'android') | Foreach-Object {
+          @('windows', 'macos', 'linux', 'ios', 'iossimulator', 'android') | Foreach-Object {
             $Platform = $_
-            $Architectures = @('x86_64', 'aarch64')
+            $Architectures = if ($Platform -Eq 'iossimulator') { @('arm64') } else { @('x86_64', 'aarch64') }
 
             if($Platform -Eq 'android') {
                 $Architectures += 'arm'
@@ -132,7 +132,7 @@ jobs:
                         os = $Platform
                         runner = switch ($Platform) {
                             "windows" { "windows-2022" }
-                            { @("macos", "ios") -contains $_ } { "macos-latest" }
+                            { @("macos", "ios", "iossimulator") -contains $_ } { "macos-latest" }
                             { @("linux", "android") -contains $_ } { "ubuntu-22.04" }
                         }
                     }

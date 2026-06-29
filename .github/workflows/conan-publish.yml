@@ -47,7 +47,7 @@ jobs:
       name: ${{ inputs.dry_run && 'conan-publish-dry-run' || 'artifactory-publish' }}
     strategy:
       matrix:
-        os: [ windows, macos, ios, android, ubuntu-18.04, ubuntu-20.04, ubuntu-22.04 ]
+        os: [ windows, macos, ios, iossimulator, android, ubuntu-18.04, ubuntu-20.04, ubuntu-22.04 ]
 
     steps:
       - name: Check out ${{ github.repository }}
@@ -91,7 +91,15 @@ jobs:
       - name: Trim downloaded data
         working-directory: download
         shell: pwsh
-        run: Get-ChildItem | Where-Object { !$_.FullName.Contains('${{ matrix.os }}') } | Remove-Item -Recurse
+        run: |
+          $TargetName = '${{ matrix.os }}'
+          Get-ChildItem | Where-Object {
+            $ArtifactTarget = $null
+            if ($_.Name -match '^conan[12]-[^-]+-(?<target>.+)-(Debug|Release|RelWithDebInfo)$') {
+              $ArtifactTarget = $Matches['target']
+            }
+            $ArtifactTarget -ne $TargetName
+          } | Remove-Item -Recurse
 
       - name: Validate packages ${{ matrix.os }}
         if: ${{ inputs.dry_run }}

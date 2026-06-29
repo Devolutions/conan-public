@@ -1,0 +1,9 @@
+
+[settings]
+os=iOS
+os.version=9.3
+os.sdk=iphonesimulator
+distro=None
+compiler=clang
+compiler.libcxx=libc++
+

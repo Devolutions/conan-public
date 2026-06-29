@@ -89,7 +89,7 @@ Build existing packages with the current PowerShell entry point:
 
 ## Conan 2 migration workflow
 
-Conan 2 has parallel build coverage for the current Conan 1 package set across Windows, macOS, iOS, Android, and Linux. Conan 1 remains the default workflow-dispatch and scheduled build path; Conan 2 can be selected with `conan_major_version=2` and also has its own scheduled validation lane. Manual package runs default to publish dry-runs with `publish_dry_run=true`; set it to `false` only when the resulting Artifactory upload is intended and approved.
+Conan 2 has parallel build coverage for the current Conan 1 package set across Windows, macOS, iOS, iOS simulator, Android, and Linux. Conan 1 remains the default workflow-dispatch and scheduled build path; Conan 2 can be selected with `conan_major_version=2` and also has its own scheduled validation lane. Manual package runs default to publish dry-runs with `publish_dry_run=true`; set it to `false` only when the resulting Artifactory upload is intended and approved.
 
 The default local Conan 2 smoke-test lane is:
 
@@ -123,6 +123,27 @@ Before porting a recipe, build the original Conan 1 recipe on the same machine a
 
 `scripts\test-conan2-recipe.ps1` defaults to `windows`, `x86_64`, and `Debug`. It also supports `x86`, `x64`/`x86_64`, `arm64`/`aarch64`, `Debug`, `Release`, and `RelWithDebInfo`. It runs `conan2 create` with the detected default Conan 2 profiles and `--build=missing` so each recipe can be iterated quickly from a normal local terminal.
 On Windows, the helper uses Ninja and automatically enters the Visual Studio `vcvarsall.bat` compiler environment for the requested target architecture when `cl.exe` is not already on PATH.
+
+### iOS simulator arm64 packages
+
+Use `iossimulator` when building arm64 simulator packages. This keeps the existing `ios-arm64`/`ios-aarch64` device target unchanged while making the simulator SDK explicit.
+
+Conan 1 uses checked-in profiles from `settings\profiles`; `iossimulator-arm64` is the primary profile and `iossimulator-aarch64` is an alias:
+
+```powershell
+conan1 config install .\settings
+.\build.ps1 -Platform iossimulator -Architecture arm64 -BuildType Release
+.\scripts\test-conan1-recipe.ps1 zlib -Platform iossimulator -Architecture arm64
+```
+
+Conan 2 derives the same target from script arguments and emits `os=iOS`, `arch=armv8`, and `os.sdk=iphonesimulator`:
+
+```powershell
+.\scripts\test-conan2-recipe.ps1 zlib -Platform iossimulator -Architecture arm64 -BuildType Debug
+.\scripts\build-conan2.ps1 -Platform iossimulator -Architecture arm64 -BuildType Release
+```
+
+iOS simulator package builds require a macOS runner with Xcode.
 
 ### Linux x86_64 Debug iteration
 
