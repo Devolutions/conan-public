@@ -15,7 +15,8 @@ class MbedtlsConan(ConanFile):
         'patches/0002-aes-ni-use-target-attributes-for-32-bit-intrinsics.patch',
         'patches/0003-fix-build-for-windows-arm64-neon-and-aes-extensions.patch',
         'patches/0004-add-support-for-mbedtls-ssl-verify-external-authmode.patch',
-        'patches/0005-fix-tls13-keys-cast-build-warning.patch']
+        'patches/0005-fix-tls13-keys-cast-build-warning.patch',
+        'patches/0006-fix-tls13-label-array-initializers.patch']
 
     options = {
         'fPIC': [True, False],
@@ -60,8 +61,6 @@ class MbedtlsConan(ConanFile):
 
         if self.settings.os == 'Windows':
             cmake.definitions['MSVC_STATIC_RUNTIME'] = 'ON'
-        elif self.settings.os in ['iOS', 'Macos']:
-            cmake.definitions['CMAKE_C_FLAGS'] = '-Wno-unknown-warning-option -Wno-unterminated-string-initialization'
 
         if self.settings.os == 'Windows':
             mbedtls_configs.extend(['MBEDTLS_THREADING_WINDOWS'])

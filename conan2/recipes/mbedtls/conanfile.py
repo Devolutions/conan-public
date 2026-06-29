@@ -54,8 +54,6 @@ class MbedtlsConan(ConanFile):
         if self.settings.os == "Windows":
             tc.variables["MSVC_STATIC_RUNTIME"] = True
             tc.variables["CMAKE_MSVC_RUNTIME_LIBRARY"] = "MultiThreadedDebug" if self.settings.build_type == "Debug" else "MultiThreaded"
-        elif self.settings.os in ["iOS", "Macos"]:
-            tc.variables["CMAKE_C_FLAGS"] = "-Wno-unknown-warning-option -Wno-unterminated-string-initialization"
         tc.generate()
 
     def build(self):
