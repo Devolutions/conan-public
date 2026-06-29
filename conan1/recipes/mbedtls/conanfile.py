@@ -40,7 +40,7 @@ class MbedtlsConan(ConanFile):
 
         patches_dir = os.path.join(self.recipe_folder, "patches")
         if os.path.isdir(patches_dir):
-            for patch_file in os.listdir(patches_dir):
+            for patch_file in sorted(os.listdir(patches_dir)):
                 patch_path = os.path.join(patches_dir, patch_file)
                 self.output.info('Applying patch: %s' % patch_path)
                 tools.patch(base_path=folder, patch_file=patch_path)
