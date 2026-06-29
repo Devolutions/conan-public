@@ -61,7 +61,7 @@ class MbedtlsConan(ConanFile):
         if self.settings.os == 'Windows':
             cmake.definitions['MSVC_STATIC_RUNTIME'] = 'ON'
         elif self.settings.os in ['iOS', 'Macos']:
-            cmake.definitions['CMAKE_C_FLAGS'] = '-Wno-unterminated-string-initialization'
+            cmake.definitions['CMAKE_C_FLAGS'] = '-Wno-unknown-warning-option -Wno-unterminated-string-initialization'
 
         if self.settings.os == 'Windows':
             mbedtls_configs.extend(['MBEDTLS_THREADING_WINDOWS'])
