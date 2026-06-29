@@ -16,7 +16,8 @@ class MbedtlsConan(ConanFile):
         'patches/0003-fix-build-for-windows-arm64-neon-and-aes-extensions.patch',
         'patches/0004-add-support-for-mbedtls-ssl-verify-external-authmode.patch',
         'patches/0005-fix-tls13-keys-cast-build-warning.patch',
-        'patches/0006-fix-tls13-label-array-initializers.patch']
+        'patches/0006-fix-tls13-label-array-initializers.patch',
+        'patches/0007-fix-tls13-prefix-array-initializer.patch']
 
     options = {
         'fPIC': [True, False],
