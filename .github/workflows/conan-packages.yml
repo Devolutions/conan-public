@@ -83,7 +83,7 @@ jobs:
                     os = $Platform
                     runner = switch ($Platform) {
                       'windows' { 'windows-2022' }
-                      { @('macos', 'ios', 'iossimulator') -contains $_ } { 'macos-latest' }
+                      { @('macos', 'ios', 'iossimulator') -contains $_ } { 'macos-15' }
                       { @('linux', 'android') -contains $_ } { 'ubuntu-22.04' }
                     }
                   }
@@ -136,7 +136,7 @@ jobs:
                         os = $Platform
                         runner = switch ($Platform) {
                             "windows" { "windows-2022" }
-                            { @("macos", "ios", "iossimulator") -contains $_ } { "macos-latest" }
+                            { @("macos", "ios", "iossimulator") -contains $_ } { "macos-15" }
                             { @("linux", "android") -contains $_ } { "ubuntu-22.04" }
                         }
                     }
