@@ -22,6 +22,10 @@ on:
 env:
   conan1_version: 1.66.0
   conan2_version: '>=2,<3'
+  # Pin the macOS/iOS toolchain so published binaries (and their LTO bitcode)
+  # stay linkable by downstream consumers instead of drifting with the runner
+  # image's default Xcode. Must match a version installed on the runner.
+  xcode_version: '16.4'
   
 jobs:
   generate-matrix:
@@ -79,7 +83,7 @@ jobs:
                     os = $Platform
                     runner = switch ($Platform) {
                       'windows' { 'windows-2022' }
-                      { @('macos', 'ios', 'iossimulator') -contains $_ } { 'macos-latest' }
+                      { @('macos', 'ios', 'iossimulator') -contains $_ } { 'macos-15' }
                       { @('linux', 'android') -contains $_ } { 'ubuntu-22.04' }
                     }
                   }
@@ -132,7 +136,7 @@ jobs:
                         os = $Platform
                         runner = switch ($Platform) {
                             "windows" { "windows-2022" }
-                            { @("macos", "ios", "iossimulator") -contains $_ } { "macos-latest" }
+                            { @("macos", "ios", "iossimulator") -contains $_ } { "macos-15" }
                             { @("linux", "android") -contains $_ } { "ubuntu-22.04" }
                         }
                     }
@@ -224,17 +228,22 @@ jobs:
         with:
           python-version: '3.10' 
 
-        # Pin Xcode to reduce headaches when the default switches across runner images
-      - name: Configure macOS runner
-        if: runner.os == 'macOS' && matrix.arch == 'aarch64'
-        env:
-          CMAKE_OSX_DEPLOYMENT_TARGET: "10.12"
+        # Pin Xcode for every macOS job (device, simulator and x86_64) so the
+        # toolchain is deterministic. Silently falling back to the runner's
+        # default Xcode lets newer toolchains ship bitcode/SDKs that older
+        # consumers can't link (e.g. RelWithDebInfo LTO across mismatched
+        # Xcode versions), so fail loudly if the pinned version is missing.
+      - name: Select Xcode
+        if: runner.os == 'macOS'
         run: |
-          if [ -d /Applications/Xcode_16.4.app ]; then
-            sudo xcode-select --switch /Applications/Xcode_16.4.app
-          else
-            echo "Xcode_16.4.app is not installed; keeping the default Xcode selection."
+          XCODE_APP="/Applications/Xcode_${{ env.xcode_version }}.app"
+          if [ ! -d "$XCODE_APP" ]; then
+            echo "::error::$XCODE_APP is not installed on this runner. Installed Xcodes:"
+            ls -d /Applications/Xcode_*.app 2>/dev/null || true
+            exit 1
           fi
+          sudo xcode-select --switch "$XCODE_APP"
+          xcodebuild -version
 
       - name: Configure macOS runner
         if: runner.os == 'macOS'
