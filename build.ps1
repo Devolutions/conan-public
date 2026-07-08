@@ -152,7 +152,6 @@ function Invoke-TlkBuild {
         if (@('windows','macos','linux') -Contains $Platform) {
             $TargetPackages += @(
                 'libvpx',
-                'openssh',
                 'wxsqlite3'
             )
         }

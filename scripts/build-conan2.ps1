@@ -79,7 +79,7 @@ function Get-DefaultPackageList {
     }
 
     if ($Platform -in @("windows", "macos", "linux")) {
-        $Packages += @("libvpx", "openssh", "wxsqlite3")
+        $Packages += @("libvpx", "wxsqlite3")
     }
 
     return $Packages

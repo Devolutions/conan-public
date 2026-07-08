@@ -161,13 +161,13 @@ Validate Linux Debug in dependency/build order for fast feedback:
 1. Prove the first small slice: `cbake`, `shared`, and `zlib`.
 2. Continue with `cjson`, `libcbor`, `mbedtls`, `libressl`, `libpng`, `libjpeg`, and `libfido2`.
 3. Validate `openh264` before `freerdp`; it is a Linux transitive requirement of the FreeRDP recipe.
-4. Continue with `winpr`, `freerdp`, `pcre2`, `libvpx`, `wxsqlite3`, and `openssh`.
+4. Continue with `winpr`, `freerdp`, `pcre2`, `libvpx`, and `wxsqlite3`.
 
 When a Linux failure reveals a missing dependency, distinguish host build tools from target libraries. Install missing host tools explicitly, but target Linux development headers and libraries should come from the Linux sysroot path rather than ad hoc host `-dev` packages.
 
 The Conan 2 `sysroot` recipe defaults to CBake's prebuilt release archives, currently `v2026.01.15.0`, so local Linux validation does not require Docker just to populate the target sysroot. To force local CBake/Docker sysroot generation instead, pass Conan build-context option `-o:b sysroot/*:source=build`; the default prebuilt path is `-o:b sysroot/*:source=prebuilt`.
 
-Validated locally on Linux x86_64 Debug with Conan 2 and the prebuilt sysroot: `cbake`, `sysroot`, `shared`, `webview`, `embedded-terminal`, `zlib`, `cjson`, `libcbor`, `mbedtls`, `libressl`, `libpng`, `libjpeg`, `libfido2`, `openh264`, `winpr`, `freerdp`, `pcre2`, `libudev-zero`, `libvpx`, `wxsqlite3`, and `openssh`.
+Validated locally on Linux x86_64 Debug with Conan 2 and the prebuilt sysroot: `cbake`, `sysroot`, `shared`, `webview`, `embedded-terminal`, `zlib`, `cjson`, `libcbor`, `mbedtls`, `libressl`, `libpng`, `libjpeg`, `libfido2`, `openh264`, `winpr`, `freerdp`, `pcre2`, `libudev-zero`, `libvpx`, and `wxsqlite3`.
 
 ### Initial migration order
 
@@ -175,7 +175,7 @@ The first Conan 2 slice follows the current `build.ps1` order for Windows x64 De
 
 1. Decide the Conan 2 shared helper strategy for `shared`: either keep a Conan 2 `python_requires` package or replace it with checked-in Python helper modules.
 2. Port the first current-order slice: `cbake`, `shared`, `openh264`, `zlib`, and `cjson`.
-3. Continue through the existing Windows x64 Debug order: `libpng`, `libjpeg`, `libcbor`, `mbedtls`, `libressl`, `libfido2`, `winpr`, `freerdp`, `pcre2`, `libvpx`, `openssh`, and `wxsqlite3`.
+3. Continue through the existing Windows x64 Debug order: `libpng`, `libjpeg`, `libcbor`, `mbedtls`, `libressl`, `libfido2`, `winpr`, `freerdp`, `pcre2`, `libvpx`, and `wxsqlite3`.
 4. Linux-focused recipes such as `sysroot`, `webview`, `embedded-terminal`, and `libudev-zero` are part of the Conan 2 Linux/Android build order.
 
 Use the Windows matrix as the local validation gate before moving on to macOS, Linux, Android, iOS, CI, and publishing.
@@ -205,9 +205,8 @@ Current Windows x64 Debug Conan 2 coverage:
 | Third | `libfido2` | Builds; test package passes | Conan 1 stops before build because required local dependency binaries are missing |
 | Fourth | `winpr`, `freerdp` | Builds; test packages pass | Conan 1 stops before build because `cjson/1.7.15` is missing and no remote is configured |
 | Fifth | `pcre2`, `libvpx`, `wxsqlite3` | Builds; test packages pass | `pcre2` misses the Conan 1 `zlib` binary; `libvpx` and `wxsqlite3` fail on the Visual Studio 2022 generator issue |
-| Sixth | `openssh` | Builds; test package passes | Conan 1 stops before build because required local dependency binaries are missing |
 
-The Windows x64 Debug lane is complete when all six slice runners pass in order:
+The Windows x64 Debug lane is complete when all five slice runners pass in order:
 
 ```powershell
 .\scripts\test-conan2-first-slice.ps1
@@ -215,7 +214,6 @@ The Windows x64 Debug lane is complete when all six slice runners pass in order:
 .\scripts\test-conan2-third-slice.ps1
 .\scripts\test-conan2-fourth-slice.ps1
 .\scripts\test-conan2-fifth-slice.ps1
-.\scripts\test-conan2-sixth-slice.ps1
 ```
 
 Keep using the same baseline-first flow when expanding the matrix: run `scripts\test-conan1-recipe.ps1 <name>` first, record whether Conan 1 succeeds or fails on this machine, then port and validate with `scripts\test-conan2-recipe.ps1 <name>`. A Conan 1 failure caused by missing local binaries or the known Visual Studio 2022 generator mismatch is an environment baseline, not a Conan 2 regression.

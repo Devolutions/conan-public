@@ -34,7 +34,6 @@ $FullPackages = @(
     "freerdp",
     "pcre2",
     "libvpx",
-    "openssh",
     "wxsqlite3"
 )
 $RelWithDebInfoPackages = @(
