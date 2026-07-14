@@ -93,12 +93,17 @@ class WinprConan(ConanFile):
         mbedtls_path = self.deps_cpp_info['mbedtls'].rootpath
         zlib_path = self.deps_cpp_info['zlib'].rootpath
         cjson_path = self.deps_cpp_info['cjson'].rootpath
-        # Only expose conan cJSON on macOS where a system cJSON (Homebrew) could otherwise
-        # be picked up as a dynamic library and cause unresolved symbols at link time.
+        # Expose conan cJSON on Apple platforms where a system json-c/cJSON (Homebrew on the
+        # macOS build host) could otherwise be picked up. WinPR's JsonDetect prefers json-c
+        # over cJSON, so simply adding cJSON to the prefix path is not enough: force cJSON as
+        # the required backend so json-c/jansson detection is skipped entirely. Without this,
+        # libwinpr3.a is compiled with the json-c backend and the final link fails with
+        # unresolved json_object_*/json_tokener_* symbols (only libcjson is provided).
         # On Windows the JsonDetect.cmake manual detection path crashes with an empty
         # CMAKE_SHARED_LIBRARY_PREFIX, and other platforms don't have the same problem.
-        if self.settings.os == 'Macos':
+        if self.settings.os == 'Macos' or self.settings.os == 'iOS':
             cmake.definitions['CMAKE_PREFIX_PATH'] = '%s;%s;%s' % (mbedtls_path, zlib_path, cjson_path)
+            cmake.definitions['WITH_CJSON_REQUIRED'] = 'ON'
         else:
             cmake.definitions['CMAKE_PREFIX_PATH'] = '%s;%s' % (mbedtls_path, zlib_path)
 
