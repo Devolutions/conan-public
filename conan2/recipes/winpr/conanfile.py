@@ -106,8 +106,15 @@ class WinprConan(ConanFile):
         tc.variables["MBEDCRYPTO_LIBRARY"] = f"{mbedtls_path}/lib/mbedcrypto.lib" if self.settings.os == "Windows" else f"{mbedtls_path}/lib/libmbedcrypto.a"
         tc.variables["MBEDX509_LIBRARY"] = f"{mbedtls_path}/lib/mbedx509.lib" if self.settings.os == "Windows" else f"{mbedtls_path}/lib/libmbedx509.a"
         tc.variables["ZLIB_ROOT"] = zlib_path
-        if self.settings.os == "Macos":
+        # Expose conan cJSON on Apple platforms where a system json-c/cJSON (Homebrew on the
+        # macOS build host) could otherwise be picked up. WinPR's JsonDetect prefers json-c
+        # over cJSON, so simply adding cJSON to the prefix path is not enough: force cJSON as
+        # the required backend so json-c/jansson detection is skipped entirely. Without this,
+        # libwinpr3.a is compiled with the json-c backend and the final link fails with
+        # unresolved json_object_*/json_tokener_* symbols (only libcjson is provided).
+        if self.settings.os in ("Macos", "iOS"):
             tc.variables["CMAKE_PREFIX_PATH"] = ";".join([mbedtls_path, zlib_path, cjson_path])
+            tc.variables["WITH_CJSON_REQUIRED"] = True
         else:
             tc.variables["CMAKE_PREFIX_PATH"] = ";".join([mbedtls_path, zlib_path])
 
