@@ -24,6 +24,7 @@ typedef void (*callback_clear_data_manager_finish_evnt_fn)(gboolean clear_succes
 
 LAUNCHER_EXPORT void* webview_new();
 LAUNCHER_EXPORT void* webview_new_ephemeral();
+LAUNCHER_EXPORT void* webview_new_with_options(gboolean ephemeral, gboolean ignore_certificate_errors);
 LAUNCHER_EXPORT void load_uri(void* view, char* uri);
 LAUNCHER_EXPORT void load_html(void* view, char* html);
 LAUNCHER_EXPORT void close_webview(void* webview);
@@ -49,6 +50,8 @@ LAUNCHER_EXPORT const char* webview_get_uri(void* view);
 LAUNCHER_EXPORT const char* webview_get_decision_uri(void* decision);
 LAUNCHER_EXPORT void webkit_authenticate_request(void* req, void* cred);
 LAUNCHER_EXPORT gboolean webkit_authentication_is_retry(void* req);
+LAUNCHER_EXPORT void webkit_authentication_cancel(void* req);
+LAUNCHER_EXPORT gboolean webkit_authentication_is_client_certificate_request(void* req);
 LAUNCHER_EXPORT WebKitCredential* webkit_create_credential(const gchar* username, const gchar* password, WebKitCredentialPersistence persistence);
 LAUNCHER_EXPORT WebKitAuthenticationScheme get_webKit_authentication_request_authentication_scheme(void* request);
 LAUNCHER_EXPORT const char* webview_get_navigation_action_request_uri(void* decision);
