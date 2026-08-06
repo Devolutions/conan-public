@@ -71,6 +71,36 @@ LAUNCHER_EXPORT gboolean webkit_authentication_is_retry(void* req)
     return webkit_authentication_request_is_retry(request);
 }
 
+LAUNCHER_EXPORT void webkit_authentication_cancel(void* req)
+{
+    WebKitAuthenticationRequest* request = (WebKitAuthenticationRequest*)req;
+
+    webkit_authentication_request_cancel(request);
+}
+
+// [RDMLI-3878] Resolved here rather than managed-side so the values come from the WebKit headers this library is
+// built against; the managed mirror of WebKitAuthenticationScheme does not look correctly aligned. - NParr - 2026-08-06
+LAUNCHER_EXPORT gboolean webkit_authentication_is_client_certificate_request(void* req)
+{
+    WebKitAuthenticationRequest* request = (WebKitAuthenticationRequest*)req;
+    WebKitAuthenticationScheme scheme = webkit_authentication_request_get_scheme(request);
+
+    if (scheme == WEBKIT_AUTHENTICATION_SCHEME_CLIENT_CERTIFICATE_REQUESTED)
+    {
+        return TRUE;
+    }
+
+// The PIN variant only exists from WebKitGTK 2.34, and libWebView is built against several.
+#if WEBKIT_CHECK_VERSION(2, 34, 0)
+    if (scheme == WEBKIT_AUTHENTICATION_SCHEME_CLIENT_CERTIFICATE_PIN_REQUESTED)
+    {
+        return TRUE;
+    }
+#endif
+
+    return FALSE;
+}
+
 LAUNCHER_EXPORT WebKitCredential* webkit_create_credential(const gchar* username, const gchar* password, WebKitCredentialPersistence persistence)
 {
     return webkit_credential_new(username, password, persistence);
@@ -115,18 +145,37 @@ LAUNCHER_EXPORT const char* webview_get_uri(void* webview)
 // process; web views only add/drop their own ref. - NParr - 2026-06-01
 static WebKitWebContext* shared_web_context = NULL;
 
+// [RDMLI-3878] Second process-wide context for views that opted into ignoring certificate errors. The TLS errors
+// policy lives on the context's website data manager, so a single shared context would leak the bypass to every
+// other open session and keep it after that session closed. Two contexts keep the two groups independent while
+// preserving the RDMLI-3093 session sharing within each group. - NParr - 2026-08-06
+static WebKitWebContext* insecure_shared_web_context = NULL;
+
 static WebKitWebContext* get_shared_web_context()
 {
     if (shared_web_context == NULL)
     {
         shared_web_context = webkit_web_context_new ();
-        webkit_website_data_manager_set_tls_errors_policy(webkit_web_context_get_website_data_manager(shared_web_context), WEBKIT_TLS_ERRORS_POLICY_IGNORE);
+        webkit_website_data_manager_set_tls_errors_policy(webkit_web_context_get_website_data_manager(shared_web_context), WEBKIT_TLS_ERRORS_POLICY_FAIL);
     }
 
     return shared_web_context;
 }
 
-LAUNCHER_EXPORT void* webview_new()
+static WebKitWebContext* get_insecure_shared_web_context()
+{
+    if (insecure_shared_web_context == NULL)
+    {
+        insecure_shared_web_context = webkit_web_context_new ();
+        webkit_website_data_manager_set_tls_errors_policy(webkit_web_context_get_website_data_manager(insecure_shared_web_context), WEBKIT_TLS_ERRORS_POLICY_IGNORE);
+    }
+
+    return insecure_shared_web_context;
+}
+
+// The TLS policy is bound to the context the view is created with and a view can't be reparented, so ignoring
+// certificate errors has to be decided here rather than through a setter. - NParr - 2026-08-06
+LAUNCHER_EXPORT void* webview_new_with_options(gboolean ephemeral, gboolean ignore_certificate_errors)
 {
     webView* wv = (webView*)calloc(sizeof(webView), 1);
     wv->load_changed_handler = 0;
@@ -136,32 +185,34 @@ LAUNCHER_EXPORT void* webview_new()
     wv->js_error_handler = 0;
     wv->clear_data_manager_finish_handler = 0;
     wv->authenticate_handler = 0;
-    WebKitWebContext* context = get_shared_web_context ();
+
+    WebKitWebContext* context = ephemeral
+        ? webkit_web_context_new_ephemeral ()
+        : (ignore_certificate_errors ? get_insecure_shared_web_context () : get_shared_web_context ());
+
     wv->view = WEBKIT_WEB_VIEW(webkit_web_view_new_with_context (context));
     wv->contentManager = webkit_web_view_get_user_content_manager(wv->view);
     g_signal_connect(wv->view, "load-failed", G_CALLBACK(web_view_load_failed_cb), wv);
+
+    // An ephemeral context belongs to this view alone, so its policy can be set directly.
+    if (ephemeral)
+    {
+        webkit_website_data_manager_set_tls_errors_policy(
+            webkit_web_context_get_website_data_manager(context),
+            ignore_certificate_errors ? WEBKIT_TLS_ERRORS_POLICY_IGNORE : WEBKIT_TLS_ERRORS_POLICY_FAIL);
+    }
 
     return wv;
 }
 
+LAUNCHER_EXPORT void* webview_new()
+{
+    return webview_new_with_options(FALSE, FALSE);
+}
+
 LAUNCHER_EXPORT void* webview_new_ephemeral()
 {
-    webView* wv = (webView*)calloc(sizeof(webView), 1);
-    wv->load_changed_handler = 0;
-    wv->load_failed_handler = 0;
-    wv->decide_policy_handler = 0;
-    wv->js_ready_handler = 0;
-    wv->js_error_handler = 0;
-    wv->clear_data_manager_finish_handler = 0;
-    wv->authenticate_handler = 0;
-    WebKitWebContext* context = webkit_web_context_new_ephemeral ();
-    wv->view = WEBKIT_WEB_VIEW(webkit_web_view_new_with_context (context));
-    wv->contentManager = webkit_web_view_get_user_content_manager(wv->view);
-    g_signal_connect(wv->view, "load-failed", G_CALLBACK(web_view_load_failed_cb), wv);
-
-    webkit_website_data_manager_set_tls_errors_policy(webkit_web_context_get_website_data_manager(webkit_web_view_get_context(wv->view)), WEBKIT_TLS_ERRORS_POLICY_IGNORE);
-
-    return wv;
+    return webview_new_with_options(TRUE, FALSE);
 }
 
 LAUNCHER_EXPORT void* webview_get_view(void* webview)
