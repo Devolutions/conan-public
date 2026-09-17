@@ -50,7 +50,6 @@ function Get-DefaultPackageList {
     if ($Platform -eq "linux") {
         $Packages += "sysroot"
         $Packages += "webview"
-        $Packages += "embedded-terminal"
     }
 
     if ($BuildType -eq "RelWithDebInfo" -and $Platform -in @("windows", "macos", "android")) {

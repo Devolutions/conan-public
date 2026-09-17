@@ -167,7 +167,7 @@ When a Linux failure reveals a missing dependency, distinguish host build tools 
 
 The Conan 2 `sysroot` recipe defaults to CBake's prebuilt release archives, currently `v2026.01.15.0`, so local Linux validation does not require Docker just to populate the target sysroot. To force local CBake/Docker sysroot generation instead, pass Conan build-context option `-o:b sysroot/*:source=build`; the default prebuilt path is `-o:b sysroot/*:source=prebuilt`.
 
-Validated locally on Linux x86_64 Debug with Conan 2 and the prebuilt sysroot: `cbake`, `sysroot`, `shared`, `webview`, `embedded-terminal`, `zlib`, `cjson`, `libcbor`, `mbedtls`, `libressl`, `libpng`, `libjpeg`, `libfido2`, `openh264`, `winpr`, `freerdp`, `pcre2`, `libudev-zero`, `libvpx`, and `wxsqlite3`.
+Validated locally on Linux x86_64 Debug with Conan 2 and the prebuilt sysroot: `cbake`, `sysroot`, `shared`, `webview`, `zlib`, `cjson`, `libcbor`, `mbedtls`, `libressl`, `libpng`, `libjpeg`, `libfido2`, `openh264`, `winpr`, `freerdp`, `pcre2`, `libudev-zero`, `libvpx`, and `wxsqlite3`.
 
 ### Initial migration order
 
@@ -176,7 +176,7 @@ The first Conan 2 slice follows the current `build.ps1` order for Windows x64 De
 1. Decide the Conan 2 shared helper strategy for `shared`: either keep a Conan 2 `python_requires` package or replace it with checked-in Python helper modules.
 2. Port the first current-order slice: `cbake`, `shared`, `openh264`, `zlib`, and `cjson`.
 3. Continue through the existing Windows x64 Debug order: `libpng`, `libjpeg`, `libcbor`, `mbedtls`, `libressl`, `libfido2`, `winpr`, `freerdp`, `pcre2`, `libvpx`, and `wxsqlite3`.
-4. Linux-focused recipes such as `sysroot`, `webview`, `embedded-terminal`, and `libudev-zero` are part of the Conan 2 Linux/Android build order.
+4. Linux-focused recipes such as `sysroot`, `webview`, and `libudev-zero` are part of the Conan 2 Linux/Android build order.
 
 Use the Windows matrix as the local validation gate before moving on to macOS, Linux, Android, iOS, CI, and publishing.
 
