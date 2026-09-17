@@ -196,6 +196,8 @@ class FreerdpConan(ConanFile):
         tc.variables["WITH_MBEDTLS"] = True
         tc.variables["WITH_ALSA"] = False
         tc.variables["WITH_OSS"] = False
+        tc.variables["WITH_PULSE"] = False
+        tc.variables["WITH_SNDIO"] = False
         tc.variables["WITH_FUSE"] = False
         tc.variables["CHANNEL_URBDRC"] = False
 

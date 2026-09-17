@@ -88,6 +88,8 @@ class FreerdpConan(ConanFile):
         cmake.definitions['WITH_OPENSSL'] = 'ON'
         cmake.definitions['WITH_MBEDTLS'] = 'ON'
         cmake.definitions['WITH_ALSA'] = 'OFF'
+        cmake.definitions['WITH_PULSE'] = 'OFF'
+        cmake.definitions['WITH_SNDIO'] = 'OFF'
         cmake.definitions['WITH_FUSE'] = 'OFF'
         cmake.definitions['CHANNEL_URBDRC'] = 'OFF'
 
