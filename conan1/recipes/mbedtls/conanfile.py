@@ -58,7 +58,7 @@ class MbedtlsConan(ConanFile):
         cmake.definitions['ENABLE_PROGRAMS'] = 'OFF'
 
         mbedtls_configs = ['MBEDTLS_THREADING_C']
-        mbedtls_configs.extend(['MBEDTLS_SSL_PROTO_TLS1_3'])
+        mbedtls_configs.extend(['MBEDTLS_SSL_PROTO_TLS1_3', 'MBEDTLS_SSL_TLS1_3_COMPATIBILITY_MODE'])
 
         if self.settings.os == 'Windows':
             cmake.definitions['MSVC_STATIC_RUNTIME'] = 'ON'
