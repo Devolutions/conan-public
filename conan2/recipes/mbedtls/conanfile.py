@@ -58,7 +58,7 @@ class MbedtlsConan(ConanFile):
 
     def build(self):
         config_h = os.path.join(self.source_folder, self.name, "include", "mbedtls", "mbedtls_config.h")
-        mbedtls_configs = ["MBEDTLS_THREADING_C", "MBEDTLS_SSL_PROTO_TLS1_3"]
+        mbedtls_configs = ["MBEDTLS_THREADING_C", "MBEDTLS_SSL_PROTO_TLS1_3", "MBEDTLS_SSL_TLS1_3_COMPATIBILITY_MODE"]
         if self.settings.os == "Windows":
             mbedtls_configs.append("MBEDTLS_THREADING_WINDOWS")
         else:
