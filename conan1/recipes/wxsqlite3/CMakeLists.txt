@@ -43,3 +43,7 @@ add_compile_definitions("SQLITE_ALLOW_URI_AUTHORITY")
 add_compile_definitions("SQLITE_SECURE_DELETE")
 add_compile_definitions("SQLITE_SOUNDEX")
 add_compile_definitions("CODEC_TYPE=CODEC_TYPE_AES128")
+
+if(UNIX)
+    add_compile_definitions("HAVE_USLEEP=1")
+endif()
