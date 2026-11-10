@@ -13,6 +13,11 @@ This repository contains the [Conan](https://conan.io/) build recipes for Devolu
 
 Avoid using an unqualified `conan` command in this repository. Use `conan1` for existing recipes and `conan2` for migrated recipes.
 
+The FreeRDP and WinPR recipes disable the optional systemd/journald logging backend
+with `WITH_SYSTEMD=OFF`, so Linux consumers do not need to link `libsystemd` for
+WinPR logging. Recipe changes do not update existing binaries: affected packages
+must be rebuilt and published before consumers such as FreeVNC receive the fix.
+
 ## Fresh Windows setup
 
 Install Python 3, then run the setup script from the repository root:

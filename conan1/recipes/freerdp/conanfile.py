@@ -85,6 +85,7 @@ class FreerdpConan(ConanFile):
         cmake.definitions['WITH_GSTREAMER_1_0'] = 'OFF'
         cmake.definitions['WITH_GSTREAMER_0_10'] = 'OFF'
         cmake.definitions['WITH_LIBSYSTEMD'] = 'OFF'
+        cmake.definitions['WITH_SYSTEMD'] = 'OFF'
         cmake.definitions['WITH_OPENSSL'] = 'ON'
         cmake.definitions['WITH_MBEDTLS'] = 'ON'
         cmake.definitions['WITH_ALSA'] = 'OFF'

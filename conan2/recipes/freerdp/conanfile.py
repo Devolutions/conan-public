@@ -192,6 +192,7 @@ class FreerdpConan(ConanFile):
         tc.variables["WITH_GSTREAMER_1_0"] = False
         tc.variables["WITH_GSTREAMER_0_10"] = False
         tc.variables["WITH_LIBSYSTEMD"] = False
+        tc.variables["WITH_SYSTEMD"] = False
         tc.variables["WITH_OPENSSL"] = True
         tc.variables["WITH_MBEDTLS"] = True
         tc.variables["WITH_ALSA"] = False

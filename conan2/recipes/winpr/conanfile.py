@@ -75,6 +75,7 @@ class WinprConan(ConanFile):
             tc.variables["WINPR_UTILS_IMAGE_PNG"] = True
             tc.variables["WINPR_UTILS_IMAGE_JPEG"] = True
             tc.variables["WITH_LIBSYSTEMD"] = False
+            tc.variables["WITH_SYSTEMD"] = False
             tc.variables["WITH_UNICODE_BUILTIN"] = True
             tc.variables["WITH_KRB5"] = False
             tc.variables["WITH_PKCS11"] = False
