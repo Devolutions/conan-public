@@ -9,7 +9,7 @@ class LibFIDO2Conan(ConanFile):
     name = "libfido2"
     exports = "VERSION", "patches/*"
     license = "BSD"
-    url = "https://github.com/PowerShell/libfido2"
+    url = "https://github.com/Yubico/libfido2.git"
     description = "libfido2"
     settings = "os", "arch", "build_type"
     no_copy_source = True
@@ -31,7 +31,7 @@ class LibFIDO2Conan(ConanFile):
     def requirements(self):
         self.requires("zlib/1.3.1@devolutions/stable")
         self.requires("libcbor/0.10.2@devolutions/stable")
-        self.requires("libressl/3.8.2@devolutions/stable")
+        self.requires("libressl/4.4.1@devolutions/stable")
 
         if self.settings.os == "Android":
             self.requires("libudev-zero/1.0.0@devolutions/stable")
@@ -53,12 +53,6 @@ class LibFIDO2Conan(ConanFile):
                 self.output.info(f"Applying patch: {patch_path}")
                 patch(self, base_path=os.path.join(self.source_folder, folder), patch_file=patch_path)
 
-        replace_in_file(
-            self,
-            os.path.join(self.source_folder, folder, "CMakeLists.txt"),
-            "cmake_minimum_required(VERSION 3.7)",
-            "cmake_minimum_required(VERSION 3.15)",
-        )
         replace_in_file(
             self,
             os.path.join(self.source_folder, folder, "CMakeLists.txt"),

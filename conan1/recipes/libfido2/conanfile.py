@@ -5,7 +5,7 @@ class LibFIDO2Conan(ConanFile):
     name = 'libfido2'
     version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
     license = 'BSD'
-    url = 'https://github.com/PowerShell/libfido2'
+    url = 'https://github.com/Yubico/libfido2.git'
     description = 'libfido2'
     settings = 'os', 'arch', 'distro', 'build_type'
     no_copy_source = True
@@ -17,7 +17,10 @@ class LibFIDO2Conan(ConanFile):
         'patches/1.10.0/0003-use-linux-hid-backend-for-android.patch',
         'patches/1.14.0/0001-fix-cmake-dependency-management.patch',
         'patches/1.14.0/0002-fix-crypto-explicit_bzero-conflict.patch',
-        'patches/1.14.0/0003-use-linux-hid-backend-for-android.patch']
+        'patches/1.14.0/0003-use-linux-hid-backend-for-android.patch',
+        'patches/1.17.0/0001-fix-cmake-dependency-management.patch',
+        'patches/1.17.0/0002-fix-crypto-explicit_bzero-conflict.patch',
+        'patches/1.17.0/0003-use-linux-hid-backend-for-android.patch']
 
     options = {
         'fPIC': [True, False],
@@ -32,7 +35,7 @@ class LibFIDO2Conan(ConanFile):
         super().build_requirements()
         self.build_requires('zlib/1.3.1@devolutions/stable')
         self.build_requires('libcbor/0.10.2@devolutions/stable')
-        self.build_requires('libressl/3.8.2@devolutions/stable')
+        self.build_requires('libressl/4.4.1@devolutions/stable')
 
         if self.settings.os == 'Android':
             self.build_requires('libudev-zero/1.0.0@devolutions/stable')
@@ -47,14 +50,10 @@ class LibFIDO2Conan(ConanFile):
 
         patches_dir = os.path.join(self.recipe_folder, "patches", self.version)
         if os.path.isdir(patches_dir):
-            for patch_file in [f for f in os.listdir(patches_dir) if f.endswith('.patch')]:
+            for patch_file in sorted(f for f in os.listdir(patches_dir) if f.endswith('.patch')):
                 patch_path = os.path.join(patches_dir, patch_file)
                 self.output.info('Applying patch: %s' % patch_path)
                 tools.patch(base_path=folder, patch_file=patch_path)
-
-        tools.replace_in_file(os.path.join(folder, 'CMakeLists.txt'),
-            "cmake_minimum_required(VERSION 3.7)",
-            "cmake_minimum_required(VERSION 3.15)")
 
     def build(self):
         cmake = CMake(self)

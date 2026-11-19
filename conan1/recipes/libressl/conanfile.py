@@ -4,7 +4,7 @@ import os
 class LibreSSLConan(ConanFile):
     name = 'libressl'
     license = 'BSD'
-    url = 'https://github.com/PowerShell/LibreSSL.git'
+    url = 'https://www.libressl.org/'
     version = open(os.path.join('.', 'VERSION'), 'r').read().rstrip()
     description = 'LibreSSL'
     settings = 'os', 'arch', 'distro', 'build_type'
@@ -34,11 +34,14 @@ class LibreSSLConan(ConanFile):
             return
 
         folder = self.name
-        tag = 'V%s.0' % (self.version)
-        self.output.info('Cloning repo: %s dest: %s tag: %s' % (self.url, folder, tag))
-        git = tools.Git(folder=folder)
-        git.clone(self.url)
-        git.checkout(tag)
+        source_url = 'https://github.com/libressl/portable/releases/download/v%s/libressl-%s.tar.gz' % (self.version, self.version)
+        self.output.info('Downloading release: %s' % source_url)
+        tools.get(
+            source_url,
+            sha256='290cdf1b53c086255dc302f118b98602a444e9ae6d11e9bfdd8c9b1b60aa3a22',
+            destination=folder,
+            strip_root=True,
+        )
 
         patches_dir = os.path.join(self.recipe_folder, "patches", self.version)
         if os.path.isdir(patches_dir):
@@ -49,23 +52,8 @@ class LibreSSLConan(ConanFile):
 
         if self.settings.os == 'iOS':
             tools.replace_in_file(os.path.join(folder, 'CMakeLists.txt'),
-                "check_function_exists(syslog_r HAVE_SYSLOG_R)",
-                "#check_function_exists(syslog_r HAVE_SYSLOG_R)")
-            tools.replace_in_file(os.path.join(folder, 'CMakeLists.txt'),
                 "check_function_exists(syslog HAVE_SYSLOG)",
                 "#check_function_exists(syslog HAVE_SYSLOG)")
-            tools.replace_in_file(os.path.join(folder, 'CMakeLists.txt'),
-                "check_function_exists(explicit_bzero HAVE_EXPLICIT_BZERO)",
-                "#check_function_exists(explicit_bzero HAVE_EXPLICIT_BZERO)")
-            tools.replace_in_file(os.path.join(folder, 'CMakeLists.txt'),
-                "check_function_exists(reallocarray HAVE_REALLOCARRAY)",
-                "#check_function_exists(reallocarray HAVE_REALLOCARRAY)")
-            tools.replace_in_file(os.path.join(folder, 'CMakeLists.txt'),
-                "check_function_exists(timingsafe_memcmp HAVE_TIMINGSAFE_MEMCMP)",
-                "#check_function_exists(timingsafe_memcmp HAVE_TIMINGSAFE_MEMCMP)")
-            tools.replace_in_file(os.path.join(folder, 'include', 'compat', 'endian.h'),
-                "#if defined(__APPLE__) && !defined(HAVE_ENDIAN_H)",
-                "#if defined(__APPLE__)")
 
     def build(self):
         if self.settings.arch == 'universal':

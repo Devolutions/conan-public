@@ -25,7 +25,7 @@ class FreerdpConan(ConanFile):
 
     def build_requirements(self):
         super().build_requirements()
-        self.build_requires('libressl/3.8.2@devolutions/stable')
+        self.build_requires('libressl/4.4.1@devolutions/stable')
         self.build_requires('winpr/3.0.0@devolutions/stable')
         self.build_requires('mbedtls/3.5.1@devolutions/stable')
         self.build_requires('zlib/1.3.1@devolutions/stable')
@@ -33,7 +33,7 @@ class FreerdpConan(ConanFile):
 
         if self.settings.os in ["Windows", "Linux", "Macos"]:
             self.build_requires('openh264/2.6.0@devolutions/stable')
-            self.build_requires('libfido2/1.14.0@devolutions/stable')
+            self.build_requires('libfido2/1.17.0@devolutions/stable')
             self.build_requires('libcbor/0.10.2@devolutions/stable')
 
             if self.settings.os == "Linux":
@@ -59,6 +59,12 @@ class FreerdpConan(ConanFile):
 
         with open(os.path.join(folder, "CMakeLists.txt"), 'a') as file:
             file.write('\nadd_subdirectory(DevolutionsRdp)')
+
+        tools.replace_in_file(
+            os.path.join(folder, "DevolutionsRdp", "CMakeLists.txt"),
+            "target_link_libraries(${MODULE_NAME} PRIVATE freerdp freerdp-client winpr)",
+            "target_link_libraries(${MODULE_NAME} PRIVATE freerdp freerdp-client winpr ${LIBFIDO2_LIBRARIES} ${LIBCBOR_LIBRARIES})",
+        )
 
     def build(self):
         if self.settings.arch == 'universal':
@@ -182,7 +188,10 @@ class FreerdpConan(ConanFile):
             cmake.definitions['LIBFIDO2_INCLUDE_DIR'] = os.path.join(libfido2_path, self.deps_cpp_info['libfido2'].includedirs[0])
             cmake.definitions['LIBFIDO2_LIBRARY'] = os.path.join(libfido2_path, self.deps_cpp_info['libfido2'].libdirs[0], fido2_lib)
             cmake.definitions['LIBCBOR_INCLUDE_DIR'] = os.path.join(libcbor_path, self.deps_cpp_info['libcbor'].includedirs[0])
+            cmake.definitions['LIBCBOR_INCLUDE_DIRS'] = cmake.definitions['LIBCBOR_INCLUDE_DIR']
             cmake.definitions['LIBCBOR_LIBRARY'] = os.path.join(libcbor_path, self.deps_cpp_info['libcbor'].libdirs[0], cbor_lib)
+            cmake.definitions['LIBCBOR_LIBRARIES'] = cmake.definitions['LIBCBOR_LIBRARY']
+            cmake.definitions['LIBFIDO2_LIBRARIES'] = cmake.definitions['LIBFIDO2_LIBRARY']
             cmake.definitions['CHANNEL_RDPEWA'] = 'ON'
 
         if self.settings.os == "Linux":
