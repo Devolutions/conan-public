@@ -69,5 +69,7 @@ class LibreSSLConan(ConanFile):
 
     def package_info(self):
         self.cpp_info.libs = collect_libs(self)
+        if self.settings.os in ["Linux", "FreeBSD"]:
+            self.cpp_info.system_libs = ["pthread"]
         self.buildenv_info.define_path("OPENSSL_DIR", self.package_folder)
         self.runenv_info.define_path("OPENSSL_DIR", self.package_folder)

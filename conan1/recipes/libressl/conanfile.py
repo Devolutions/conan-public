@@ -15,7 +15,8 @@ class LibreSSLConan(ConanFile):
         'patches/3.4.2/0001-normalize-library-output-names.patch',
         'patches/3.4.2/0002-set-default-output-directories.patch',
         'patches/3.8.2/0001-normalize-library-output-names.patch',
-        'patches/3.8.2/0002-set-default-output-directories.patch']
+        'patches/3.8.2/0002-set-default-output-directories.patch',
+        'patches/4.4.1/0001-normalize-library-prefixes.patch']
 
     options = {
         'fPIC': [True, False],
@@ -45,7 +46,7 @@ class LibreSSLConan(ConanFile):
 
         patches_dir = os.path.join(self.recipe_folder, "patches", self.version)
         if os.path.isdir(patches_dir):
-            for patch_file in os.listdir(patches_dir):
+            for patch_file in sorted(os.listdir(patches_dir)):
                 patch_path = os.path.join(patches_dir, patch_file)
                 self.output.info('Applying patch: %s' % patch_path)
                 tools.patch(base_path=folder, patch_file=patch_path)
@@ -93,4 +94,6 @@ class LibreSSLConan(ConanFile):
             self.cpp_info.libs = ['ssl', 'crypto', 'tls']
 
         self.cpp_info.libs = tools.collect_libs(self)
+        if self.settings.os in ['Linux', 'FreeBSD']:
+            self.cpp_info.system_libs = ['pthread']
         self.env_info.OPENSSL_DIR = self.package_folder
