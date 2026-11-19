@@ -90,6 +90,8 @@ class LibFIDO2Conan(ConanFile):
         tc.variables["CRYPTO_BIN_DIRS"] = f"{libressl_path}/bin"
         tc.variables["CRYPTO_INCLUDE_DIRS"] = f"{libressl_path}/include"
         tc.variables["CRYPTO_LIBRARY_DIRS"] = f"{libressl_path}/lib"
+        if self.settings.os == "Windows":
+            tc.variables["CRYPTO_LIBRARIES"] = f"{libressl_path}/lib/libcrypto.lib"
 
         if self.settings.os == "Android":
             tc.variables["UDEV_ROOT_DIR"] = self._cmake_path(self.dependencies["libudev-zero"].package_folder)

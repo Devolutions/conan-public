@@ -1,0 +1,16 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -22,7 +22,11 @@
+-project(LibreSSL LANGUAGES C ASM)
++project(LibreSSL LANGUAGES C)
++if(CMAKE_C_COMPILER_TARGET)
++	set(CMAKE_ASM_COMPILER_TARGET "${CMAKE_C_COMPILER_TARGET}")
++endif()
++enable_language(ASM)
+ 
+ # Platform initialization in project() overrides command-line library prefixes.
+ set(CMAKE_SHARED_LIBRARY_PREFIX "lib")
+ set(CMAKE_STATIC_LIBRARY_PREFIX "lib")
+ 
+ include(CheckCSourceCompiles)

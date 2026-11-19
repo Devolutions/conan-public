@@ -92,6 +92,8 @@ class LibFIDO2Conan(ConanFile):
         cmake.definitions['CRYPTO_BIN_DIRS'] = os.path.join(libressl_path, 'bin')
         cmake.definitions['CRYPTO_INCLUDE_DIRS'] = os.path.join(libressl_path, 'include')
         cmake.definitions['CRYPTO_LIBRARY_DIRS'] = os.path.join(libressl_path, 'lib')
+        if self.settings.os == 'Windows':
+            cmake.definitions['CRYPTO_LIBRARIES'] = os.path.join(libressl_path, 'lib', 'libcrypto.lib').replace('\\', '/')
 
         if self.settings.os == 'Android':
             libudev_zero_path = self.deps_cpp_info['libudev-zero'].rootpath
