@@ -10,7 +10,7 @@ class FreerdpConan(ConanFile):
     url = 'https://github.com/Devolutions/FreeRDP.git'
     description = 'FreeRDP is a free remote desktop protocol client'
     settings = 'os', 'arch', 'distro', 'build_type'
-    branch = 'devolutions-rdp-3.33.1'
+    branch = 'thenextman-freerdp-dependency-linkage'
     python_requires = "shared/1.0.0@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
 
@@ -59,12 +59,6 @@ class FreerdpConan(ConanFile):
 
         with open(os.path.join(folder, "CMakeLists.txt"), 'a') as file:
             file.write('\nadd_subdirectory(DevolutionsRdp)')
-
-        tools.replace_in_file(
-            os.path.join(folder, "DevolutionsRdp", "CMakeLists.txt"),
-            "target_link_libraries(${MODULE_NAME} PRIVATE freerdp freerdp-client winpr)",
-            "target_link_libraries(${MODULE_NAME} PRIVATE freerdp freerdp-client winpr ${LIBFIDO2_LIBRARIES} ${LIBCBOR_LIBRARIES})",
-        )
 
     def build(self):
         if self.settings.arch == 'universal':
@@ -188,10 +182,7 @@ class FreerdpConan(ConanFile):
             cmake.definitions['LIBFIDO2_INCLUDE_DIR'] = os.path.join(libfido2_path, self.deps_cpp_info['libfido2'].includedirs[0])
             cmake.definitions['LIBFIDO2_LIBRARY'] = os.path.join(libfido2_path, self.deps_cpp_info['libfido2'].libdirs[0], fido2_lib)
             cmake.definitions['LIBCBOR_INCLUDE_DIR'] = os.path.join(libcbor_path, self.deps_cpp_info['libcbor'].includedirs[0])
-            cmake.definitions['LIBCBOR_INCLUDE_DIRS'] = cmake.definitions['LIBCBOR_INCLUDE_DIR']
             cmake.definitions['LIBCBOR_LIBRARY'] = os.path.join(libcbor_path, self.deps_cpp_info['libcbor'].libdirs[0], cbor_lib)
-            cmake.definitions['LIBCBOR_LIBRARIES'] = cmake.definitions['LIBCBOR_LIBRARY']
-            cmake.definitions['LIBFIDO2_LIBRARIES'] = cmake.definitions['LIBFIDO2_LIBRARY']
             cmake.definitions['CHANNEL_RDPEWA'] = 'ON'
 
         if self.settings.os == "Linux":

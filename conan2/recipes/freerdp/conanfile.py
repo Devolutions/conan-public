@@ -14,7 +14,7 @@ class FreerdpConan(ConanFile):
     url = "https://github.com/Devolutions/FreeRDP.git"
     description = "FreeRDP is a free remote desktop protocol client"
     settings = "os", "arch", "build_type"
-    branch = "devolutions-rdp-3.33.1"
+    branch = "thenextman-freerdp-dependency-linkage"
     python_requires = "shared/1.0.0@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
 
@@ -137,23 +137,6 @@ class FreerdpConan(ConanFile):
             "    set(OPENSSL_CRYPTO_LIBRARIES ${OPENSSL_CRYPTO_LIBRARY})\n"
             "    set(OPENSSL_LIBRARIES ${OPENSSL_SSL_LIBRARY} ${OPENSSL_CRYPTO_LIBRARY})\n"
             "  endif()",
-        )
-        replace_in_file(
-            self,
-            os.path.join(self.source_folder, folder, "DevolutionsRdp", "CMakeLists.txt"),
-            "add_library(${MODULE_NAME} ${TARGET_TYPE} ${${MODULE_PREFIX}_HEADERS} ${${MODULE_PREFIX}_SOURCES} ${${MODULE_PREFIX}_RESOURCES})",
-            "add_library(${MODULE_NAME} ${TARGET_TYPE} ${${MODULE_PREFIX}_HEADERS} ${${MODULE_PREFIX}_SOURCES} ${${MODULE_PREFIX}_RESOURCES})\n"
-            "target_include_directories(${MODULE_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})",
-        )
-        replace_in_file(
-            self,
-            os.path.join(self.source_folder, folder, "DevolutionsRdp", "CMakeLists.txt"),
-            "target_link_libraries(${MODULE_NAME} PRIVATE freerdp freerdp-client winpr)",
-            "target_link_libraries(${MODULE_NAME} PRIVATE freerdp freerdp-client winpr)\n"
-            "if(MBEDTLS_LIBRARY)\n"
-            "    target_link_libraries(${MODULE_NAME} PRIVATE ${MBEDTLS_LIBRARY} ${MBEDX509_LIBRARY} ${MBEDCRYPTO_LIBRARY})\n"
-            "endif()\n"
-            "target_link_libraries(${MODULE_NAME} PRIVATE ${LIBFIDO2_LIBRARIES} ${LIBCBOR_LIBRARIES})",
         )
         replace_in_file(
             self,
@@ -321,10 +304,7 @@ class FreerdpConan(ConanFile):
                 libfido2_library = ";".join([libfido2_library, openssl_crypto_library])
             tc.variables["LIBFIDO2_LIBRARY"] = libfido2_library
             tc.variables["LIBCBOR_INCLUDE_DIR"] = f"{libcbor_path}/include"
-            tc.variables["LIBCBOR_INCLUDE_DIRS"] = f"{libcbor_path}/include"
             tc.variables["LIBCBOR_LIBRARY"] = f"{libcbor_path}/lib/{cbor_lib}"
-            tc.variables["LIBCBOR_LIBRARIES"] = tc.variables["LIBCBOR_LIBRARY"]
-            tc.variables["LIBFIDO2_LIBRARIES"] = tc.variables["LIBFIDO2_LIBRARY"]
             tc.variables["CHANNEL_RDPEWA"] = True
 
         if self.settings.os == "Android":
