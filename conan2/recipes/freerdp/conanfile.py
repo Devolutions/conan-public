@@ -14,7 +14,7 @@ class FreerdpConan(ConanFile):
     url = "https://github.com/Devolutions/FreeRDP.git"
     description = "FreeRDP is a free remote desktop protocol client"
     settings = "os", "arch", "build_type"
-    branch = "thenextman-freerdp-dependency-linkage"
+    branch = "devolutions-rdp-3.33.1"
     python_requires = "shared/1.0.0@devolutions/stable"
     python_requires_extend = "shared.UtilsBase"
 
