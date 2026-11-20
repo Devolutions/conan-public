@@ -80,6 +80,8 @@ class LibFIDO2Conan(ConanFile):
         cmake.definitions['ZLIB_BIN_DIRS'] = os.path.join(zlib_path, 'bin')
         cmake.definitions['ZLIB_INCLUDE_DIRS'] = os.path.join(zlib_path, 'include')
         cmake.definitions['ZLIB_LIBRARY_DIRS'] = os.path.join(zlib_path, 'lib')
+        if self.settings.os == 'Windows':
+            cmake.definitions['ZLIB_LIBRARIES'] = os.path.join(zlib_path, 'lib', 'zlib.lib').replace('\\', '/')
 
         libcbor_path = self.deps_cpp_info['libcbor'].rootpath
         cmake.definitions['CBOR_ROOT_DIR'] = libcbor_path

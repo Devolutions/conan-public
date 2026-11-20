@@ -78,6 +78,8 @@ class LibFIDO2Conan(ConanFile):
         tc.variables["ZLIB_BIN_DIRS"] = f"{zlib_path}/bin"
         tc.variables["ZLIB_INCLUDE_DIRS"] = f"{zlib_path}/include"
         tc.variables["ZLIB_LIBRARY_DIRS"] = f"{zlib_path}/lib"
+        if self.settings.os == "Windows":
+            tc.variables["ZLIB_LIBRARIES"] = f"{zlib_path}/lib/zlib.lib"
 
         libcbor_path = self._cmake_path(self.dependencies["libcbor"].package_folder)
         tc.variables["CBOR_ROOT_DIR"] = libcbor_path
