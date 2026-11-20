@@ -11,19 +11,7 @@ index 1c97a09..809cad6 100644
  		set(FIDO_CFLAGS "${FIDO_CFLAGS} -D_GNU_SOURCE")
  		set(FIDO_CFLAGS "${FIDO_CFLAGS} -D_DEFAULT_SOURCE")
  	elseif(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD" OR
-@@ -121,6 +121,11 @@ check_symbol_exists(sysconf unistd.h HAVE_SYSCONF)
- check_symbol_exists(timespecsub sys/time.h HAVE_TIMESPECSUB)
- check_symbol_exists(timingsafe_bcmp string.h HAVE_TIMINGSAFE_BCMP)
- 
-+if(CMAKE_SYSTEM_NAME STREQUAL "Android")
-+	set(HAVE_EXPLICIT_BZERO OFF)
-+	add_definitions(-DCRYPTO_EXPLICIT_BZERO)
-+endif()
-+
- set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
- try_compile(HAVE_POSIX_IOCTL
-     "${CMAKE_CURRENT_BINARY_DIR}/posix_ioctl_check.o"
-@@ -223,9 +228,52 @@ if(MSVC)
+@@ -223,9 +223,52 @@ if(MSVC)
  	set(NFC_LINUX OFF)
  else()
  	include(FindPkgConfig)
@@ -79,7 +67,7 @@ index 1c97a09..809cad6 100644
  
  	if(NOT CBOR_FOUND AND NOT HAVE_CBOR_H)
  		message(FATAL_ERROR "could not find libcbor")
-@@ -258,6 +306,18 @@ else()
+@@ -258,6 +301,18 @@ else()
  				set(BASE_LIBRARIES ${BASE_LIBRARIES} rt)
  			endif()
  		endif()
