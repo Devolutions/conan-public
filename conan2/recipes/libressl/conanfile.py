@@ -1,7 +1,6 @@
 from conan import ConanFile
 from conan.tools.cmake import CMake, CMakeToolchain, cmake_layout
-from conan.tools.files import collect_libs, load, patch
-from conan.tools.scm import Git
+from conan.tools.files import collect_libs, get, load, patch
 import os
 
 
@@ -9,7 +8,7 @@ class LibreSSLConan(ConanFile):
     name = "libressl"
     exports = "VERSION", "patches/*"
     license = "BSD"
-    url = "https://github.com/PowerShell/LibreSSL.git"
+    url = "https://www.libressl.org/"
     description = "LibreSSL"
     settings = "os", "arch", "build_type"
     python_requires = "shared/1.0.0@devolutions/stable"
@@ -32,10 +31,15 @@ class LibreSSLConan(ConanFile):
 
     def source(self):
         folder = self.name
-        tag = f"V{self.version}.0"
-        self.output.info(f"Cloning repo: {self.url} dest: {folder} tag: {tag}")
-        git = Git(self)
-        git.clone(url=self.url, target=folder, args=["--branch", tag])
+        source_url = f"https://github.com/libressl/portable/releases/download/v{self.version}/libressl-{self.version}.tar.gz"
+        self.output.info(f"Downloading release: {source_url}")
+        get(
+            self,
+            url=source_url,
+            sha256="290cdf1b53c086255dc302f118b98602a444e9ae6d11e9bfdd8c9b1b60aa3a22",
+            destination=os.path.join(self.source_folder, folder),
+            strip_root=True,
+        )
 
         patches_dir = os.path.join(self.recipe_folder, "patches", self.version)
         if os.path.isdir(patches_dir):
@@ -65,5 +69,7 @@ class LibreSSLConan(ConanFile):
 
     def package_info(self):
         self.cpp_info.libs = collect_libs(self)
+        if self.settings.os in ["Linux", "FreeBSD"]:
+            self.cpp_info.system_libs = ["pthread"]
         self.buildenv_info.define_path("OPENSSL_DIR", self.package_folder)
         self.runenv_info.define_path("OPENSSL_DIR", self.package_folder)

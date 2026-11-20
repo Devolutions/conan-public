@@ -31,7 +31,7 @@ class FreerdpConan(ConanFile):
         self.version = load(self, os.path.join(self.recipe_folder, "VERSION")).strip()
 
     def requirements(self):
-        self.requires("libressl/3.8.2@devolutions/stable")
+        self.requires("libressl/4.4.1@devolutions/stable")
         self.requires("winpr/3.0.0@devolutions/stable")
         self.requires("mbedtls/3.5.1@devolutions/stable")
         self.requires("zlib/1.3.1@devolutions/stable")
@@ -39,7 +39,7 @@ class FreerdpConan(ConanFile):
 
         if self.settings.os in ("Windows", "Linux", "Macos"):
             self.requires("openh264/2.6.0@devolutions/stable")
-            self.requires("libfido2/1.14.0@devolutions/stable")
+            self.requires("libfido2/1.17.0@devolutions/stable")
             self.requires("libcbor/0.10.2@devolutions/stable")
 
             if self.settings.os == "Linux":
@@ -137,22 +137,6 @@ class FreerdpConan(ConanFile):
             "    set(OPENSSL_CRYPTO_LIBRARIES ${OPENSSL_CRYPTO_LIBRARY})\n"
             "    set(OPENSSL_LIBRARIES ${OPENSSL_SSL_LIBRARY} ${OPENSSL_CRYPTO_LIBRARY})\n"
             "  endif()",
-        )
-        replace_in_file(
-            self,
-            os.path.join(self.source_folder, folder, "DevolutionsRdp", "CMakeLists.txt"),
-            "add_library(${MODULE_NAME} ${TARGET_TYPE} ${${MODULE_PREFIX}_HEADERS} ${${MODULE_PREFIX}_SOURCES} ${${MODULE_PREFIX}_RESOURCES})",
-            "add_library(${MODULE_NAME} ${TARGET_TYPE} ${${MODULE_PREFIX}_HEADERS} ${${MODULE_PREFIX}_SOURCES} ${${MODULE_PREFIX}_RESOURCES})\n"
-            "target_include_directories(${MODULE_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})",
-        )
-        replace_in_file(
-            self,
-            os.path.join(self.source_folder, folder, "DevolutionsRdp", "CMakeLists.txt"),
-            "target_link_libraries(${MODULE_NAME} PRIVATE freerdp freerdp-client winpr)",
-            "target_link_libraries(${MODULE_NAME} PRIVATE freerdp freerdp-client winpr)\n"
-            "if(MBEDTLS_LIBRARY)\n"
-            "    target_link_libraries(${MODULE_NAME} PRIVATE ${MBEDTLS_LIBRARY} ${MBEDX509_LIBRARY} ${MBEDCRYPTO_LIBRARY})\n"
-            "endif()",
         )
         replace_in_file(
             self,

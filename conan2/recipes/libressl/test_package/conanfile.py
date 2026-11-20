@@ -22,6 +22,6 @@ class TestPackageConan(ConanFile):
 
         self.output.info("Testing headers exist:")
         include_dir = os.path.join(package_folder, "include", "openssl")
-        self.output.info(f"- should have at least 70 headers under {include_dir}")
+        self.output.info(f"- should have at least 68 headers under {include_dir}")
         headers = glob.glob(os.path.join(include_dir, "*.h"))
-        assert len(headers) >= 70, f"Number of headers: {len(headers)}"
+        assert len(headers) >= 68, f"Number of headers: {len(headers)}"

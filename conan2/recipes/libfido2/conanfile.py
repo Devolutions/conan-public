@@ -9,7 +9,7 @@ class LibFIDO2Conan(ConanFile):
     name = "libfido2"
     exports = "VERSION", "patches/*"
     license = "BSD"
-    url = "https://github.com/PowerShell/libfido2"
+    url = "https://github.com/Yubico/libfido2.git"
     description = "libfido2"
     settings = "os", "arch", "build_type"
     no_copy_source = True
@@ -31,7 +31,7 @@ class LibFIDO2Conan(ConanFile):
     def requirements(self):
         self.requires("zlib/1.3.1@devolutions/stable")
         self.requires("libcbor/0.10.2@devolutions/stable")
-        self.requires("libressl/3.8.2@devolutions/stable")
+        self.requires("libressl/4.4.1@devolutions/stable")
 
         if self.settings.os == "Android":
             self.requires("libudev-zero/1.0.0@devolutions/stable")
@@ -53,12 +53,6 @@ class LibFIDO2Conan(ConanFile):
                 self.output.info(f"Applying patch: {patch_path}")
                 patch(self, base_path=os.path.join(self.source_folder, folder), patch_file=patch_path)
 
-        replace_in_file(
-            self,
-            os.path.join(self.source_folder, folder, "CMakeLists.txt"),
-            "cmake_minimum_required(VERSION 3.7)",
-            "cmake_minimum_required(VERSION 3.15)",
-        )
         replace_in_file(
             self,
             os.path.join(self.source_folder, folder, "CMakeLists.txt"),
@@ -84,6 +78,8 @@ class LibFIDO2Conan(ConanFile):
         tc.variables["ZLIB_BIN_DIRS"] = f"{zlib_path}/bin"
         tc.variables["ZLIB_INCLUDE_DIRS"] = f"{zlib_path}/include"
         tc.variables["ZLIB_LIBRARY_DIRS"] = f"{zlib_path}/lib"
+        if self.settings.os == "Windows":
+            tc.variables["ZLIB_LIBRARIES"] = f"{zlib_path}/lib/zlib.lib"
 
         libcbor_path = self._cmake_path(self.dependencies["libcbor"].package_folder)
         tc.variables["CBOR_ROOT_DIR"] = libcbor_path
@@ -96,6 +92,8 @@ class LibFIDO2Conan(ConanFile):
         tc.variables["CRYPTO_BIN_DIRS"] = f"{libressl_path}/bin"
         tc.variables["CRYPTO_INCLUDE_DIRS"] = f"{libressl_path}/include"
         tc.variables["CRYPTO_LIBRARY_DIRS"] = f"{libressl_path}/lib"
+        if self.settings.os == "Windows":
+            tc.variables["CRYPTO_LIBRARIES"] = f"{libressl_path}/lib/libcrypto.lib"
 
         if self.settings.os == "Android":
             tc.variables["UDEV_ROOT_DIR"] = self._cmake_path(self.dependencies["libudev-zero"].package_folder)
