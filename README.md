@@ -92,6 +92,43 @@ Build existing packages with the current PowerShell entry point:
 
 `build.ps1`, `publish.ps1`, and the Conan 1 workflows use `conan1` explicitly and read recipes from `conan1\recipes`.
 
+### Linux sysroots
+
+Conan 1 now defaults to SHA256-verified sysroot archives from the pinned
+[CBake release v2026.01.15.0](https://github.com/Devolutions/CBake/releases/tag/v2026.01.15.0),
+as Conan 2 already does. This release provides all six current Linux CI targets:
+Ubuntu 18.04, 20.04, and 22.04 on x86_64 (`amd64`) and armv8 (`arm64`).
+Conan 1 retains its `distro` setting and exposes
+`CMAKE_SYSROOT=<package-folder>/<distro>-<amd64|arm64>` to existing consumers.
+
+Prebuilt acquisition does not run Docker, apt, or emulated ARM package
+configuration. Missing assets/checksums, checksum mismatches, extraction failures,
+and missing `usr/` directories fail the recipe; there is no fallback to a source
+build. Other distro settings are not guaranteed to have usable release assets.
+To explicitly run CBake/Docker instead, use `-o sysroot:source=build`; this path
+still requires the source-build prerequisites and propagates process failures.
+Use `-o sysroot:release=<tag>` to deliberately select another prebuilt release.
+The source and release options are part of the Conan 1 package ID, so changing
+them cannot silently reuse a binary from the old configuration.
+
+For example, create a local ARM64 package without executing ARM code:
+
+```bash
+conan1 create ./conan1/recipes/sysroot devolutions/stable -pr linux-arm64 -s distro=ubuntu-20.04
+```
+
+Run the focused offline regression suite with the Python interpreter from the
+Conan 1 virtual environment (no additional test dependencies):
+
+```bash
+~/.conan-venvs/conan1/bin/python -m unittest discover -s scripts/tests -p 'test_conan1_sysroot.py' -v
+```
+
+The recipe's `test_package` also checks the actual packaged C header and consumer
+environment path during `conan1 create`. This change bypasses sysroot-generation
+failures in the default path; it does not repair QEMU/apt failures in explicit
+source builds or unrelated runner/toolchain issues.
+
 ## Conan 2 migration workflow
 
 Conan 2 has parallel build coverage for the current Conan 1 package set across Windows, macOS, iOS, iOS simulator, Android, and Linux. Conan 1 remains the default workflow-dispatch and scheduled build path; Conan 2 can be selected with `conan_major_version=2` and also has its own scheduled validation lane. Manual package runs default to publish dry-runs with `publish_dry_run=true`; set it to `false` only when the resulting Artifactory upload is intended and approved.
